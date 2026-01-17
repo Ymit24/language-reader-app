@@ -86,3 +86,34 @@ export const createLesson = mutation({
     return lessonId;
   },
 });
+
+export const deleteLesson = mutation({
+  args: {
+    lessonId: v.id("lessons"),
+  },
+  handler: async (ctx, args) => {
+    const userId = (await ctx.auth.getUserIdentity())?.subject;
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const { lessonId } = args;
+
+    // Verify ownership
+    const lesson = await ctx.db.get(lessonId);
+    if (!lesson || lesson.userId !== userId) {
+      throw new Error("Lesson not found or unauthorized");
+    }
+
+    // Delete lesson tokens
+    const tokens = await ctx.db
+      .query("lessonTokens")
+      .withIndex("by_lesson_index", (q) => q.eq("lessonId", lessonId))
+      .collect();
+    
+    await Promise.all(tokens.map((t) => ctx.db.delete(t._id)));
+    
+    // Delete the lesson
+    await ctx.db.delete(lessonId);
+  },
+});

@@ -1,25 +1,71 @@
-import { ScrollView, View, Text, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, ActivityIndicator, Alert, ActionSheetIOS, Platform, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Button } from '@/src/components/Button';
 import { LessonCard, EmptyState } from '@/src/components/Card';
+import { Id } from '@/convex/_generated/dataModel';
 
 // Estimated reading speed (words per minute)
 const WORDS_PER_MINUTE = 200;
 
 export default function LibraryScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
   const lessons = useQuery(api.lessons.listLessons);
+  const deleteLesson = useMutation(api.lessons.deleteLesson);
+
+  const isDesktop = width >= 768; // iPad/Desktop breakpoint
+  const numColumns = width >= 1024 ? 3 : width >= 768 ? 2 : 1;
+  const variant = isDesktop ? 'grid' : 'list';
 
   const handleLessonPress = (lessonId: string) => {
-    // Cast to any to bypass strict route typing for dynamic routes in some setups
     (router.push as any)(`/(app)/library/${lessonId}`);
   };
 
   const handleCreateLesson = () => {
     router.push('/(app)/library/new');
+  };
+
+  const handleDelete = async (lessonId: Id<"lessons">) => {
+    try {
+      await deleteLesson({ lessonId });
+    } catch (error) {
+      Alert.alert("Error", "Failed to delete lesson");
+    }
+  };
+
+  // Idiomatic "Long Press" menu
+  const handleLongPress = (lessonId: Id<"lessons">, title: string) => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Delete Lesson'],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 0,
+          title: `Manage "${title}"`,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            handleDelete(lessonId);
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        `Manage "${title}"`,
+        'Choose an action',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Delete', 
+            style: 'destructive', 
+            onPress: () => handleDelete(lessonId) 
+          },
+        ]
+      );
+    }
   };
 
   const formatDate = (timestamp: number) => {
@@ -57,31 +103,48 @@ export default function LibraryScreen() {
         ) : (
           <ScrollView
             className="flex-1"
-            contentContainerStyle={{ gap: 12 }}
             showsVerticalScrollIndicator={false}
           >
-            {lessons.map((lesson) => {
-              const knownPercentage = lesson.tokenCount > 0 
-                ? Math.round((lesson.knownTokenCount / lesson.tokenCount) * 100) 
-                : 0;
+            {/* Grid Container */}
+            <View className={`flex-row flex-wrap ${isDesktop ? 'gap-4' : 'gap-3'}`}>
+              {lessons.map((lesson) => {
+                const knownPercentage = lesson.tokenCount > 0 
+                  ? Math.round((lesson.knownTokenCount / lesson.tokenCount) * 100) 
+                  : 0;
 
-              // Use lastOpenedAt if available, otherwise createdAt
-              const dateToUse = lesson.lastOpenedAt ?? lesson.createdAt;
-              const dateLabel = lesson.lastOpenedAt ? 'opened' : 'created';
-              
-              return (
-                <LessonCard
-                  key={lesson._id}
-                  title={lesson.title}
-                  language={lesson.language.toUpperCase()}
-                  duration={formatDuration(lesson.tokenCount)}
-                  openedDate={`${dateLabel} ${formatDate(dateToUse)}`}
-                  knownPercentage={knownPercentage}
-                  onPress={() => handleLessonPress(lesson._id)}
-                />
-              );
-            })}
-            <View className="h-4" />
+                const dateToUse = lesson.lastOpenedAt ?? lesson.createdAt;
+                const dateLabel = lesson.lastOpenedAt ? 'opened' : 'created';
+                
+                // Calculate width based on columns
+                // We use percentage widths with manual gap compensation for simplicity in flex-wrap
+                // Gap is 16px (gap-4) for desktop, 12px (gap-3) for mobile
+                // Note: NativeWind gap works well, but percentages need to be precise.
+                // 3 cols: ~32%, 2 cols: ~48%, 1 col: 100%
+                
+                let widthClass = 'w-full';
+                if (numColumns === 2) widthClass = 'w-[48%]';
+                if (numColumns === 3) widthClass = 'w-[32%]';
+
+                return (
+                  <View 
+                    key={lesson._id}
+                    className={widthClass}
+                  >
+                    <LessonCard
+                      title={lesson.title}
+                      language={lesson.language.toUpperCase()}
+                      duration={formatDuration(lesson.tokenCount)}
+                      openedDate={`${dateLabel} ${formatDate(dateToUse)}`}
+                      knownPercentage={knownPercentage}
+                      variant={variant}
+                      onPress={() => handleLessonPress(lesson._id)}
+                      onLongPress={() => handleLongPress(lesson._id, lesson.title)}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+            <View className="h-8" />
           </ScrollView>
         )}
       </View>
