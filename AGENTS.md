@@ -134,10 +134,11 @@ Suggested structure:
 - `src/components/` reusable UI components (Button, Card, Token, etc.)
 - `src/features/reader/` reader-specific logic/components
 - `src/features/review/` review logic/components
-- `src/lib/` utilities (normalization, tokenization helpers)
+- `src/lib/` utilities
 - `convex/` schema + queries/mutations/actions
+- `convex/lib/` backend-only utilities (tokenization)
 
-Keep tokenization helpers in `src/lib/tokenize/` and ensure they are deterministic.
+Keep tokenization helpers in `convex/lib/tokenize.ts` (shared backend logic) and ensure they are deterministic.
 
 ## Convex function rules
 

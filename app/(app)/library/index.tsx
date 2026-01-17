@@ -1,64 +1,37 @@
-import { useState } from 'react';
-import { ScrollView, View, Text } from 'react-native';
+import { ScrollView, View, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 import { Button } from '@/src/components/Button';
 import { LessonCard, EmptyState } from '@/src/components/Card';
 
-interface Lesson {
-  id: string;
-  title: string;
-  language: string;
-  duration: string;
-  openedDate: string;
-  knownPercentage: number;
-}
-
-const mockLessons: Lesson[] = [
-  {
-    id: '1',
-    title: 'Der Umgang mit Zeit',
-    language: 'DE',
-    duration: '12 min',
-    openedDate: 'Jan 16',
-    knownPercentage: 62,
-  },
-  {
-    id: '2',
-    title: '日本の食文化（入門）',
-    language: 'JA',
-    duration: '8 min',
-    openedDate: 'Jan 10',
-    knownPercentage: 18,
-  },
-  {
-    id: '3',
-    title: 'Introduction to French',
-    language: 'FR',
-    duration: '15 min',
-    openedDate: 'Jan 8',
-    knownPercentage: 45,
-  },
-  {
-    id: '4',
-    title: 'Morning Routines',
-    language: 'DE',
-    duration: '10 min',
-    openedDate: 'Jan 5',
-    knownPercentage: 78,
-  },
-];
+// Estimated reading speed (words per minute)
+const WORDS_PER_MINUTE = 200;
 
 export default function LibraryScreen() {
   const router = useRouter();
-  const [lessons] = useState<Lesson[]>(mockLessons);
+  const lessons = useQuery(api.lessons.listLessons);
 
   const handleLessonPress = (lessonId: string) => {
+    // Cast to any to bypass strict route typing for dynamic routes in some setups
     (router.push as any)(`/(app)/library/${lessonId}`);
   };
 
   const handleCreateLesson = () => {
     router.push('/(app)/library/new');
+  };
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const formatDuration = (tokenCount: number) => {
+    const minutes = Math.ceil(tokenCount / WORDS_PER_MINUTE);
+    return `${minutes} min`;
   };
 
   return (
@@ -71,7 +44,11 @@ export default function LibraryScreen() {
           </Button>
         </View>
 
-        {lessons.length === 0 ? (
+        {lessons === undefined ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" />
+          </View>
+        ) : lessons.length === 0 ? (
           <EmptyState
             title="No lessons yet"
             description="Create your first lesson by pasting text"
@@ -83,17 +60,27 @@ export default function LibraryScreen() {
             contentContainerStyle={{ gap: 12 }}
             showsVerticalScrollIndicator={false}
           >
-            {lessons.map((lesson) => (
-              <LessonCard
-                key={lesson.id}
-                title={lesson.title}
-                language={lesson.language}
-                duration={lesson.duration}
-                openedDate={lesson.openedDate}
-                knownPercentage={lesson.knownPercentage}
-                onPress={() => handleLessonPress(lesson.id)}
-              />
-            ))}
+            {lessons.map((lesson) => {
+              const knownPercentage = lesson.tokenCount > 0 
+                ? Math.round((lesson.knownTokenCount / lesson.tokenCount) * 100) 
+                : 0;
+
+              // Use lastOpenedAt if available, otherwise createdAt
+              const dateToUse = lesson.lastOpenedAt ?? lesson.createdAt;
+              const dateLabel = lesson.lastOpenedAt ? 'opened' : 'created';
+              
+              return (
+                <LessonCard
+                  key={lesson._id}
+                  title={lesson.title}
+                  language={lesson.language.toUpperCase()}
+                  duration={formatDuration(lesson.tokenCount)}
+                  openedDate={`${dateLabel} ${formatDate(dateToUse)}`}
+                  knownPercentage={knownPercentage}
+                  onPress={() => handleLessonPress(lesson._id)}
+                />
+              );
+            })}
             <View className="h-4" />
           </ScrollView>
         )}

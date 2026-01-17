@@ -1,0 +1,88 @@
+import { v } from "convex/values";
+import { query, mutation } from "./_generated/server";
+import { tokenize } from "./lib/tokenize";
+
+export const listLessons = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = (await ctx.auth.getUserIdentity())?.subject;
+    if (!userId) {
+      return [];
+    }
+
+    // Fetch lessons for the user
+    // Ordered by lastOpenedAt desc (most recent), then createdAt desc
+    // Convex doesn't support multi-field sort easily in one go unless indexed that way.
+    // Index: "by_user_lastOpenedAt" ["userId", "lastOpenedAt"]
+    
+    // We'll prioritize the "Recently Opened" view
+    const lessons = await ctx.db
+      .query("lessons")
+      .withIndex("by_user_lastOpenedAt", (q) => q.eq("userId", userId))
+      .order("desc")
+      .collect();
+
+    return lessons;
+  },
+});
+
+export const createLesson = mutation({
+  args: {
+    title: v.string(),
+    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    rawText: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = (await ctx.auth.getUserIdentity())?.subject;
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const { title, language, rawText } = args;
+
+    // 1. Tokenize
+    const tokens = tokenize(rawText);
+
+    // 2. Calculate counts
+    const wordTokens = tokens.filter((t) => t.isWord);
+    const tokenCount = wordTokens.length;
+    // For MVP, we don't have existing vocab knowledge check during import yet,
+    // so knownTokenCount starts at 0.
+    const knownTokenCount = 0;
+
+    const now = Date.now();
+
+    // 3. Create Lesson
+    const lessonId = await ctx.db.insert("lessons", {
+      userId,
+      language,
+      title,
+      source: "paste",
+      rawText,
+      lastOpenedAt: now,
+      tokenCount,
+      knownTokenCount,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // 4. Batch insert tokens
+    // We'll use Promise.all for speed, though Convex handles them sequentially in the transaction.
+    await Promise.all(
+      tokens.map((token, index) =>
+        ctx.db.insert("lessonTokens", {
+          userId,
+          lessonId,
+          language,
+          index,
+          surface: token.surface,
+          normalized: token.normalized,
+          isWord: token.isWord,
+          createdAt: now,
+        })
+      )
+    );
+
+    return lessonId;
+  },
+});

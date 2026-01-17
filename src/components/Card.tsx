@@ -41,7 +41,7 @@ export function LessonCard({
         <View className="flex-1">
           <Text className="text-sm font-semibold text-ink">{title}</Text>
           <Text className="mt-1 text-xs text-faint">
-            {language} · {duration} · opened {openedDate}
+            {language} · {duration} · {openedDate}
           </Text>
         </View>
         <Pressable
