@@ -1,6 +1,5 @@
 import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '@/src/components/Button';
 
 export default function NewLessonScreen() {
   return (
