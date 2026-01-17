@@ -117,3 +117,35 @@ export const deleteLesson = mutation({
     await ctx.db.delete(lessonId);
   },
 });
+
+export const getLesson = query({
+  args: {
+    lessonId: v.id("lessons"),
+  },
+  handler: async (ctx, args) => {
+    const userId = (await ctx.auth.getUserIdentity())?.subject;
+    if (!userId) {
+      return null;
+    }
+
+    const { lessonId } = args;
+    const lesson = await ctx.db.get(lessonId);
+
+    if (!lesson || lesson.userId !== userId) {
+      return null;
+    }
+
+    // Fetch all tokens for the lesson
+    // Optimization: In a real app with huge texts, we might paginate tokens.
+    // For MVP, we fetch all.
+    const tokens = await ctx.db
+      .query("lessonTokens")
+      .withIndex("by_lesson_index", (q) => q.eq("lessonId", lessonId))
+      .collect();
+
+    return {
+      ...lesson,
+      tokens,
+    };
+  },
+});
