@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '@/src/components/SafeAreaView';
 
 export default function ReviewScreen() {
   return (

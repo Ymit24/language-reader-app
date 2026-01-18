@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '@/src/components/SafeAreaView';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Reader } from '../../../../src/features/reader/Reader';
 import { Id } from '../../../../convex/_generated/dataModel';

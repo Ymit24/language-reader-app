@@ -1,6 +1,6 @@
 import { View, Text, Alert, ActivityIndicator, Platform } from 'react-native';
 import { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '@/src/components/SafeAreaView';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { useConvexAuth } from 'convex/react';
 import { Button } from '@/src/components/Button';

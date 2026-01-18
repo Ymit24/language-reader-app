@@ -1,5 +1,5 @@
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '@/src/components/SafeAreaView';
 import { Input } from '@/src/components/Input';
 import { Button } from '@/src/components/Button';
 import { useAuthActions } from '@convex-dev/auth/react';
