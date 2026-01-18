@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
@@ -7,8 +7,11 @@ interface ReaderHeaderProps {
 }
 
 export function ReaderHeader({ title }: ReaderHeaderProps) {
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
+
   return (
-    <View className="h-20 flex-row items-center px-[28px] justify-between bg-canvas border-b border-border">
+    <View className={`h-20 flex-row items-center justify-between bg-canvas border-b border-border ${isLargeScreen ? 'px-[28px]' : 'px-4'}`}>
       <Pressable
         onPress={() => router.back()}
         className="p-2 -mr-2 rounded-lg active:bg-muted/50"
