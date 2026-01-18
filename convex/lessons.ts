@@ -293,3 +293,27 @@ export const listLessonsWithVocab = query({
     return result;
   },
 });
+
+export const completeLesson = mutation({
+  args: {
+    lessonId: v.id("lessons"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const { lessonId } = args;
+
+    const lesson = await ctx.db.get(lessonId);
+    if (!lesson || lesson.userId !== userId) {
+      throw new Error("Lesson not found or unauthorized");
+    }
+
+    await ctx.db.patch(lessonId, {
+      completedAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});

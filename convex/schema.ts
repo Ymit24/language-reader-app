@@ -28,6 +28,7 @@ export default defineSchema({
     currentPage: v.optional(v.number()),
     tokenCount: v.number(),
     knownTokenCount: v.number(),
+    completedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

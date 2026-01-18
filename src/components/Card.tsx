@@ -1,6 +1,7 @@
 import { View, Text, Pressable, PressableProps } from 'react-native';
 import { ProgressBar } from './ProgressBar';
 import { StackedProgressBar, type VocabCounts } from './StackedProgressBar';
+import { CompletedBadge } from './CompletedBadge';
 
 interface CardProps {
   children: React.ReactNode;
@@ -50,6 +51,7 @@ interface LessonCardProps extends PressableProps {
   vocabCounts?: VocabCounts;
   readingPercentage?: number;
   variant?: 'list' | 'grid';
+  isCompleted?: boolean;
 }
 
 export function LessonCard({
@@ -60,17 +62,27 @@ export function LessonCard({
   vocabCounts,
   readingPercentage,
   variant = 'list',
+  isCompleted = false,
   className = '',
   ...props
 }: LessonCardProps) {
+  const cardBackground = isCompleted ? 'bg-stone-50' : 'bg-panel';
+
   if (variant === 'grid') {
     return (
       <Pressable
-        className={`flex-1 rounded-lg border border-border bg-panel active:opacity-90 ${className}`}
+        className={`flex-1 rounded-lg border border-border ${cardBackground} active:opacity-90 ${className}`}
         style={{ overflow: 'hidden' }}
         {...props}
       >
-        <LanguageThumbnail language={language} variant="grid" />
+        <View className="relative">
+          <LanguageThumbnail language={language} variant="grid" />
+          {isCompleted && (
+            <View className="absolute top-3 right-3">
+              <CompletedBadge />
+            </View>
+          )}
+        </View>
         
         <View className="p-4 gap-3 flex-1">
           <View>
@@ -80,6 +92,9 @@ export function LessonCard({
             <Text className="mt-1 text-xs text-faint">
               {duration} · {openedDate}
             </Text>
+            {isCompleted && (
+              <Text className="mt-1 text-xs text-green-600 font-medium">Completed</Text>
+            )}
           </View>
           
           <View className="mt-auto gap-2">
@@ -105,20 +120,26 @@ export function LessonCard({
 
   return (
     <Pressable
-      className={`rounded-lg border border-border bg-panel p-3 active:bg-muted ${className}`}
+      className={`rounded-lg border border-border ${cardBackground} p-3 active:bg-muted ${className}`}
       {...props}
     >
-      <View className="flex-row gap-3">
+      <View className="flex-row gap-3 items-center">
         <LanguageThumbnail language={language} variant="list" />
 
         <View className="flex-1 justify-between">
-          <View>
-            <Text className="text-base font-semibold text-ink leading-tight" numberOfLines={1}>
-              {title}
-            </Text>
-            <Text className="mt-0.5 text-xs text-faint">
-              {duration} · {openedDate}
-            </Text>
+          <View className="flex-row items-start justify-between">
+            <View className="flex-1 pr-2">
+              <Text className="text-base font-semibold text-ink leading-tight" numberOfLines={1}>
+                {title}
+              </Text>
+              <Text className="mt-0.5 text-xs text-faint">
+                {duration} · {openedDate}
+              </Text>
+              {isCompleted && (
+                <Text className="mt-1 text-xs text-green-600 font-medium">Completed</Text>
+              )}
+            </View>
+            {isCompleted && <CompletedBadge />}
           </View>
           
           <View className="mt-2 gap-2">

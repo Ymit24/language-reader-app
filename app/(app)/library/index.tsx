@@ -169,6 +169,7 @@ export default function LibraryScreen() {
                       vocabCounts={calculateVocabCounts(lesson.uniqueTerms)}
                       readingPercentage={readingPercentage}
                       variant={variant}
+                      isCompleted={!!lesson.completedAt}
                       onPress={() => handleLessonPress(lesson._id)}
                       onLongPress={() => handleLongPress(lesson._id, lesson.title)}
                     />

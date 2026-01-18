@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, ActivityIndicator, Pressable } from 'react-native';
 import { useQuery, useMutation } from 'convex/react';
+import { useRouter } from 'expo-router';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { ReaderPage } from './ReaderPage';
@@ -19,6 +20,8 @@ const STATUS_KNOWN = 4;
 const STATUS_IGNORED = 99;
 
 export function Reader({ lessonId }: ReaderProps) {
+  const router = useRouter();
+
   // 1. Fetch Lesson Data
   const lessonData = useQuery(api.lessons.getLesson, { lessonId });
   
@@ -157,6 +160,10 @@ export function Reader({ lessonId }: ReaderProps) {
     }
   };
 
+  const handleFinishLesson = () => {
+    router.push(`/(app)/library/${lessonId}/summary`);
+  };
+
   if (lessonData === undefined) {
     return (
       <View className="flex-1 justify-center items-center bg-canvas">
@@ -216,11 +223,13 @@ export function Reader({ lessonId }: ReaderProps) {
             </Text>
 
             <Pressable 
-                onPress={handleNextPage} 
-                disabled={currentPage === totalPages - 1}
-                className={`p-3 rounded-full ${currentPage === totalPages - 1 ? 'opacity-20' : 'active:bg-gray-100'}`}
+                onPress={currentPage === totalPages - 1 ? handleFinishLesson : handleNextPage} 
+                disabled={false}
+                className={`p-3 rounded-full ${currentPage === totalPages - 1 ? 'active:bg-green-50' : 'active:bg-gray-100'}`}
             >
-                <Text className="text-2xl text-ink font-light">→</Text>
+                <Text className={`text-2xl font-light ${currentPage === totalPages - 1 ? 'text-green-600' : 'text-ink'}`}>
+                  {currentPage === totalPages - 1 ? "✓" : "→"}
+                </Text>
             </Pressable>
         </View>
 
