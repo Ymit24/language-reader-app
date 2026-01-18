@@ -47,7 +47,7 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId }: 
   return (
     <ScrollView 
       className="flex-1 px-6 md:px-24 py-8"
-      contentContainerStyle={{ paddingBottom: 150 }}
+      contentContainerStyle={{ paddingBottom: 80 }}
       showsVerticalScrollIndicator={false}
     >
       <View className="flex-row flex-wrap items-end justify-start">

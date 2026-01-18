@@ -193,7 +193,7 @@ export function Reader({ lessonId }: ReaderProps) {
         />
         
         {/* Pagination Controls */}
-        <View className="absolute bottom-0 left-0 right-0 flex-row justify-between items-center px-8 py-6 bg-canvas/95 backdrop-blur-sm border-t border-gray-100/50 pb-10 md:pb-6">
+        <View className="absolute bottom-0 left-0 right-0 flex-row justify-between items-center px-8 py-4 bg-canvas/95 backdrop-blur-sm border-t border-gray-100/50 md:pb-6">
             <Pressable 
                 onPress={handlePrevPage} 
                 disabled={currentPage === 0}

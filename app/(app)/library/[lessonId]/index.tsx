@@ -54,7 +54,7 @@ export default function LessonReaderScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
       <Stack.Screen options={{ headerShown: false }} />
       <ReaderHeader title={lessonQuery.title} />
       <Reader lessonId={safeLessonId as Id<"lessons">} />

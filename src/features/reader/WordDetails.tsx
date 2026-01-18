@@ -21,12 +21,9 @@ export function WordDetails({ surface, normalized, currentStatus, onUpdateStatus
   ];
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 md:left-auto md:right-8 md:bottom-8 md:w-[400px] md:rounded-2xl bg-white/95 backdrop-blur-xl border-t md:border border-gray-200/50 shadow-2xl p-6 pb-10 md:pb-6">
-      {/* Handle bar for mobile feel */}
-      <View className="md:hidden w-12 h-1 bg-gray-300 rounded-full self-center mb-6" />
-
+    <View className="absolute bottom-0 left-0 right-0 md:left-auto md:right-8 md:bottom-8 md:w-[400px] md:rounded-2xl bg-white/95 backdrop-blur-xl border-t md:border border-gray-200/50 shadow-2xl p-6">
       {/* Header */}
-      <View className="flex-row justify-between items-start mb-6">
+      <View className="flex-row justify-between items-start mb-4">
         <View>
           <Text className="text-4xl font-serif font-medium text-ink tracking-tight">{surface}</Text>
           {/* <Text className="text-sm text-subink mt-1 uppercase tracking-wider font-semibold opacity-60">Normalized: {normalized}</Text> */}
