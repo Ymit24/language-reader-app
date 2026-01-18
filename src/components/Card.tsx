@@ -1,5 +1,6 @@
 import { View, Text, Pressable, PressableProps } from 'react-native';
 import { ProgressBar } from './ProgressBar';
+import { StackedProgressBar, type VocabCounts } from './StackedProgressBar';
 
 interface CardProps {
   children: React.ReactNode;
@@ -17,7 +18,6 @@ export function Card({ children, className = '' }: CardProps) {
 // ------------------------------------------------------------------
 
 function LanguageThumbnail({ language, variant }: { language: string, variant: 'list' | 'grid' }) {
-  // Simple color mapping
   const colors: Record<string, string> = {
     DE: 'bg-yellow-100 text-yellow-800',
     FR: 'bg-blue-100 text-blue-800',
@@ -35,7 +35,6 @@ function LanguageThumbnail({ language, variant }: { language: string, variant: '
     );
   }
 
-  // Grid variant (larger)
   return (
     <View className={`h-24 w-full items-center justify-center rounded-t-md ${bgClass}`}>
       <Text className={`text-2xl font-bold ${textClass}`}>{language}</Text>
@@ -48,7 +47,7 @@ interface LessonCardProps extends PressableProps {
   language: string;
   duration: string;
   openedDate: string;
-  knownPercentage: number;
+  vocabCounts?: VocabCounts;
   readingPercentage?: number;
   variant?: 'list' | 'grid';
 }
@@ -58,7 +57,7 @@ export function LessonCard({
   language,
   duration,
   openedDate,
-  knownPercentage,
+  vocabCounts,
   readingPercentage,
   variant = 'list',
   className = '',
@@ -91,11 +90,13 @@ export function LessonCard({
                 height={4}
               />
             )}
-            <ProgressBar
-              progress={knownPercentage}
-              color={knownPercentage >= 50 ? 'success' : 'brand'}
-              height={4}
-            />
+            {vocabCounts && (
+              <StackedProgressBar
+                counts={vocabCounts}
+                showLegend={false}
+                height={4}
+              />
+            )}
           </View>
         </View>
       </Pressable>
@@ -128,11 +129,13 @@ export function LessonCard({
                 height={4}
               />
             )}
-            <ProgressBar
-              progress={knownPercentage}
-              color={knownPercentage >= 50 ? 'success' : 'brand'}
-              height={4}
-            />
+            {vocabCounts && (
+              <StackedProgressBar
+                counts={vocabCounts}
+                showLegend={false}
+                height={4}
+              />
+            )}
           </View>
         </View>
       </View>

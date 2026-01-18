@@ -186,3 +186,42 @@ export const getLesson = query({
     };
   },
 });
+
+export const listLessonsWithVocab = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    const lessons = await ctx.db
+      .query("lessons")
+      .withIndex("by_user_lastOpenedAt", (q) => q.eq("userId", userId))
+      .order("desc")
+      .collect();
+
+    const result = await Promise.all(
+      lessons.map(async (lesson) => {
+        const tokens = await ctx.db
+          .query("lessonTokens")
+          .withIndex("by_lesson_index", (q) => q.eq("lessonId", lesson._id))
+          .collect();
+
+        const uniqueTerms = new Set<string>();
+        for (const token of tokens) {
+          if (token.isWord && token.normalized) {
+            uniqueTerms.add(token.normalized);
+          }
+        }
+
+        return {
+          ...lesson,
+          uniqueTerms: Array.from(uniqueTerms),
+        };
+      })
+    );
+
+    return result;
+  },
+});

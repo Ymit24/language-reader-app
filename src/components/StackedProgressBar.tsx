@@ -1,17 +1,28 @@
 import { View, Text } from 'react-native';
 
-interface StackedProgressBarProps {
-  counts: {
-    new: number;
-    learning: number;
-    known: number;
-    ignored: number;
-  };
-  total: number;
+export interface VocabCounts {
+  new: number;
+  learning: number;
+  known: number;
+  ignored: number;
 }
 
-export function StackedProgressBar({ counts, total }: StackedProgressBarProps) {
-  if (total === 0) {
+interface StackedProgressBarProps {
+  counts: VocabCounts;
+  total?: number;
+  showLegend?: boolean;
+  height?: number;
+}
+
+export function StackedProgressBar({
+  counts,
+  total,
+  showLegend = true,
+  height,
+}: StackedProgressBarProps) {
+  const actualTotal = total ?? counts.new + counts.learning + counts.known + counts.ignored;
+
+  if (actualTotal === 0) {
     return null;
   }
 
@@ -22,13 +33,15 @@ export function StackedProgressBar({ counts, total }: StackedProgressBarProps) {
     { key: 'ignored', label: 'Ignored', count: counts.ignored, color: 'bg-gray-400' },
   ].filter(seg => seg.count > 0);
 
-  const formatPercent = (count: number) => Math.round((count / total) * 100);
+  const formatPercent = (count: number) => Math.round((count / actualTotal) * 100);
+
+  const heightClass = height === 4 ? 'h-1' : height === 6 ? 'h-1.5' : 'h-0.75';
 
   return (
     <View className="w-full">
-      <View className="h-3 w-full rounded-full flex-row overflow-hidden bg-border">
+      <View className={`w-full rounded-full flex-row overflow-hidden bg-border ${heightClass}`}>
         {segments.map((segment) => {
-          const width = (segment.count / total) * 100;
+          const width = (segment.count / actualTotal) * 100;
           return (
             <View
               key={segment.key}
@@ -38,16 +51,18 @@ export function StackedProgressBar({ counts, total }: StackedProgressBarProps) {
           );
         })}
       </View>
-      <View className="flex-row flex-wrap mt-2 gap-x-4 gap-y-1">
-        {segments.map((segment) => (
-          <View key={segment.key} className="flex-row items-center gap-1.5">
-            <View className={`w-2.5 h-2.5 rounded-full ${segment.color}`} />
-            <Text className="text-xs text-subink">
-              {segment.label}: {formatPercent(segment.count)}%
-            </Text>
-          </View>
-        ))}
-      </View>
+      {showLegend && (
+        <View className="flex-row flex-wrap mt-2 gap-x-4 gap-y-1">
+          {segments.map((segment) => (
+            <View key={segment.key} className="flex-row items-center gap-1.5">
+              <View className={`w-2.5 h-2.5 rounded-full ${segment.color}`} />
+              <Text className="text-xs text-subink">
+                {segment.label}: {formatPercent(segment.count)}%
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
