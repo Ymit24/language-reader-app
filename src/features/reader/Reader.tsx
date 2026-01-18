@@ -6,10 +6,17 @@ import { Id } from '../../../convex/_generated/dataModel';
 import { ReaderPage } from './ReaderPage';
 import { WordDetails } from './WordDetails';
 import { ProgressBar } from '@/src/components/ProgressBar';
+import { StackedProgressBar } from '@/src/components/StackedProgressBar';
 
 interface ReaderProps {
   lessonId: Id<"lessons">;
 }
+
+const STATUS_NEW = 0;
+const STATUS_LEARNING_MIN = 1;
+const STATUS_LEARNING_MAX = 3;
+const STATUS_KNOWN = 4;
+const STATUS_IGNORED = 99;
 
 export function Reader({ lessonId }: ReaderProps) {
   // 1. Fetch Lesson Data
@@ -41,6 +48,29 @@ export function Reader({ lessonId }: ReaderProps) {
     }
     return map;
   }, [vocabData]);
+
+  // 4b. Calculate vocab status counts for entire lesson
+  const vocabCounts = useMemo(() => {
+    const counts = { new: 0, learning: 0, known: 0, ignored: 0 };
+    if (!lessonData?.tokens) return counts;
+
+    const seenTerms = new Set<string>();
+
+    for (const token of lessonData.tokens) {
+      if (!token.isWord) continue;
+      const term = token.normalized;
+      if (!term || seenTerms.has(term)) continue;
+      seenTerms.add(term);
+
+      const status = vocabMap[term] ?? STATUS_NEW;
+      if (status === STATUS_NEW) counts.new++;
+      else if (status >= STATUS_LEARNING_MIN && status <= STATUS_LEARNING_MAX) counts.learning++;
+      else if (status === STATUS_KNOWN) counts.known++;
+      else if (status === STATUS_IGNORED) counts.ignored++;
+    }
+
+    return counts;
+  }, [lessonData?.tokens, vocabMap]);
 
   // Pagination Logic
   const pages = useMemo(() => {
@@ -141,13 +171,17 @@ export function Reader({ lessonId }: ReaderProps) {
 
   return (
     <View className="flex-1 bg-canvas relative">
-        <View className="px-4 py-3 border-b border-gray-100">
+        <View className="px-4 py-3 border-b border-gray-100 gap-3">
           <ProgressBar
             progress={totalPages > 0 ? ((currentPage + 1) / totalPages) * 100 : 0}
             color="brand"
             height={6}
             showLabel
             label={`Page ${currentPage + 1} of ${totalPages || 1}`}
+          />
+          <StackedProgressBar
+            counts={vocabCounts}
+            total={vocabCounts.new + vocabCounts.learning + vocabCounts.known + vocabCounts.ignored}
           />
         </View>
         <ReaderPage 
