@@ -29,6 +29,7 @@ export function Reader({ lessonId }: ReaderProps) {
 
   // 3. Local State
   const [selectedToken, setSelectedToken] = useState<any | null>(null);
+  const [selectedNormalized, setSelectedNormalized] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(() => {
     if (lessonData?.currentPage !== undefined) {
       return Math.max(0, lessonData.currentPage);
@@ -115,15 +116,16 @@ export function Reader({ lessonId }: ReaderProps) {
     if (!selectedToken || !language) return;
 
     const term = selectedToken.normalized;
-    
+
     await updateStatusMutation({
       language,
       term,
       status: newStatus,
     });
-    
+
     if (newStatus === 4 || newStatus === 99) {
         setSelectedToken(null);
+        setSelectedNormalized(null);
     }
   };
 
@@ -131,6 +133,7 @@ export function Reader({ lessonId }: ReaderProps) {
     if (currentPage < totalPages - 1) {
       setCurrentPage(p => p + 1);
       setSelectedToken(null);
+      setSelectedNormalized(null);
       const newPage = currentPage + 1;
       updateProgressMutation({
         lessonId,
@@ -144,6 +147,7 @@ export function Reader({ lessonId }: ReaderProps) {
     if (currentPage > 0) {
       setCurrentPage(p => p - 1);
       setSelectedToken(null);
+      setSelectedNormalized(null);
       const newPage = currentPage - 1;
       updateProgressMutation({
         lessonId,
@@ -188,8 +192,12 @@ export function Reader({ lessonId }: ReaderProps) {
         <ReaderPage 
           tokens={currentTokens}
           vocabMap={vocabMap}
-          onTokenPress={setSelectedToken}
+          onTokenPress={(token) => {
+            setSelectedToken(token);
+            setSelectedNormalized(token.normalized || null);
+          }}
           selectedTokenId={selectedToken?._id}
+          selectedNormalized={selectedNormalized}
         />
         
         {/* Pagination Controls */}
@@ -222,7 +230,10 @@ export function Reader({ lessonId }: ReaderProps) {
                 normalized={selectedToken.normalized}
                 currentStatus={vocabMap[selectedToken.normalized] ?? 0}
                 onUpdateStatus={handleUpdateStatus}
-                onClose={() => setSelectedToken(null)}
+                onClose={() => {
+                  setSelectedToken(null);
+                  setSelectedNormalized(null);
+                }}
             />
         )}
     </View>
