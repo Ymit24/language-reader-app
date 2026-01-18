@@ -34,7 +34,13 @@ export default function AppLayout() {
             headerShown: false,
             tabBarActiveTintColor: '#2563eb',
             tabBarInactiveTintColor: '#4b5563',
-            tabBarStyle: isLargeScreen ? { display: 'none' } : undefined,
+            tabBarStyle: isLargeScreen
+              ? { display: 'none' }
+              : {
+                  backgroundColor: '#fbfbfa',
+                  borderTopWidth: 1,
+                  borderTopColor: '#e5e7eb',
+                },
           }}
         >
           <Tabs.Screen
