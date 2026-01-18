@@ -119,6 +119,42 @@ export const deleteLesson = mutation({
   },
 });
 
+export const updateLessonProgress = mutation({
+  args: {
+    lessonId: v.id("lessons"),
+    currentPage: v.optional(v.number()),
+    lastTokenIndex: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const { lessonId } = args;
+
+    const lesson = await ctx.db.get(lessonId);
+    if (!lesson || lesson.userId !== userId) {
+      throw new Error("Lesson not found or unauthorized");
+    }
+
+    const now = Date.now();
+    const updates: Record<string, any> = {
+      lastOpenedAt: now,
+      updatedAt: now,
+    };
+
+    if (args.currentPage !== undefined) {
+      updates.currentPage = args.currentPage;
+    }
+    if (args.lastTokenIndex !== undefined) {
+      updates.lastTokenIndex = args.lastTokenIndex;
+    }
+
+    await ctx.db.patch(lessonId, updates);
+  },
+});
+
 export const getLesson = query({
   args: {
     lessonId: v.id("lessons"),

@@ -9,6 +9,7 @@ import { Id } from '@/convex/_generated/dataModel';
 
 // Estimated reading speed (words per minute)
 const WORDS_PER_MINUTE = 200;
+const WORDS_PER_PAGE = 150;
 
 export default function LibraryScreen() {
   const router = useRouter();
@@ -112,6 +113,11 @@ export default function LibraryScreen() {
                   ? Math.round((lesson.knownTokenCount / lesson.tokenCount) * 100) 
                   : 0;
 
+                const totalPages = Math.ceil(lesson.tokenCount / WORDS_PER_PAGE);
+                const readingPercentage = lesson.currentPage !== undefined && totalPages > 0
+                  ? Math.round(((lesson.currentPage + 1) / totalPages) * 100)
+                  : undefined;
+
                 const dateToUse = lesson.lastOpenedAt ?? lesson.createdAt;
                 const dateLabel = lesson.lastOpenedAt ? 'opened' : 'created';
                 
@@ -130,6 +136,7 @@ export default function LibraryScreen() {
                       duration={formatDuration(lesson.tokenCount)}
                       openedDate={`${dateLabel} ${formatDate(dateToUse)}`}
                       knownPercentage={knownPercentage}
+                      readingPercentage={readingPercentage}
                       variant={variant}
                       onPress={() => handleLessonPress(lesson._id)}
                       onLongPress={() => handleLongPress(lesson._id, lesson.title)}

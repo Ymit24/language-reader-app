@@ -25,6 +25,7 @@ export default defineSchema({
     rawText: v.string(),
     lastOpenedAt: v.optional(v.number()),
     lastTokenIndex: v.optional(v.number()),
+    currentPage: v.optional(v.number()),
     tokenCount: v.number(),
     knownTokenCount: v.number(),
     createdAt: v.number(),

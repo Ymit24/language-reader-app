@@ -5,6 +5,7 @@ import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { ReaderPage } from './ReaderPage';
 import { WordDetails } from './WordDetails';
+import { ProgressBar } from '@/src/components/ProgressBar';
 
 interface ReaderProps {
   lessonId: Id<"lessons">;
@@ -21,7 +22,12 @@ export function Reader({ lessonId }: ReaderProps) {
 
   // 3. Local State
   const [selectedToken, setSelectedToken] = useState<any | null>(null);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (lessonData?.currentPage !== undefined) {
+      return Math.max(0, lessonData.currentPage);
+    }
+    return 0;
+  });
 
   const WORDS_PER_PAGE = 150; // Conservative for mobile screens
 
@@ -73,6 +79,7 @@ export function Reader({ lessonId }: ReaderProps) {
 
   // 5. Mutations
   const updateStatusMutation = useMutation(api.vocab.updateVocabStatus);
+  const updateProgressMutation = useMutation(api.lessons.updateLessonProgress);
 
   const handleUpdateStatus = async (newStatus: number) => {
     if (!selectedToken || !language) return;
@@ -94,6 +101,12 @@ export function Reader({ lessonId }: ReaderProps) {
     if (currentPage < totalPages - 1) {
       setCurrentPage(p => p + 1);
       setSelectedToken(null);
+      const newPage = currentPage + 1;
+      updateProgressMutation({
+        lessonId,
+        currentPage: newPage,
+        lastTokenIndex: newPage * WORDS_PER_PAGE,
+      });
     }
   };
 
@@ -101,6 +114,12 @@ export function Reader({ lessonId }: ReaderProps) {
     if (currentPage > 0) {
       setCurrentPage(p => p - 1);
       setSelectedToken(null);
+      const newPage = currentPage - 1;
+      updateProgressMutation({
+        lessonId,
+        currentPage: newPage,
+        lastTokenIndex: newPage * WORDS_PER_PAGE,
+      });
     }
   };
 
@@ -122,6 +141,15 @@ export function Reader({ lessonId }: ReaderProps) {
 
   return (
     <View className="flex-1 bg-canvas relative">
+        <View className="px-4 py-3 border-b border-gray-100">
+          <ProgressBar
+            progress={totalPages > 0 ? ((currentPage + 1) / totalPages) * 100 : 0}
+            color="brand"
+            height={6}
+            showLabel
+            label={`Page ${currentPage + 1} of ${totalPages || 1}`}
+          />
+        </View>
         <ReaderPage 
           tokens={currentTokens}
           vocabMap={vocabMap}
