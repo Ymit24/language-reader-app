@@ -28,31 +28,24 @@ export const getDueCount = query({
   },
 });
 
-export const getDueVocab = query({
+export const getKnownCount = query({
   args: {
     language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
-    limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      return [];
+      return 0;
     }
-
-    const limit = args.limit ?? 20;
-    const now = Date.now();
 
     const items = await ctx.db
       .query("vocab")
-      .withIndex("by_user_language_nextReviewAt", (q) =>
-        q
-          .eq("userId", userId)
-          .eq("language", args.language)
-          .lte("nextReviewAt", now)
+      .withIndex("by_user_language_status", (q) =>
+        q.eq("userId", userId).eq("language", args.language).eq("status", 4)
       )
-      .take(limit);
+      .collect();
 
-    return items;
+    return items.length;
   },
 });
 
@@ -95,9 +88,106 @@ function calculateSm2(
   };
 }
 
-export const processReview = mutation({
+export const startReviewSession = mutation({
   args: {
-    vocabId: v.id("vocab"),
+    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const limit = args.limit ?? 20;
+    const now = Date.now();
+
+    const dueVocab = await ctx.db
+      .query("vocab")
+      .withIndex("by_user_language_nextReviewAt", (q) =>
+        q
+          .eq("userId", userId)
+          .eq("language", args.language)
+          .lte("nextReviewAt", now)
+      )
+      .take(limit);
+
+    if (dueVocab.length === 0) {
+      return { sessionId: null, items: [] };
+    }
+
+    const sessionId = await ctx.db.insert("reviewSessions", {
+      userId,
+      language: args.language,
+      status: "in_progress",
+      cardCount: dueVocab.length,
+      reviewedCount: 0,
+      easeSum: 0,
+      startedAt: now,
+    });
+
+    const sessionItems = await Promise.all(
+      dueVocab.map((vocab) =>
+        ctx.db.insert("reviewSessionItems", {
+          sessionId,
+          vocabId: vocab._id,
+        })
+      )
+    );
+
+    const itemsWithVocab = dueVocab.map((vocab, i) => ({
+      _id: sessionItems[i],
+      sessionId,
+      vocabId: vocab._id,
+      quality: undefined as number | undefined,
+      reviewedAt: undefined as number | undefined,
+      vocab,
+    }));
+
+    return { sessionId, items: itemsWithVocab };
+  },
+});
+
+export const getSession = query({
+  args: {
+    sessionId: v.id("reviewSessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session || session.userId !== userId) {
+      throw new Error("Session not found");
+    }
+
+    const items = await ctx.db
+      .query("reviewSessionItems")
+      .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    const itemsWithVocab = await Promise.all(
+      items.map(async (item) => {
+        const vocab = await ctx.db.get(item.vocabId);
+        return {
+          ...item,
+          vocab: vocab!,
+        };
+      })
+    );
+
+    return {
+      session,
+      items: itemsWithVocab,
+    };
+  },
+});
+
+export const gradeCard = mutation({
+  args: {
+    sessionItemId: v.id("reviewSessionItems"),
     quality: v.number(),
   },
   handler: async (ctx, args) => {
@@ -106,51 +196,86 @@ export const processReview = mutation({
       throw new Error("Unauthorized");
     }
 
-    const vocab = await ctx.db.get(args.vocabId);
+    const sessionItem = await ctx.db.get(args.sessionItemId);
+    if (!sessionItem) {
+      throw new Error("Session item not found");
+    }
+
+    const session = await ctx.db.get(sessionItem.sessionId);
+    if (!session || session.userId !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const vocab = await ctx.db.get(sessionItem.vocabId);
     if (!vocab || vocab.userId !== userId) {
-      throw new Error("Vocab not found or unauthorized");
+      throw new Error("Vocab not found");
     }
 
     const now = Date.now();
-    const result = calculateSm2(vocab, args.quality);
+    const sm2Result = calculateSm2(vocab, args.quality);
 
     const msPerDay = 24 * 60 * 60 * 1000;
-    const nextReviewAt = now + result.intervalDays * msPerDay;
+    const nextReviewAt = now + sm2Result.intervalDays * msPerDay;
 
-    await ctx.db.patch(args.vocabId, {
-      intervalDays: result.intervalDays,
-      ease: result.ease,
-      reviews: result.reviews,
+    await ctx.db.patch(sessionItem.vocabId, {
+      intervalDays: sm2Result.intervalDays,
+      ease: sm2Result.ease,
+      reviews: sm2Result.reviews,
       lastReviewedAt: now,
       nextReviewAt,
       updatedAt: now,
     });
 
+    await ctx.db.patch(args.sessionItemId, {
+      quality: args.quality,
+      reviewedAt: now,
+    });
+
+    const newReviewedCount = session.reviewedCount + 1;
+    const newEaseSum = session.easeSum + sm2Result.ease;
+
+    if (newReviewedCount >= session.cardCount) {
+      await ctx.db.patch(session._id, {
+        status: "completed",
+        reviewedCount: newReviewedCount,
+        easeSum: newEaseSum,
+        completedAt: now,
+      });
+    } else {
+      await ctx.db.patch(session._id, {
+        reviewedCount: newReviewedCount,
+        easeSum: newEaseSum,
+      });
+    }
+
     return {
-      intervalDays: result.intervalDays,
-      ease: result.ease,
-      reviews: result.reviews,
+      ease: sm2Result.ease,
+      isComplete: newReviewedCount >= session.cardCount,
     };
   },
 });
 
-export const getKnownCount = query({
+export const abandonSession = mutation({
   args: {
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    sessionId: v.id("reviewSessions"),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      return 0;
+      throw new Error("Unauthorized");
     }
 
-    const items = await ctx.db
-      .query("vocab")
-      .withIndex("by_user_language_status", (q) =>
-        q.eq("userId", userId).eq("language", args.language).eq("status", 4)
-      )
-      .collect();
+    const session = await ctx.db.get(args.sessionId);
+    if (!session || session.userId !== userId) {
+      throw new Error("Session not found");
+    }
 
-    return items.length;
+    if (session.status !== "in_progress") {
+      return;
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      status: "abandoned",
+    });
   },
 });

@@ -8,7 +8,7 @@ export default function ReviewLayout() {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen name="session" />
+      <Stack.Screen name="session/[sessionId]" />
     </Stack>
   );
 }

@@ -1,11 +1,12 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from '@/src/components/SafeAreaView';
 import { Button } from '@/src/components/Button';
 import { LanguageFlag } from '@/src/components/LanguageFlag';
 import { api } from '@/convex/_generated/api';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 
 type LanguageCode = 'fr' | 'de' | 'ja';
 
@@ -24,9 +25,26 @@ function LanguageCard({ language }: { language: LanguageInfo }) {
   const dueCount = useQuery(api.review.getDueCount, { language: language.code });
   const knownCount = useQuery(api.review.getKnownCount, { language: language.code });
   const router = useRouter();
+  const startSession = useMutation(api.review.startReviewSession);
+  const [isStarting, setIsStarting] = useState(false);
 
   const due = dueCount ?? 0;
   const known = knownCount ?? 0;
+
+  const handleStartSession = async () => {
+    if (due === 0 || isStarting) return;
+    setIsStarting(true);
+    try {
+      const result = await startSession({ language: language.code });
+      if (result.sessionId) {
+        router.replace(`/review/session/${result.sessionId}` as any);
+      }
+    } catch (error) {
+      console.error('Failed to start session:', error);
+    } finally {
+      setIsStarting(false);
+    }
+  };
 
   return (
     <View className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
@@ -51,11 +69,20 @@ function LanguageCard({ language }: { language: LanguageInfo }) {
 
       <Button
         variant={due > 0 ? 'primary' : 'secondary'}
-        disabled={due === 0}
-        onPress={() => (router.push as any)(`/review/session?language=${language.code}`)}
+        disabled={due === 0 || isStarting}
+        onPress={handleStartSession}
         className="w-full"
       >
-        {due > 0 ? 'Start Review Session' : 'No cards due'}
+        {isStarting ? (
+          <View className="flex-row items-center gap-2">
+            <ActivityIndicator size="small" color="white" />
+            <Text className="text-white">Starting...</Text>
+          </View>
+        ) : due > 0 ? (
+          'Start Review Session'
+        ) : (
+          'No cards due'
+        )}
       </Button>
     </View>
   );

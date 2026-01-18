@@ -95,4 +95,26 @@ export default defineSchema({
     raw: v.optional(v.any()),
     cachedAt: v.number(),
   }).index("by_language_keyTerm", ["language", "keyTerm"]),
+
+  reviewSessions: defineTable({
+    userId: v.string(),
+    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    status: v.union(v.literal("in_progress"), v.literal("completed"), v.literal("abandoned")),
+    cardCount: v.number(),
+    reviewedCount: v.number(),
+    easeSum: v.number(),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_user_language", ["userId", "language"])
+    .index("by_user_status", ["userId", "status"]),
+
+  reviewSessionItems: defineTable({
+    sessionId: v.id("reviewSessions"),
+    vocabId: v.id("vocab"),
+    quality: v.optional(v.number()),
+    reviewedAt: v.optional(v.number()),
+  })
+    .index("by_session", ["sessionId"])
+    .index("by_vocab", ["vocabId"]),
 });
