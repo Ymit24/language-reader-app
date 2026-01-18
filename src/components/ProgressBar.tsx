@@ -1,20 +1,43 @@
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
 
 interface ProgressBarProps {
   progress: number;
-  className?: string;
-  color?: 'success' | 'brand';
+  color?: 'success' | 'brand' | 'neutral';
+  showLabel?: boolean;
+  label?: string;
+  height?: number;
 }
 
-export function ProgressBar({ progress, className = '', color = 'brand' }: ProgressBarProps) {
-  const colorClass = color === 'success' ? 'bg-success' : 'bg-brand';
-  
+export function ProgressBar({
+  progress,
+  color = 'brand',
+  showLabel = false,
+  label,
+  height,
+}: ProgressBarProps) {
+  const colorMap: Record<string, string> = {
+    success: 'bg-success',
+    brand: 'bg-brand',
+    neutral: 'bg-gray-400',
+  };
+
+  const colorClass = colorMap[color] || colorMap.brand;
+  const heightClass = height === 6 ? 'h-1.5' : height === 8 ? 'h-2' : 'h-1.5';
+
   return (
-    <View className={`h-1.5 w-full rounded bg-border ${className}`}>
-      <View
-        className={`h-1.5 rounded ${colorClass}`}
-        style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-      />
+    <View className="w-full">
+      {(showLabel || label) && (
+        <View className="flex-row items-center justify-between mb-1.5">
+          <Text className="text-xs text-subink">{label || 'Progress'}</Text>
+          <Text className="text-xs text-subink tabular-nums">{Math.round(progress)}%</Text>
+        </View>
+      )}
+      <View className={`w-full rounded-full bg-border ${heightClass}`}>
+        <View
+          className={`rounded-full ${colorClass}`}
+          style={{ width: `${Math.min(100, Math.max(0, progress))}%`, height: '100%' }}
+        />
+      </View>
     </View>
   );
 }

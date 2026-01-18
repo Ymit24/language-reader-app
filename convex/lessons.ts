@@ -119,6 +119,42 @@ export const deleteLesson = mutation({
   },
 });
 
+export const updateLessonProgress = mutation({
+  args: {
+    lessonId: v.id("lessons"),
+    currentPage: v.optional(v.number()),
+    lastTokenIndex: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const { lessonId } = args;
+
+    const lesson = await ctx.db.get(lessonId);
+    if (!lesson || lesson.userId !== userId) {
+      throw new Error("Lesson not found or unauthorized");
+    }
+
+    const now = Date.now();
+    const updates: Record<string, any> = {
+      lastOpenedAt: now,
+      updatedAt: now,
+    };
+
+    if (args.currentPage !== undefined) {
+      updates.currentPage = args.currentPage;
+    }
+    if (args.lastTokenIndex !== undefined) {
+      updates.lastTokenIndex = args.lastTokenIndex;
+    }
+
+    await ctx.db.patch(lessonId, updates);
+  },
+});
+
 export const getLesson = query({
   args: {
     lessonId: v.id("lessons"),
@@ -148,5 +184,44 @@ export const getLesson = query({
       ...lesson,
       tokens,
     };
+  },
+});
+
+export const listLessonsWithVocab = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    const lessons = await ctx.db
+      .query("lessons")
+      .withIndex("by_user_lastOpenedAt", (q) => q.eq("userId", userId))
+      .order("desc")
+      .collect();
+
+    const result = await Promise.all(
+      lessons.map(async (lesson) => {
+        const tokens = await ctx.db
+          .query("lessonTokens")
+          .withIndex("by_lesson_index", (q) => q.eq("lessonId", lesson._id))
+          .collect();
+
+        const uniqueTerms = new Set<string>();
+        for (const token of tokens) {
+          if (token.isWord && token.normalized) {
+            uniqueTerms.add(token.normalized);
+          }
+        }
+
+        return {
+          ...lesson,
+          uniqueTerms: Array.from(uniqueTerms),
+        };
+      })
+    );
+
+    return result;
   },
 });

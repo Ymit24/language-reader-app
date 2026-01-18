@@ -1,0 +1,68 @@
+import { View, Text } from 'react-native';
+
+export interface VocabCounts {
+  new: number;
+  learning: number;
+  known: number;
+  ignored: number;
+}
+
+interface StackedProgressBarProps {
+  counts: VocabCounts;
+  total?: number;
+  showLegend?: boolean;
+  height?: number;
+}
+
+export function StackedProgressBar({
+  counts,
+  total,
+  showLegend = true,
+  height,
+}: StackedProgressBarProps) {
+  const actualTotal = total ?? counts.new + counts.learning + counts.known + counts.ignored;
+
+  if (actualTotal === 0) {
+    return null;
+  }
+
+  const segments = [
+    { key: 'known', label: 'Known', count: counts.known, color: 'bg-success' },
+    { key: 'learning', label: 'Learning', count: counts.learning, color: 'bg-amber-500' },
+    { key: 'new', label: 'New', count: counts.new, color: 'bg-blue-500' },
+    { key: 'ignored', label: 'Ignored', count: counts.ignored, color: 'bg-gray-400' },
+  ].filter(seg => seg.count > 0);
+
+  const formatPercent = (count: number) => Math.round((count / actualTotal) * 100);
+
+  const heightClass = height === 4 ? 'h-1' : height === 6 ? 'h-1.5' : 'h-0.75';
+
+  return (
+    <View className="w-full">
+      <View className={`w-full rounded-full flex-row overflow-hidden bg-border ${heightClass}`}>
+        {segments.map((segment) => {
+          const width = (segment.count / actualTotal) * 100;
+          return (
+            <View
+              key={segment.key}
+              className={`h-full ${segment.color}`}
+              style={{ width: `${width}%` }}
+            />
+          );
+        })}
+      </View>
+      {showLegend && (
+        <View className="flex-row flex-wrap mt-2 gap-x-4 gap-y-1">
+          {segments.map((segment) => (
+            <View key={segment.key} className="flex-row items-center gap-1.5">
+              <View className={`w-2.5 h-2.5 rounded-full ${segment.color}`} />
+              <Text className="text-xs text-subink">
+                {segment.label}: {formatPercent(segment.count)}%
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}

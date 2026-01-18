@@ -1,4 +1,6 @@
 import { View, Text, Pressable, PressableProps } from 'react-native';
+import { ProgressBar } from './ProgressBar';
+import { StackedProgressBar, type VocabCounts } from './StackedProgressBar';
 
 interface CardProps {
   children: React.ReactNode;
@@ -16,7 +18,6 @@ export function Card({ children, className = '' }: CardProps) {
 // ------------------------------------------------------------------
 
 function LanguageThumbnail({ language, variant }: { language: string, variant: 'list' | 'grid' }) {
-  // Simple color mapping
   const colors: Record<string, string> = {
     DE: 'bg-yellow-100 text-yellow-800',
     FR: 'bg-blue-100 text-blue-800',
@@ -34,7 +35,6 @@ function LanguageThumbnail({ language, variant }: { language: string, variant: '
     );
   }
 
-  // Grid variant (larger)
   return (
     <View className={`h-24 w-full items-center justify-center rounded-t-md ${bgClass}`}>
       <Text className={`text-2xl font-bold ${textClass}`}>{language}</Text>
@@ -47,7 +47,8 @@ interface LessonCardProps extends PressableProps {
   language: string;
   duration: string;
   openedDate: string;
-  knownPercentage: number;
+  vocabCounts?: VocabCounts;
+  readingPercentage?: number;
   variant?: 'list' | 'grid';
 }
 
@@ -56,38 +57,21 @@ export function LessonCard({
   language,
   duration,
   openedDate,
-  knownPercentage,
+  vocabCounts,
+  readingPercentage,
   variant = 'list',
   className = '',
   ...props
 }: LessonCardProps) {
-  // Common Progress Bar
-  const ProgressBar = () => (
-    <View className="mt-auto">
-      <View className="flex-row items-center justify-between">
-        <Text className="text-xs text-subink">Known</Text>
-        <Text className="text-xs text-subink tabular-nums">{knownPercentage}%</Text>
-      </View>
-      <View className="mt-1.5 h-1.5 w-full rounded-full bg-border">
-        <View
-          className={`h-1.5 rounded-full ${knownPercentage >= 50 ? 'bg-success' : 'bg-brand'}`}
-          style={{ width: `${knownPercentage}%` }}
-        />
-      </View>
-    </View>
-  );
-
   if (variant === 'grid') {
     return (
       <Pressable
         className={`flex-1 rounded-lg border border-border bg-panel active:opacity-90 ${className}`}
-        style={{ overflow: 'hidden' }} // Ensure thumbnail corners clip
+        style={{ overflow: 'hidden' }}
         {...props}
       >
-        {/* Top: Thumbnail */}
         <LanguageThumbnail language={language} variant="grid" />
         
-        {/* Bottom: Content */}
         <View className="p-4 gap-3 flex-1">
           <View>
             <Text className="text-base font-semibold text-ink leading-tight" numberOfLines={2}>
@@ -98,23 +82,35 @@ export function LessonCard({
             </Text>
           </View>
           
-          <ProgressBar />
+          <View className="mt-auto gap-2">
+            {readingPercentage !== undefined && (
+              <ProgressBar
+                progress={readingPercentage}
+                color="neutral"
+                height={4}
+              />
+            )}
+            {vocabCounts && (
+              <StackedProgressBar
+                counts={vocabCounts}
+                showLegend={false}
+                height={4}
+              />
+            )}
+          </View>
         </View>
       </Pressable>
     );
   }
 
-  // List Variant (Default)
   return (
     <Pressable
       className={`rounded-lg border border-border bg-panel p-3 active:bg-muted ${className}`}
       {...props}
     >
       <View className="flex-row gap-3">
-        {/* Left: Thumbnail */}
         <LanguageThumbnail language={language} variant="list" />
 
-        {/* Right: Content */}
         <View className="flex-1 justify-between">
           <View>
             <Text className="text-base font-semibold text-ink leading-tight" numberOfLines={1}>
@@ -125,8 +121,21 @@ export function LessonCard({
             </Text>
           </View>
           
-          <View className="mt-2">
-            <ProgressBar />
+          <View className="mt-2 gap-2">
+            {readingPercentage !== undefined && (
+              <ProgressBar
+                progress={readingPercentage}
+                color="neutral"
+                height={4}
+              />
+            )}
+            {vocabCounts && (
+              <StackedProgressBar
+                counts={vocabCounts}
+                showLegend={false}
+                height={4}
+              />
+            )}
           </View>
         </View>
       </View>

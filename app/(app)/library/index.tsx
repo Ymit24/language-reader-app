@@ -1,4 +1,5 @@
 import { ScrollView, View, Text, ActivityIndicator, Alert, ActionSheetIOS, Platform, useWindowDimensions } from 'react-native';
+import { useMemo } from 'react';
 import { SafeAreaView } from '@/src/components/SafeAreaView';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation } from 'convex/react';
@@ -6,17 +7,38 @@ import { api } from '@/convex/_generated/api';
 import { Button } from '@/src/components/Button';
 import { LessonCard, EmptyState } from '@/src/components/Card';
 import { Id } from '@/convex/_generated/dataModel';
+import type { VocabCounts } from '@/src/components/StackedProgressBar';
 
 // Estimated reading speed (words per minute)
 const WORDS_PER_MINUTE = 200;
+const WORDS_PER_PAGE = 150;
+
+const STATUS_NEW = 0;
+const STATUS_LEARNING_MIN = 1;
+const STATUS_LEARNING_MAX = 3;
+const STATUS_KNOWN = 4;
+const STATUS_IGNORED = 99;
 
 export default function LibraryScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const lessons = useQuery(api.lessons.listLessons);
+  const lessons = useQuery(api.lessons.listLessonsWithVocab);
   const deleteLesson = useMutation(api.lessons.deleteLesson);
 
-  const isDesktop = width >= 768; // iPad/Desktop breakpoint
+  const vocabDe = useQuery(api.vocab.getVocabProfile, { language: 'de' });
+  const vocabFr = useQuery(api.vocab.getVocabProfile, { language: 'fr' });
+  const vocabJa = useQuery(api.vocab.getVocabProfile, { language: 'ja' });
+
+  const vocabMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    const allVocab = [...(vocabDe || []), ...(vocabFr || []), ...(vocabJa || [])];
+    for (const v of allVocab) {
+      map[v.term] = v.status;
+    }
+    return map;
+  }, [vocabDe, vocabFr, vocabJa]);
+
+  const isDesktop = width >= 768;
   const numColumns = width >= 1024 ? 3 : width >= 768 ? 2 : 1;
   const variant = isDesktop ? 'grid' : 'list';
 
@@ -36,7 +58,6 @@ export default function LibraryScreen() {
     }
   };
 
-  // Idiomatic "Long Press" menu
   const handleLongPress = (lessonId: Id<"lessons">, title: string) => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -80,6 +101,22 @@ export default function LibraryScreen() {
     return `${minutes} min`;
   };
 
+  const calculateVocabCounts = (uniqueTerms: string[]): VocabCounts => {
+    const counts: VocabCounts = { new: 0, learning: 0, known: 0, ignored: 0 };
+
+    for (const term of uniqueTerms) {
+      const status = vocabMap[term] ?? STATUS_NEW;
+      if (status === STATUS_NEW) counts.new++;
+      else if (status >= STATUS_LEARNING_MIN && status <= STATUS_LEARNING_MAX) counts.learning++;
+      else if (status === STATUS_KNOWN) counts.known++;
+      else if (status === STATUS_IGNORED) counts.ignored++;
+    }
+
+    return counts;
+  };
+
+  const isLoading = lessons === undefined || vocabDe === undefined || vocabFr === undefined || vocabJa === undefined;
+
   return (
     <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
       <View className="flex-1 px-4 py-6 md:px-6">
@@ -90,7 +127,7 @@ export default function LibraryScreen() {
           </Button>
         </View>
 
-        {lessons === undefined ? (
+        {isLoading ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" />
           </View>
@@ -105,12 +142,12 @@ export default function LibraryScreen() {
             className="flex-1"
             showsVerticalScrollIndicator={false}
           >
-            {/* Grid Container */}
             <View className={`flex-row flex-wrap ${isDesktop ? 'gap-4' : 'gap-3'}`}>
               {lessons.map((lesson) => {
-                const knownPercentage = lesson.tokenCount > 0 
-                  ? Math.round((lesson.knownTokenCount / lesson.tokenCount) * 100) 
-                  : 0;
+                const totalPages = Math.ceil(lesson.tokenCount / WORDS_PER_PAGE);
+                const readingPercentage = lesson.currentPage !== undefined && totalPages > 0
+                  ? Math.round(((lesson.currentPage + 1) / totalPages) * 100)
+                  : undefined;
 
                 const dateToUse = lesson.lastOpenedAt ?? lesson.createdAt;
                 const dateLabel = lesson.lastOpenedAt ? 'opened' : 'created';
@@ -129,7 +166,8 @@ export default function LibraryScreen() {
                       language={lesson.language.toUpperCase()}
                       duration={formatDuration(lesson.tokenCount)}
                       openedDate={`${dateLabel} ${formatDate(dateToUse)}`}
-                      knownPercentage={knownPercentage}
+                      vocabCounts={calculateVocabCounts(lesson.uniqueTerms)}
+                      readingPercentage={readingPercentage}
                       variant={variant}
                       onPress={() => handleLessonPress(lesson._id)}
                       onLongPress={() => handleLongPress(lesson._id, lesson.title)}
