@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { usePathname, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { PanelLeft } from 'lucide-react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
@@ -83,13 +84,9 @@ export function Sidebar() {
           className="p-2 -mr-2 rounded-lg active:bg-muted/50"
           hitSlop={8}
         >
-          <AnimatedView style={chevronRotationStyle}>
-            <Ionicons 
-              name="chevron-back" 
-              size={20} 
-              color="#4b5563" 
-            />
-          </AnimatedView>
+          <Animated.View style={chevronRotationStyle}>
+            <PanelLeft size={20} color="#4b5563" />
+          </Animated.View>
         </Pressable>
       </View>
 
