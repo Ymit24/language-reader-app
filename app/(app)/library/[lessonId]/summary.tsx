@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { PageHeader } from '@/src/components/PageHeader';
 import { useLocalSearchParams, Stack, router } from 'expo-router';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
@@ -189,10 +190,13 @@ export default function LessonSummaryScreen() {
     <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
       <Stack.Screen
         options={{
-          headerShown: true,
+          headerShown: false,
           title: lessonQuery.title,
-          headerTitleAlign: 'center',
         }}
+      />
+      <PageHeader
+        title={lessonQuery.title}
+        leftAction={{ onPress: () => router.back() }}
       />
 
       <View className="flex-1">

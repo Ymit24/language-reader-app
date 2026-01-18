@@ -1,11 +1,11 @@
 import { View, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from '@/src/components/SafeAreaView';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { PageHeader } from '@/src/components/PageHeader';
+import { useLocalSearchParams, Stack, router } from 'expo-router';
 import { useQuery } from 'convex/react';
 import { Reader } from '../../../../src/features/reader/Reader';
 import { Id } from '../../../../convex/_generated/dataModel';
 import { api } from '../../../../convex/_generated/api';
-import { ReaderHeader } from '@/src/components/ReaderHeader';
 
 function LoadingScreen() {
   return (
@@ -56,7 +56,14 @@ export default function LessonReaderScreen() {
   return (
     <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
       <Stack.Screen options={{ headerShown: false }} />
-      <ReaderHeader title={lessonQuery.title} />
+      <PageHeader
+        title={lessonQuery.title}
+        leftAction={{ onPress: () => router.back() }}
+        rightAction={{
+          icon: 'settings-outline',
+          onPress: () => router.push(`/library/${lessonId}/edit`),
+        }}
+      />
       <Reader lessonId={safeLessonId as Id<"lessons">} />
     </SafeAreaView>
   );
