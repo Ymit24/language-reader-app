@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { usePathname, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { PanelLeft } from 'lucide-react';
+import { PanelLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
