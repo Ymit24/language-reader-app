@@ -130,25 +130,26 @@ export function Reader({ lessonId }: ReaderProps) {
         />
         
         {/* Pagination Controls */}
-        <View className="flex-row justify-between items-center px-6 py-4 border-t border-gray-100 bg-canvas">
+        <View className="absolute bottom-0 left-0 right-0 flex-row justify-between items-center px-8 py-6 bg-canvas/95 backdrop-blur-sm border-t border-gray-100/50 pb-10 md:pb-6">
             <Pressable 
                 onPress={handlePrevPage} 
                 disabled={currentPage === 0}
-                className={`px-4 py-2 rounded-md ${currentPage === 0 ? 'opacity-30' : 'bg-gray-100'}`}
+                className={`p-3 rounded-full ${currentPage === 0 ? 'opacity-20' : 'active:bg-gray-100'}`}
             >
-                <Text>Previous</Text>
+                {/* Minimal arrow */}
+                <Text className="text-2xl text-ink font-light">←</Text>
             </Pressable>
             
-            <Text className="text-subink">
-                Page {currentPage + 1} of {totalPages || 1}
+            <Text className="text-sm font-medium text-subink tracking-widest uppercase">
+                Page {currentPage + 1} / {totalPages || 1}
             </Text>
 
             <Pressable 
                 onPress={handleNextPage} 
                 disabled={currentPage === totalPages - 1}
-                className={`px-4 py-2 rounded-md ${currentPage === totalPages - 1 ? 'opacity-30' : 'bg-gray-100'}`}
+                className={`p-3 rounded-full ${currentPage === totalPages - 1 ? 'opacity-20' : 'active:bg-gray-100'}`}
             >
-                <Text>Next</Text>
+                <Text className="text-2xl text-ink font-light">→</Text>
             </Pressable>
         </View>
 

@@ -14,29 +14,40 @@ interface WordDetailsProps {
 
 export function WordDetails({ surface, normalized, currentStatus, onUpdateStatus, onClose }: WordDetailsProps) {
   const statusOptions = [
-    { value: 1, label: '1', color: 'bg-yellow-100', activeColor: 'bg-yellow-400' },
-    { value: 2, label: '2', color: 'bg-yellow-100', activeColor: 'bg-yellow-400' },
-    { value: 3, label: '3', color: 'bg-yellow-100', activeColor: 'bg-yellow-400' },
-    { value: 4, label: 'Known', icon: 'checkmark', color: 'bg-white border border-gray-200', activeColor: 'bg-green-100 border-green-300' },
+    { value: 1, label: '1', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-400 border-amber-500' },
+    { value: 2, label: '2', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-400 border-amber-500' },
+    { value: 3, label: '3', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-400 border-amber-500' },
+    { value: 4, label: 'Known', icon: 'checkmark', color: 'bg-white border-gray-200', activeColor: 'bg-green-100 border-green-400' },
   ];
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 md:left-[10%] md:right-[10%] md:bottom-6 md:rounded-xl bg-white border-t md:border border-gray-200 shadow-lg p-4 pb-8 md:pb-6">
+    <View className="absolute bottom-0 left-0 right-0 md:left-auto md:right-8 md:bottom-8 md:w-[400px] md:rounded-2xl bg-white/95 backdrop-blur-xl border-t md:border border-gray-200/50 shadow-2xl p-6 pb-10 md:pb-6">
+      {/* Handle bar for mobile feel */}
+      <View className="md:hidden w-12 h-1 bg-gray-300 rounded-full self-center mb-6" />
+
       {/* Header */}
-      <View className="flex-row justify-between items-start mb-4">
+      <View className="flex-row justify-between items-start mb-6">
         <View>
-          <Text className="text-3xl font-serif text-ink">{surface}</Text>
-          <Text className="text-sm text-subink mt-1">Normalized: {normalized}</Text>
+          <Text className="text-4xl font-serif font-medium text-ink tracking-tight">{surface}</Text>
+          {/* <Text className="text-sm text-subink mt-1 uppercase tracking-wider font-semibold opacity-60">Normalized: {normalized}</Text> */}
         </View>
-        <Pressable onPress={onClose} className="p-2 -mr-2">
-          <Ionicons name="close" size={24} color="#666" />
+        <Pressable 
+          onPress={onClose} 
+          className="bg-gray-100 p-2 rounded-full active:bg-gray-200"
+          hitSlop={10}
+        >
+          <Ionicons name="close" size={20} color="#666" />
         </Pressable>
       </View>
 
-      {/* Dictionary Placeholder */}
-      <View className="mb-6 bg-gray-50 p-4 rounded-md min-h-[100px]">
-        <Text className="text-subink italic">
-          Dictionary definition for "{surface}" would appear here.
+      {/* Dictionary Placeholder - styled nicely */}
+      <View className="mb-8">
+        <View className="flex-row items-baseline mb-2">
+            <Text className="text-lg font-semibold text-ink mr-2">Definition</Text>
+            <Text className="text-sm text-subink">(Wiktionary)</Text>
+        </View>
+        <Text className="text-lg text-ink/80 leading-7 font-serif">
+           Definition not available in offline mode.
         </Text>
       </View>
 
@@ -46,32 +57,35 @@ export function WordDetails({ surface, normalized, currentStatus, onUpdateStatus
         <Pressable
           onPress={() => onUpdateStatus(99)}
           className={cn(
-            "flex-1 items-center justify-center p-3 rounded-md",
-            currentStatus === 99 ? "bg-gray-200" : "bg-white border border-gray-200"
+            "w-14 items-center justify-center p-3 rounded-xl border",
+            currentStatus === 99 ? "bg-gray-200 border-gray-300" : "bg-white border-gray-200"
           )}
         >
-          <Ionicons name="trash-outline" size={20} color={currentStatus === 99 ? "#000" : "#666"} />
-          <Text className="text-xs mt-1 text-subink">Ignore</Text>
+          <Ionicons name="eye-off-outline" size={22} color={currentStatus === 99 ? "#000" : "#999"} />
         </Pressable>
 
         {/* Status Buttons */}
-        {statusOptions.map((opt) => (
-          <Pressable
-            key={opt.value}
-            onPress={() => onUpdateStatus(opt.value)}
-            className={cn(
-              "flex-1 items-center justify-center p-3 rounded-md",
-              currentStatus === opt.value ? opt.activeColor : opt.color
-            )}
-          >
-            {opt.icon ? (
-              <Ionicons name={opt.icon as any} size={20} color="#000" />
-            ) : (
-              <Text className="text-lg font-bold">{opt.label}</Text>
-            )}
-            {opt.value === 4 && <Text className="text-xs mt-1 text-subink">Known</Text>}
-          </Pressable>
-        ))}
+        <View className="flex-1 flex-row gap-2">
+            {statusOptions.map((opt) => (
+            <Pressable
+                key={opt.value}
+                onPress={() => onUpdateStatus(opt.value)}
+                className={cn(
+                "flex-1 items-center justify-center py-3 rounded-xl border",
+                currentStatus === opt.value ? opt.activeColor : `bg-white ${opt.color.split(' ').find(c => c.startsWith('border')) || 'border-transparent'}`
+                )}
+                style={{
+                    backgroundColor: currentStatus === opt.value ? undefined : (opt.value === 4 ? '#fff' : '#fffbeb') // Fallback for complex class logic
+                }}
+            >
+                {opt.icon ? (
+                <Ionicons name={opt.icon as any} size={24} color={currentStatus === opt.value ? "#15803d" : "#000"} />
+                ) : (
+                <Text className={cn("text-lg font-bold", currentStatus === opt.value ? "text-amber-900" : "text-amber-700/70")}>{opt.label}</Text>
+                )}
+            </Pressable>
+            ))}
+        </View>
       </View>
     </View>
   );

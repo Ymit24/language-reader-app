@@ -46,11 +46,11 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId }: 
 
   return (
     <ScrollView 
-      className="flex-1 px-4 md:px-12 py-6"
-      contentContainerStyle={{ paddingBottom: 100 }}
-      showsVerticalScrollIndicator={true}
+      className="flex-1 px-6 md:px-24 py-8"
+      contentContainerStyle={{ paddingBottom: 150 }}
+      showsVerticalScrollIndicator={false}
     >
-      <View className="flex-row flex-wrap items-end">
+      <View className="flex-row flex-wrap items-end justify-start">
         {renderedTokens}
       </View>
     </ScrollView>
