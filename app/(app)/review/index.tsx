@@ -89,6 +89,12 @@ function LanguageCard({ language }: { language: LanguageInfo }) {
 }
 
 export default function ReviewScreen() {
+  const todayReviews = useQuery(api.review.getTodayReviewCount);
+  const learningCount = useQuery(api.review.getLearningCount);
+
+  const today = todayReviews ?? 0;
+  const learning = learningCount ?? 0;
+
   return (
     <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
       <ScrollView className="flex-1 px-4 py-6">
@@ -97,11 +103,11 @@ export default function ReviewScreen() {
         <View className="flex-row flex-wrap gap-4 mb-6">
           <View className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
             <Text className="text-xs text-amber-700 uppercase tracking-wide font-semibold">Today&apos;s Reviews</Text>
-            <Text className="text-2xl font-bold text-amber-800 mt-1">--</Text>
+            <Text className="text-2xl font-bold text-amber-800 mt-1">{today}</Text>
           </View>
           <View className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
             <Text className="text-xs text-green-700 uppercase tracking-wide font-semibold">Learning</Text>
-            <Text className="text-2xl font-bold text-green-800 mt-1">--</Text>
+            <Text className="text-2xl font-bold text-green-800 mt-1">{learning}</Text>
           </View>
         </View>
 

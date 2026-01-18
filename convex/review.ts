@@ -49,6 +49,58 @@ export const getKnownCount = query({
   },
 });
 
+export const getTodayReviewCount = query({
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return 0;
+    }
+
+    const now = Date.now();
+    let totalDue = 0;
+
+    const languages: Array<'de' | 'fr' | 'ja'> = ['de', 'fr', 'ja'];
+
+    for (const language of languages) {
+      const items = await ctx.db
+        .query("vocab")
+        .withIndex("by_user_language_nextReviewAt", (q) =>
+          q.eq("userId", userId).eq("language", language).lte("nextReviewAt", now)
+        )
+        .collect();
+      totalDue += items.length;
+    }
+
+    return totalDue;
+  },
+});
+
+export const getLearningCount = query({
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return 0;
+    }
+
+    let totalLearning = 0;
+    const languages: Array<'de' | 'fr' | 'ja'> = ['de', 'fr', 'ja'];
+
+    for (const language of languages) {
+      for (let status = 1; status <= 3; status++) {
+        const items = await ctx.db
+          .query("vocab")
+          .withIndex("by_user_language_status", (q) =>
+            q.eq("userId", userId).eq("language", language).eq("status", status)
+          )
+          .collect();
+        totalLearning += items.length;
+      }
+    }
+
+    return totalLearning;
+  },
+});
+
 interface Sm2Result {
   intervalDays: number;
   ease: number;
