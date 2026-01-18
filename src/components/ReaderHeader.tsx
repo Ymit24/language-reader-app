@@ -1,6 +1,6 @@
 import { View, Text, Pressable, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 interface ReaderHeaderProps {
   title: string;
@@ -9,6 +9,7 @@ interface ReaderHeaderProps {
 export function ReaderHeader({ title }: ReaderHeaderProps) {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
+  const { lessonId } = useLocalSearchParams();
 
   return (
     <View className={`h-20 flex-row items-center justify-between bg-canvas border-b border-border ${isLargeScreen ? 'px-[28px]' : 'px-4'}`}>
@@ -28,7 +29,17 @@ export function ReaderHeader({ title }: ReaderHeaderProps) {
         {title}
       </Text>
 
-      <View className="w-10" />
+      <Pressable
+        onPress={() => router.push(`/library/${lessonId}/edit`)}
+        className="p-2 rounded-lg active:bg-muted/50"
+        hitSlop={8}
+      >
+        <Ionicons
+          name="settings-outline"
+          size={20}
+          color="#4b5563"
+        />
+      </Pressable>
     </View>
   );
 }

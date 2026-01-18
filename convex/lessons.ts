@@ -111,11 +111,79 @@ export const deleteLesson = mutation({
       .query("lessonTokens")
       .withIndex("by_lesson_index", (q) => q.eq("lessonId", lessonId))
       .collect();
-    
+
     await Promise.all(tokens.map((t) => ctx.db.delete(t._id)));
-    
+
     // Delete the lesson
     await ctx.db.delete(lessonId);
+  },
+});
+
+export const updateLesson = mutation({
+  args: {
+    lessonId: v.id("lessons"),
+    title: v.string(),
+    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    rawText: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const { lessonId, title, language, rawText } = args;
+
+    // Verify ownership
+    const lesson = await ctx.db.get(lessonId);
+    if (!lesson || lesson.userId !== userId) {
+      throw new Error("Lesson not found or unauthorized");
+    }
+
+    // Tokenize new text
+    const tokens = tokenize(rawText);
+
+    // Calculate counts
+    const wordTokens = tokens.filter((t) => t.isWord);
+    const tokenCount = wordTokens.length;
+    // Reset knownTokenCount on edit since we're retokenizing
+    const knownTokenCount = 0;
+
+    const now = Date.now();
+
+    // Delete existing tokens
+    const existingTokens = await ctx.db
+      .query("lessonTokens")
+      .withIndex("by_lesson_index", (q) => q.eq("lessonId", lessonId))
+      .collect();
+
+    await Promise.all(existingTokens.map((t) => ctx.db.delete(t._id)));
+
+    // Batch insert new tokens
+    await Promise.all(
+      tokens.map((token, index) =>
+        ctx.db.insert("lessonTokens", {
+          userId,
+          lessonId,
+          language,
+          index,
+          surface: token.surface,
+          normalized: token.normalized,
+          isWord: token.isWord,
+          createdAt: now,
+        })
+      )
+    );
+
+    // Update lesson
+    await ctx.db.patch(lessonId, {
+      title,
+      language,
+      rawText,
+      tokenCount,
+      knownTokenCount,
+      updatedAt: now,
+    });
   },
 });
 
