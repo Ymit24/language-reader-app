@@ -115,12 +115,6 @@ export default function LibraryScreen() {
                 const dateToUse = lesson.lastOpenedAt ?? lesson.createdAt;
                 const dateLabel = lesson.lastOpenedAt ? 'opened' : 'created';
                 
-                // Calculate width based on columns
-                // We use percentage widths with manual gap compensation for simplicity in flex-wrap
-                // Gap is 16px (gap-4) for desktop, 12px (gap-3) for mobile
-                // Note: NativeWind gap works well, but percentages need to be precise.
-                // 3 cols: ~32%, 2 cols: ~48%, 1 col: 100%
-                
                 let widthClass = 'w-full';
                 if (numColumns === 2) widthClass = 'w-[48%]';
                 if (numColumns === 3) widthClass = 'w-[32%]';

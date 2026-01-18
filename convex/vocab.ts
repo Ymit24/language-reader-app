@@ -1,12 +1,13 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const getVocabProfile = query({
   args: {
     language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
   },
   handler: async (ctx, args) => {
-    const userId = (await ctx.auth.getUserIdentity())?.subject;
+    const userId = await getAuthUserId(ctx);
     if (!userId) {
       return [];
     }
@@ -29,7 +30,7 @@ export const updateVocabStatus = mutation({
     status: v.number(),
   },
   handler: async (ctx, args) => {
-    const userId = (await ctx.auth.getUserIdentity())?.subject;
+    const userId = await getAuthUserId(ctx);
     if (!userId) {
       throw new Error("Unauthorized");
     }
