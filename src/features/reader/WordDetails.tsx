@@ -14,9 +14,10 @@ interface WordDetailsProps {
 
 export function WordDetails({ surface, normalized, currentStatus, onUpdateStatus, onClose }: WordDetailsProps) {
   const statusOptions = [
-    { value: 1, label: '1', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-400 border-amber-500' },
-    { value: 2, label: '2', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-400 border-amber-500' },
-    { value: 3, label: '3', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-400 border-amber-500' },
+    { value: 0, label: 'New', color: 'bg-blue-50 border-blue-200', activeColor: 'bg-blue-200 border-blue-300' },
+    { value: 1, label: '1', color: 'bg-amber-50 border-amber-200', activeColor: 'bg-amber-200 border-amber-300' },
+    { value: 2, label: '2', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-300 border-amber-400' },
+    { value: 3, label: '3', color: 'bg-amber-200 border-amber-300', activeColor: 'bg-amber-400 border-amber-500' },
     { value: 4, label: 'Known', icon: 'checkmark', color: 'bg-white border-gray-200', activeColor: 'bg-green-100 border-green-400' },
   ];
 
@@ -49,40 +50,23 @@ export function WordDetails({ surface, normalized, currentStatus, onUpdateStatus
       </View>
 
       {/* Status Actions */}
-      <View className="flex-row gap-3">
-        {/* Ignore Button */}
-        <Pressable
-          onPress={() => onUpdateStatus(99)}
-          className={cn(
-            "w-14 items-center justify-center p-3 rounded-xl border",
-            currentStatus === 99 ? "bg-gray-200 border-gray-300" : "bg-white border-gray-200"
-          )}
-        >
-          <Ionicons name="eye-off-outline" size={22} color={currentStatus === 99 ? "#000" : "#999"} />
-        </Pressable>
-
-        {/* Status Buttons */}
-        <View className="flex-1 flex-row gap-2">
-            {statusOptions.map((opt) => (
-            <Pressable
-                key={opt.value}
-                onPress={() => onUpdateStatus(opt.value)}
-                className={cn(
-                "flex-1 items-center justify-center py-3 rounded-xl border",
-                currentStatus === opt.value ? opt.activeColor : `bg-white ${opt.color.split(' ').find(c => c.startsWith('border')) || 'border-transparent'}`
-                )}
-                style={{
-                    backgroundColor: currentStatus === opt.value ? undefined : (opt.value === 4 ? '#fff' : '#fffbeb') // Fallback for complex class logic
-                }}
-            >
-                {opt.icon ? (
-                <Ionicons name={opt.icon as any} size={24} color={currentStatus === opt.value ? "#15803d" : "#000"} />
-                ) : (
-                <Text className={cn("text-lg font-bold", currentStatus === opt.value ? "text-amber-900" : "text-amber-700/70")}>{opt.label}</Text>
-                )}
-            </Pressable>
-            ))}
-        </View>
+      <View className="flex-row gap-2">
+        {statusOptions.map((opt) => (
+          <Pressable
+            key={opt.value}
+            onPress={() => onUpdateStatus(opt.value)}
+            className={cn(
+              "flex-1 items-center justify-center py-3 rounded-xl border",
+              currentStatus === opt.value ? opt.activeColor : `bg-white ${opt.color.split(' ').find(c => c.startsWith('border')) || 'border-transparent'}`
+            )}
+          >
+            {opt.icon ? (
+              <Ionicons name={opt.icon as any} size={24} color={currentStatus === opt.value ? "#15803d" : "#000"} />
+            ) : (
+              <Text className={cn("text-lg font-bold", currentStatus === opt.value ? (opt.value === 0 ? "text-blue-900" : "text-amber-900") : "text-ink/60")}>{opt.label}</Text>
+            )}
+          </Pressable>
+        ))}
       </View>
     </View>
   );
