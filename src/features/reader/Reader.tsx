@@ -182,6 +182,7 @@ export function Reader({ lessonId }: ReaderProps) {
           <StackedProgressBar
             counts={vocabCounts}
             total={vocabCounts.new + vocabCounts.learning + vocabCounts.known + vocabCounts.ignored}
+            height={6}
           />
         </View>
         <ReaderPage 
