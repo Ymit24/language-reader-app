@@ -1,7 +1,8 @@
-import { Redirect } from 'expo-router';
-import { Text, View } from 'react-native';
+import { Redirect, Tabs } from 'expo-router';
+import { Text, View, useWindowDimensions } from 'react-native';
 import { useConvexAuth } from 'convex/react';
-import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import { Sidebar } from '../../src/components/Sidebar';
 
 function LoadingScreen() {
   return (
@@ -13,6 +14,8 @@ function LoadingScreen() {
 
 export default function AppLayout() {
   const { isAuthenticated, isLoading } = useConvexAuth();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -23,21 +26,46 @@ export default function AppLayout() {
   }
 
   return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="library">
-        <Icon sf={{ default: 'book', selected: 'book.fill' }} />
-        <Label>Library</Label>
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="review">
-        <Icon sf={{ default: 'repeat', selected: 'repeat' }} />
-        <Label>Review</Label>
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="settings">
-        <Icon sf={{ default: 'gearshape', selected: 'gearshape.fill' }} />
-        <Label>Settings</Label>
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <View style={{ flex: 1, flexDirection: 'row' }}>
+      {isLargeScreen && <Sidebar />}
+      <View style={{ flex: 1 }}>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: '#2563eb',
+            tabBarInactiveTintColor: '#4b5563',
+            tabBarStyle: isLargeScreen ? { display: 'none' } : undefined,
+          }}
+        >
+          <Tabs.Screen
+            name="library"
+            options={{
+              title: 'Library',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="book" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="review"
+            options={{
+              title: 'Review',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="repeat" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="settings"
+            options={{
+              title: 'Settings',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="settings" size={size} color={color} />
+              ),
+            }}
+          />
+        </Tabs>
+      </View>
+    </View>
   );
 }
