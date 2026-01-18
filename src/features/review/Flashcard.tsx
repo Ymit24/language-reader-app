@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { View, Text, Pressable, Animated } from 'react-native';
 import { Doc } from '@/convex/_generated/dataModel';
 
@@ -11,6 +11,16 @@ interface FlashcardProps {
 export function Flashcard({ vocab, isFlipped, onFlip }: FlashcardProps) {
   const animation = useRef(new Animated.Value(0)).current;
   const [showBack, setShowBack] = useState(false);
+
+  useEffect(() => {
+    if (isFlipped) {
+      setShowBack(true);
+      animation.setValue(180);
+    } else {
+      setShowBack(false);
+      animation.setValue(0);
+    }
+  }, [isFlipped, animation]);
 
   const frontInterpolate = animation.interpolate({
     inputRange: [0, 180],
