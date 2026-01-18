@@ -1,6 +1,7 @@
 import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from '@/src/components/SafeAreaView';
 import { Button } from '@/src/components/Button';
+import { LanguageFlag } from '@/src/components/LanguageFlag';
 import { api } from '@/convex/_generated/api';
 import { useQuery } from 'convex/react';
 import { useRouter } from 'expo-router';
@@ -11,13 +12,12 @@ type LanguageCode = 'fr' | 'de' | 'ja';
 interface LanguageInfo {
   code: LanguageCode;
   name: string;
-  flag: string;
 }
 
 const LANGUAGES: LanguageInfo[] = [
-  { code: 'fr', name: 'French', flag: '🇫🇷' },
-  { code: 'de', name: 'German', flag: '🇩🇪' },
-  { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
+  { code: 'fr', name: 'French' },
+  { code: 'de', name: 'German' },
+  { code: 'ja', name: 'Japanese' },
 ];
 
 function LanguageCard({ language }: { language: LanguageInfo }) {
@@ -32,7 +32,7 @@ function LanguageCard({ language }: { language: LanguageInfo }) {
     <View className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
       <View className="flex-row items-center justify-between mb-3">
         <View className="flex-row items-center gap-3">
-          <Text className="text-3xl">{language.flag}</Text>
+          <LanguageFlag code={language.code} size={32} />
           <Text className="text-xl font-semibold text-ink">{language.name}</Text>
         </View>
         <View className="flex-row gap-4">
