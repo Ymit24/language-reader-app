@@ -49,20 +49,34 @@ export const updateVocabStatus = mutation({
 
     const now = Date.now();
 
+    const isLearningStatus = status >= 1 && status <= 3;
+    const updateFields: Record<string, any> = {
+      status,
+      updatedAt: now,
+    };
+
+    if (isLearningStatus) {
+      updateFields.nextReviewAt = now;
+      updateFields.intervalDays = 0;
+      updateFields.reviews = 0;
+    }
+
     if (existing) {
-      await ctx.db.patch(existing._id, {
-        status,
-        updatedAt: now,
-      });
+      await ctx.db.patch(existing._id, updateFields);
     } else {
       await ctx.db.insert("vocab", {
         userId,
         language,
         term,
-        display: term, // Initial display form is just the term
+        display: term,
         status,
         createdAt: now,
         updatedAt: now,
+        ...(isLearningStatus && {
+          nextReviewAt: now,
+          intervalDays: 0,
+          reviews: 0,
+        }),
       });
     }
   },

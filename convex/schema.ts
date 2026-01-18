@@ -61,6 +61,7 @@ export default defineSchema({
     meaning: v.optional(v.string()),
     notes: v.optional(v.string()),
     status: v.number(),
+    reviews: v.optional(v.number()),
     nextReviewAt: v.optional(v.number()),
     intervalDays: v.optional(v.number()),
     ease: v.optional(v.number()),

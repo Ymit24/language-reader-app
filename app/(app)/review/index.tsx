@@ -1,13 +1,98 @@
-import { View, Text } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { Button } from '@/src/components/Button';
+import { api } from '@/convex/_generated/api';
+import { useQuery } from 'convex/react';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+
+type LanguageCode = 'fr' | 'de' | 'ja';
+
+interface LanguageInfo {
+  code: LanguageCode;
+  name: string;
+  flag: string;
+}
+
+const LANGUAGES: LanguageInfo[] = [
+  { code: 'fr', name: 'French', flag: '🇫🇷' },
+  { code: 'de', name: 'German', flag: '🇩🇪' },
+  { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
+];
+
+function LanguageCard({ language }: { language: LanguageInfo }) {
+  const dueCount = useQuery(api.review.getDueCount, { language: language.code });
+  const knownCount = useQuery(api.review.getKnownCount, { language: language.code });
+  const router = useRouter();
+
+  const due = dueCount ?? 0;
+  const known = knownCount ?? 0;
+
+  return (
+    <View className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+      <View className="flex-row items-center justify-between mb-3">
+        <View className="flex-row items-center gap-3">
+          <Text className="text-3xl">{language.flag}</Text>
+          <Text className="text-xl font-semibold text-ink">{language.name}</Text>
+        </View>
+        <View className="flex-row gap-4">
+          <View className="items-end">
+            <Text className="text-xs text-subink uppercase tracking-wide">Due</Text>
+            <Text className={`text-2xl font-bold ${due > 0 ? 'text-amber-600' : 'text-gray-400'}`}>
+              {due}
+            </Text>
+          </View>
+          <View className="items-end">
+            <Text className="text-xs text-subink uppercase tracking-wide">Known</Text>
+            <Text className="text-2xl font-bold text-green-600">{known}</Text>
+          </View>
+        </View>
+      </View>
+
+      <Button
+        variant={due > 0 ? 'primary' : 'secondary'}
+        disabled={due === 0}
+        onPress={() => (router.push as any)(`/review/session?language=${language.code}`)}
+        className="w-full"
+      >
+        {due > 0 ? 'Start Review Session' : 'No cards due'}
+      </Button>
+    </View>
+  );
+}
 
 export default function ReviewScreen() {
   return (
     <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
-      <View className="flex-1 px-4 py-6">
-        <Text className="text-2xl font-semibold tracking-tight text-ink">Review</Text>
-        <Text className="mt-2 text-sm text-subink">Spaced repetition review feature coming soon.</Text>
-      </View>
+      <ScrollView className="flex-1 px-4 py-6">
+        <Text className="text-2xl font-semibold tracking-tight text-ink mb-6">Review</Text>
+
+        <View className="flex-row flex-wrap gap-4 mb-6">
+          <View className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
+            <Text className="text-xs text-amber-700 uppercase tracking-wide font-semibold">Today&apos;s Reviews</Text>
+            <Text className="text-2xl font-bold text-amber-800 mt-1">--</Text>
+          </View>
+          <View className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
+            <Text className="text-xs text-green-700 uppercase tracking-wide font-semibold">Learning</Text>
+            <Text className="text-2xl font-bold text-green-800 mt-1">--</Text>
+          </View>
+        </View>
+
+        <Text className="text-sm font-medium text-subink uppercase tracking-wide mb-3">Languages</Text>
+        {LANGUAGES.map((lang) => (
+          <LanguageCard key={lang.code} language={lang} />
+        ))}
+
+        <View className="mt-8 p-4 bg-muted rounded-lg border border-border">
+          <View className="flex-row items-center gap-2 mb-2">
+            <Ionicons name="information-circle-outline" size={18} color="#666" />
+            <Text className="font-medium text-subink">About Spaced Repetition</Text>
+          </View>
+          <Text className="text-sm text-subink leading-5">
+            Review words at optimal intervals to maximize retention. Words you find difficult will appear more frequently.
+          </Text>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
