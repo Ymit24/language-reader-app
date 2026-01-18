@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, LayoutAnimation, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, Pressable } from 'react-native';
 import { usePathname, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+  Easing,
+} from 'react-native-reanimated';
 import { cn } from '../lib/utils';
-import { UIManager } from 'react-native';
 
-if (Platform.OS === 'android') {
-  UIManager.setLayoutAnimationEnabledExperimental?.(true);
-}
+const AnimatedView = Animated.View;
 
 type NavItemProps = {
   name: string;
@@ -18,49 +21,80 @@ type NavItemProps = {
 };
 
 const NAV_ITEMS: NavItemProps[] = [
-  { name: 'library', href: '/library', iconName: 'book-outline', label: 'Library' },
-  { name: 'review', href: '/review', iconName: 'repeat-outline', label: 'Review' },
-  { name: 'settings', href: '/settings', iconName: 'settings-outline', label: 'Settings' },
+  { name: 'library', href: '/library', iconName: 'book', label: 'Library' },
+  { name: 'review', href: '/review', iconName: 'repeat', label: 'Review' },
+  { name: 'settings', href: '/settings', iconName: 'settings', label: 'Settings' },
 ];
+
+const EXPANDED_WIDTH = 256;
+const COLLAPSED_WIDTH = 80;
 
 export function Sidebar() {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const isCollapsed = useSharedValue(false);
 
   const toggleCollapse = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setIsCollapsed(!isCollapsed);
+    isCollapsed.value = !isCollapsed.value;
   };
 
-  const width = isCollapsed ? 80 : 256;
+  const sidebarWidthStyle = useAnimatedStyle(() => {
+    return {
+      width: withTiming(isCollapsed.value ? COLLAPSED_WIDTH : EXPANDED_WIDTH, {
+        duration: 300,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      }),
+    };
+  });
+
+  const chevronRotationStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{
+        rotate: withTiming(isCollapsed.value ? '180deg' : '0deg', {
+          duration: 300,
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+        }),
+      }],
+    };
+  });
+
+  const labelContainerStyle = useAnimatedStyle(() => {
+    const isCollapsing = isCollapsed.value;
+    return {
+      opacity: withTiming(isCollapsing ? 0 : 1, { duration: 200 }),
+      marginLeft: withTiming(isCollapsing ? 0 : 12, { duration: 300 }),
+      maxWidth: withTiming(isCollapsing ? 0 : 160, { duration: 300 }),
+    };
+  });
 
   return (
-    <View 
+    <AnimatedView 
       className="flex-col h-full bg-canvas border-r border-border"
-      style={{ width, paddingTop: insets.top, paddingBottom: insets.bottom }}
+      style={[sidebarWidthStyle, { paddingTop: insets.top, paddingBottom: insets.bottom, overflow: 'hidden' }]}
     >
-      <View className={cn("flex-row items-center gap-3 px-4 py-6", isCollapsed ? 'justify-center' : 'justify-between')}>
-        {!isCollapsed && (
-          <Text className="text-xl font-bold text-ink">Reader</Text>
-        )}
+      {/* Header */}
+      <View className="h-20 flex-row items-center px-[28px] justify-between">
+        <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
+          <Text className="text-xl font-bold text-ink" numberOfLines={1}>Reader</Text>
+        </AnimatedView>
+        
         <Pressable
           onPress={toggleCollapse}
-          className={cn(
-            "p-2 rounded-lg",
-            isCollapsed ? 'mx-auto mt-2' : ''
-          )}
+          className="p-2 -mr-2 rounded-lg active:bg-muted/50"
           hitSlop={8}
         >
-          <Ionicons 
-            name={isCollapsed ? 'chevron-forward-outline' : 'chevron-back-outline'} 
-            size={24} 
-            color="#4b5563" 
-          />
+          <AnimatedView style={chevronRotationStyle}>
+            <Ionicons 
+              name="chevron-back" 
+              size={20} 
+              color="#4b5563" 
+            />
+          </AnimatedView>
         </Pressable>
       </View>
 
-      <View className={cn("flex-1 gap-2 px-3", isCollapsed ? 'items-center' : '')}>
+      {/* Nav Items */}
+      <View className="flex-1 mt-4">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname.startsWith(item.href);
           
@@ -68,18 +102,21 @@ export function Sidebar() {
             <Link key={item.name} href={item.href} asChild>
               <Pressable
                 className={cn(
-                  "flex-row items-center gap-3 p-3 rounded-xl transition-colors w-full",
-                  isActive ? "bg-brandSoft" : "hover:bg-muted"
+                  "flex-row items-center h-12 px-[28px] mb-1 transition-colors",
+                  isActive ? "bg-brandSoft" : "active:bg-muted/50 hover:bg-muted/30"
                 )}
-                style={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
               >
-                <Ionicons 
-                  name={isActive ? item.iconName.replace('-outline', '') as any : item.iconName} 
-                  size={24} 
-                  color={isActive ? "#2563eb" : "#4b5563"} 
-                />
-                {!isCollapsed && (
+                <View style={{ width: 24, alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons 
+                    name={item.iconName as any} 
+                    size={22} 
+                    color={isActive ? "#2563eb" : "#4b5563"} 
+                  />
+                </View>
+                
+                <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
                   <Text 
+                    numberOfLines={1}
                     className={cn(
                       "text-base font-medium",
                       isActive ? "text-brand" : "text-subink"
@@ -87,18 +124,19 @@ export function Sidebar() {
                   >
                     {item.label}
                   </Text>
-                )}
+                </AnimatedView>
               </Pressable>
             </Link>
           );
         })}
       </View>
 
-      <View className={cn("px-3 py-4", isCollapsed ? 'items-center' : '')}>
-        {!isCollapsed && (
-          <Text className="text-xs text-faint px-3">v1.0.0</Text>
-        )}
+      {/* Footer */}
+      <View className="h-16 px-[28px] flex-row items-center">
+        <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
+          <Text className="text-xs text-faint" numberOfLines={1}>v1.0.0</Text>
+        </AnimatedView>
       </View>
-    </View>
+    </AnimatedView>
   );
 }
