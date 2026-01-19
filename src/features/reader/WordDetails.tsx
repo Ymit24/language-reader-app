@@ -67,13 +67,13 @@ export function WordDetails({
 
   const containerStyle = isSidebar
     ? "flex-1 bg-white border-l border-border/50"
-    : "absolute bottom-0 left-0 right-0 bg-white shadow-pop border-t border-border/50 overflow-hidden rounded-t-3xl pb-safe";
+    : "absolute bottom-0 left-0 right-0 bg-white shadow-pop border-t border-border/50 overflow-hidden rounded-t-3xl";
 
   return (
     <View className={containerStyle}>
       <ScrollView 
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: isSidebar ? 40 : 20 }}
+        contentContainerStyle={{ paddingBottom: isSidebar ? 40 : 0 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header Area */}
@@ -168,7 +168,7 @@ export function WordDetails({
           </View>
 
           {/* Action Bar */}
-          <View className="mt-6 pt-5 border-t border-border/50 flex-row justify-end items-center">
+          <View className="mt-4 pt-4 border-t border-border/50 flex-row justify-end items-center">
             <Pressable
               onPress={onClose}
               className="bg-ink px-6 py-2 rounded-full active:opacity-90"
