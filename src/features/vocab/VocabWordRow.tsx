@@ -118,8 +118,6 @@ export function VocabWordRow({ vocab, isSelected, isCompact = false, onPress, on
           </View>
         )}
       </View>
-
-      <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
     </Pressable>
   );
 }
