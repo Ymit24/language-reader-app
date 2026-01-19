@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { cn } from '../../lib/utils';
-import { TokenStatus } from './Token';
 
 interface WordDetailsProps {
   surface: string;
@@ -12,61 +11,176 @@ interface WordDetailsProps {
   onClose: () => void;
 }
 
-export function WordDetails({ surface, normalized, currentStatus, onUpdateStatus, onClose }: WordDetailsProps) {
+export function WordDetails({
+  surface,
+  normalized,
+  currentStatus,
+  onUpdateStatus,
+  onClose,
+}: WordDetailsProps) {
   const statusOptions = [
-    { value: 0, label: 'New', color: 'bg-blue-50 border-blue-200', activeColor: 'bg-blue-200 border-blue-300' },
-    { value: 1, label: 'Recognized', color: 'bg-amber-50 border-amber-200', activeColor: 'bg-amber-200 border-amber-300' },
-    { value: 2, label: 'Learning', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-300 border-amber-400' },
-    { value: 3, label: 'Familiar', color: 'bg-amber-200 border-amber-300', activeColor: 'bg-amber-400 border-amber-500' },
-    { value: 4, label: 'Known', icon: 'checkmark', color: 'bg-white border-gray-200', activeColor: 'bg-green-100 border-green-400' },
+    {
+      value: 0,
+      label: 'New',
+      desc: 'Never seen',
+      icon: 'sparkles-outline',
+      activeIcon: 'sparkles',
+      color: '#d97706', // amber-600
+      bg: 'bg-amber-50',
+      border: 'border-amber-200',
+    },
+    {
+      value: 1,
+      label: 'Learning',
+      desc: 'Recognize',
+      icon: 'book-outline',
+      activeIcon: 'book',
+      color: '#2563eb', // blue-600
+      bg: 'bg-blue-50',
+      border: 'border-blue-200',
+    },
+    {
+      value: 3,
+      label: 'Familiar',
+      desc: 'Almost known',
+      icon: 'star-outline',
+      activeIcon: 'star',
+      color: '#4f46e5', // indigo-600
+      bg: 'bg-indigo-50',
+      border: 'border-indigo-200',
+    },
+    {
+      value: 4,
+      label: 'Known',
+      desc: 'Mastered',
+      icon: 'checkmark-circle-outline',
+      activeIcon: 'checkmark-circle',
+      color: '#047857', // success
+      bg: 'bg-successSoft',
+      border: 'border-success/20',
+    },
   ];
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 md:left-auto md:right-8 md:bottom-8 md:w-[400px] md:rounded-2xl bg-white/95 backdrop-blur-xl border-t md:border border-gray-200/50 shadow-2xl p-6">
-      {/* Header */}
-      <View className="flex-row justify-between items-start mb-4">
-        <View>
-          <Text className="text-4xl font-serif font-medium text-ink tracking-tight">{surface}</Text>
-          {/* <Text className="text-sm text-subink mt-1 uppercase tracking-wider font-semibold opacity-60">Normalized: {normalized}</Text> */}
+    <View className="absolute bottom-0 left-0 right-0 md:left-auto md:right-8 md:bottom-24 md:w-[380px] md:rounded-2xl bg-white shadow-pop border-t md:border border-border/50 overflow-hidden">
+      {/* Header Area */}
+      <View className="p-6 pb-4">
+        <View className="flex-row justify-between items-start">
+          <View className="flex-1 pr-4">
+            <Text className="text-3xl font-bold text-ink tracking-tight">
+              {surface}
+            </Text>
+            {surface.toLowerCase() !== normalized.toLowerCase() && (
+              <Text className="text-sm text-faint mt-0.5 font-medium italic">
+                {normalized}
+              </Text>
+            )}
+          </View>
+          <Pressable
+            onPress={onClose}
+            className="h-8 w-8 items-center justify-center rounded-full bg-muted active:bg-border"
+            hitSlop={20}
+          >
+            <Ionicons name="close" size={18} color="#4b5563" />
+          </Pressable>
         </View>
-        <Pressable 
-          onPress={onClose} 
-          className="bg-gray-100 p-2 rounded-full active:bg-gray-200"
-          hitSlop={10}
-        >
-          <Ionicons name="close" size={20} color="#666" />
-        </Pressable>
       </View>
 
-      {/* Dictionary Placeholder - styled nicely */}
-      <View className="mb-8">
-        <View className="flex-row items-baseline mb-2">
-            <Text className="text-lg font-semibold text-ink mr-2">Definition</Text>
-            <Text className="text-sm text-subink">(Wiktionary)</Text>
+      {/* Dictionary Section */}
+      <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
+        <View className="flex-row items-center mb-2 opacity-50">
+          <Ionicons name="search-outline" size={14} color="#4b5563" />
+          <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
+            Wiktionary Definition
+          </Text>
         </View>
-        <Text className="text-lg text-ink/80 leading-7 font-serif">
-           Definition not available in offline mode.
+        <Text className="text-sm text-subink leading-5 italic">
+          Definition lookup is currently unavailable in offline mode.
         </Text>
       </View>
 
-      {/* Status Actions */}
-      <View className="flex-row gap-2">
-        {statusOptions.map((opt) => (
+      {/* Status Selection Grid */}
+      <View className="p-6">
+        <Text className="text-[10px] font-bold uppercase tracking-widest text-faint mb-4">
+          Set Word Status
+        </Text>
+        <View className="flex-row flex-wrap gap-3">
+          {statusOptions.map((opt) => {
+            const isActive = currentStatus === opt.value;
+            return (
+              <Pressable
+                key={opt.value}
+                onPress={() => onUpdateStatus(opt.value)}
+                className={cn(
+                  'flex-1 min-w-[140px] p-3 rounded-xl border',
+                  isActive
+                    ? `${opt.bg} ${opt.border}`
+                    : 'bg-white border-border active:bg-muted'
+                )}
+              >
+                <View className="flex-row items-center">
+                  <View
+                    className={cn(
+                      'w-8 h-8 rounded-lg items-center justify-center mr-3',
+                      isActive ? 'bg-white/50' : 'bg-canvas'
+                    )}
+                  >
+                    <Ionicons
+                      name={(isActive ? opt.activeIcon : opt.icon) as any}
+                      size={18}
+                      color={isActive ? opt.color : '#6b7280'}
+                    />
+                  </View>
+                  <View>
+                    <Text
+                      className={cn(
+                        'text-sm font-bold',
+                        isActive ? 'text-ink' : 'text-subink'
+                      )}
+                    >
+                      {opt.label}
+                    </Text>
+                    <Text className="text-[10px] text-faint font-medium">
+                      {opt.desc}
+                    </Text>
+                  </View>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/* Action Bar */}
+        <View className="mt-6 pt-5 border-t border-border/50 flex-row justify-between items-center">
           <Pressable
-            key={opt.value}
-            onPress={() => onUpdateStatus(opt.value)}
+            onPress={() => onUpdateStatus(99)}
             className={cn(
-              "flex-1 items-center justify-center py-3 rounded-xl border",
-              currentStatus === opt.value ? opt.activeColor : `bg-white ${opt.color.split(' ').find(c => c.startsWith('border')) || 'border-transparent'}`
+              'flex-row items-center px-3 py-1.5 rounded-lg',
+              currentStatus === 99 ? 'bg-gray-100' : 'active:bg-gray-50'
             )}
           >
-            {opt.icon ? (
-              <Ionicons name={opt.icon as any} size={24} color={currentStatus === opt.value ? "#15803d" : "#000"} />
-            ) : (
-              <Text className={cn("text-lg font-bold", currentStatus === opt.value ? (opt.value === 0 ? "text-blue-900" : "text-amber-900") : "text-ink/60")}>{opt.label}</Text>
-            )}
+            <Ionicons
+              name="eye-off-outline"
+              size={14}
+              color={currentStatus === 99 ? '#111827' : '#6b7280'}
+            />
+            <Text
+              className={cn(
+                'text-xs font-semibold ml-2',
+                currentStatus === 99 ? 'text-ink' : 'text-faint'
+              )}
+            >
+              Ignore Word
+            </Text>
           </Pressable>
-        ))}
+
+          <Pressable
+            onPress={onClose}
+            className="bg-ink px-6 py-2 rounded-full active:opacity-90"
+          >
+            <Text className="text-white text-xs font-bold">Done</Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
