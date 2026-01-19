@@ -17,7 +17,14 @@ interface TokenProps {
 
 export function Token({ surface, isWord, status, learningLevel, onPress, isSelected, normalized, isWordSelected }: TokenProps) {
   if (!isWord) {
-    return <Text className="text-xl text-ink font-serif leading-9">{surface}</Text>;
+    return (
+      <Text 
+        className="text-2xl text-ink font-serif leading-relaxed"
+        style={{ lineHeight: 42 }}
+      >
+        {surface}
+      </Text>
+    );
   }
 
   const effectiveStatus = status || 'new';
@@ -26,51 +33,55 @@ export function Token({ surface, isWord, status, learningLevel, onPress, isSelec
   let textClass = 'text-ink';
 
   if (isWordSelected && normalized) {
-    bgClass = 'bg-brand/40 outline outline-2 outline-brand rounded-sm';
+    bgClass = 'bg-brand/30';
     textClass = 'text-brand';
   } else if (isSelected) {
-    bgClass = 'bg-brand/40 outline outline-2 outline-brand rounded-sm';
+    bgClass = 'bg-brand/30';
     textClass = 'text-brand';
   } else {
     switch (effectiveStatus) {
       case 'new':
-        bgClass = 'bg-blue-50';
-        textClass = 'text-blue-700';
+        bgClass = 'bg-blue-100/60';
+        textClass = 'text-blue-900';
         break;
       case 'learning':
         if (learningLevel === 1) {
-          bgClass = 'bg-orange-100';
-          textClass = 'text-orange-800';
+          bgClass = 'bg-orange-200/60';
+          textClass = 'text-orange-900';
         } else if (learningLevel === 2) {
-          bgClass = 'bg-amber-100';
-          textClass = 'text-amber-800';
+          bgClass = 'bg-amber-200/60';
+          textClass = 'text-amber-900';
         } else {
-          bgClass = 'bg-yellow-50';
-          textClass = 'text-yellow-700';
+          bgClass = 'bg-yellow-100/60';
+          textClass = 'text-yellow-900';
         }
         break;
       case 'known':
-        bgClass = 'bg-emerald-50/50';
-        textClass = 'text-emerald-800';
+        bgClass = 'bg-transparent';
+        textClass = 'text-ink'; 
         break;
       case 'ignored':
-        bgClass = 'bg-gray-100';
-        textClass = 'text-gray-500';
+        bgClass = 'bg-transparent';
+        textClass = 'text-gray-300';
         break;
     }
   }
 
   return (
-    <Pressable
+    <Text
       onPress={onPress}
+      suppressHighlighting={true}
       className={cn(
-        "px-0.5 mx-[1px] rounded-sm items-center justify-center",
+        "text-2xl font-serif rounded-sm",
+        textClass,
         bgClass
       )}
+      style={{ 
+        lineHeight: 42,
+        // Using style for background to ensure it behaves well in nested text
+      }}
     >
-      <Text className={cn("text-xl font-serif leading-9", textClass)}>
-        {surface}
-      </Text>
-    </Pressable>
+      {surface}
+    </Text>
   );
 }

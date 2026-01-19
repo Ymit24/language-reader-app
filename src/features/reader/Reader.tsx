@@ -40,7 +40,7 @@ export function Reader({ lessonId }: ReaderProps) {
     return 0;
   });
 
-  const WORDS_PER_PAGE = 150; // Conservative for mobile screens
+  const WORDS_PER_PAGE = 200;
 
   // 4. Transform Vocab for fast lookup
   const vocabMap = useMemo(() => {
@@ -85,21 +85,35 @@ export function Reader({ lessonId }: ReaderProps) {
     let currentChunk: any[] = [];
     let wordCount = 0;
 
-    for (const token of allTokens) {
+    for (let i = 0; i < allTokens.length; i++) {
+      const token = allTokens[i];
       currentChunk.push(token);
       if (token.isWord) {
         wordCount++;
       }
       
-      // Split when we hit the limit, but try to respect sentence endings if possible?
-      // For MVP, strict word count limit is fine. 
-      // A better approach is paragraph based, but we don't have paragraph markers explicitly in tokens unless we parse newline tokens.
       if (wordCount >= WORDS_PER_PAGE) {
-          // If the last token was not a sentence closer, maybe look ahead?
-          // Let's just hard split for now.
+        const isParagraphBreak = !token.isWord && token.surface.includes('\n\n');
+        const isSentenceEnd = !token.isWord && /[.!?]/.test(token.surface);
+        const isForced = wordCount >= WORDS_PER_PAGE * 1.5;
+
+        if (isParagraphBreak || isSentenceEnd || isForced) {
+          // Consume trailing non-word tokens (punctuation, but NOT new paragraphs)
+          let j = i + 1;
+          while (j < allTokens.length) {
+            const next = allTokens[j];
+            if (next.isWord) break;
+            if (next.surface.includes('\n\n')) break;
+            
+            currentChunk.push(next);
+            i = j;
+            j++;
+          }
+          
           pagesArray.push(currentChunk);
           currentChunk = [];
           wordCount = 0;
+        }
       }
     }
     if (currentChunk.length > 0) {
@@ -107,6 +121,7 @@ export function Reader({ lessonId }: ReaderProps) {
     }
     return pagesArray;
   }, [lessonData]);
+
 
   const currentTokens = pages[currentPage] || [];
   const totalPages = pages.length;
