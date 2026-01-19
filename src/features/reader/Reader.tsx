@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
 import { useQuery, useMutation } from 'convex/react';
 import { useRouter } from 'expo-router';
 import { api } from '../../../convex/_generated/api';
@@ -8,6 +8,7 @@ import { ReaderPage } from './ReaderPage';
 import { WordDetails } from './WordDetails';
 import { ProgressBar } from '@/src/components/ProgressBar';
 import { StackedProgressBar } from '@/src/components/StackedProgressBar';
+import { cn } from '../../lib/utils';
 
 interface ReaderProps {
   lessonId: Id<"lessons">;
@@ -20,6 +21,8 @@ const STATUS_KNOWN = 4;
 
 export function Reader({ lessonId }: ReaderProps) {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
 
   // 1. Fetch Lesson Data
   const lessonData = useQuery(api.lessons.getLesson, { lessonId });
@@ -194,7 +197,8 @@ export function Reader({ lessonId }: ReaderProps) {
   }
 
   return (
-    <View className="flex-1 bg-canvas relative">
+    <View className={cn("flex-1 bg-canvas", isLargeScreen ? "flex-row" : "flex-col")}>
+      <View className="flex-1 relative">
         <View className="px-4 py-3 border-b border-gray-100 gap-3">
           <ProgressBar
             progress={totalPages > 0 ? ((currentPage + 1) / totalPages) * 100 : 0}
@@ -246,8 +250,9 @@ export function Reader({ lessonId }: ReaderProps) {
             </Pressable>
         </View>
 
-        {selectedToken && (
+        {selectedToken && !isLargeScreen && (
             <WordDetails 
+                mode="popup"
                 surface={selectedToken.surface}
                 normalized={selectedToken.normalized}
                 currentStatus={vocabMap[selectedToken.normalized] ?? 0}
@@ -258,6 +263,25 @@ export function Reader({ lessonId }: ReaderProps) {
                 }}
             />
         )}
+      </View>
+
+      {/* Sidebar for tablets / web */}
+      {isLargeScreen && selectedToken && (
+        <View className="w-[380px] border-l border-border/50 bg-white">
+          <WordDetails 
+            mode="sidebar"
+            surface={selectedToken.surface}
+            normalized={selectedToken.normalized}
+            currentStatus={vocabMap[selectedToken.normalized] ?? 0}
+            onUpdateStatus={handleUpdateStatus}
+            onClose={() => {
+              setSelectedToken(null);
+              setSelectedNormalized(null);
+            }}
+          />
+        </View>
+      )}
     </View>
   );
 }
+

@@ -32,7 +32,7 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, se
 
   return (
     <ScrollView
-      className="flex-1 px-6 md:px-24 py-8"
+      className="flex-1 px-6 md:px-12 lg:px-24 py-8"
       contentContainerStyle={{ paddingBottom: 120 }}
       showsVerticalScrollIndicator={false}
     >
