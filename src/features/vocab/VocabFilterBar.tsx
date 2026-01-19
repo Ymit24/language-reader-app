@@ -77,7 +77,7 @@ export function VocabFilterBar({
   };
 
   return (
-    <View className="bg-white border-b border-gray-200">
+    <View className="bg-white border-b border-gray-200" style={{ zIndex: 10, overflow: 'visible' }}>
       <View className="px-4 py-3">
         <View className="flex-row items-center gap-2 mb-3">
           <View className="flex-row bg-gray-100 rounded-lg p-1">
@@ -101,7 +101,7 @@ export function VocabFilterBar({
           </View>
         </View>
 
-        <View className="flex-row items-center gap-2">
+        <View className="flex-row items-center gap-2" style={{ zIndex: 20, overflow: 'visible' }}>
           <View className="flex-1 flex-row items-center bg-gray-100 rounded-lg px-3 py-2">
             <Ionicons name="search" size={18} color="#9ca3af" />
             <TextInput
@@ -118,7 +118,7 @@ export function VocabFilterBar({
             )}
           </View>
 
-          <View className="relative">
+          <View className="relative" style={{ zIndex: 30 }}>
             <Pressable
               onPress={() => setShowSortMenu(!showSortMenu)}
               className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg active:bg-gray-200"
@@ -129,7 +129,10 @@ export function VocabFilterBar({
             </Pressable>
 
             {showSortMenu && (
-              <View className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 min-w-[160px]">
+              <View 
+                className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[160px]"
+                style={{ zIndex: 1000, elevation: 5 }}
+              >
                 {SORT_OPTIONS.map((option) => (
                   <Pressable
                     key={option.value}

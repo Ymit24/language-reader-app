@@ -33,6 +33,7 @@ export const getVocabProfile = query({
 export const getVocabCounts = query({
   args: {
     language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    search: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -53,8 +54,17 @@ export const getVocabCounts = query({
     let familiarCount = 0;
     let knownCount = 0;
     let ignoredCount = 0;
+    let total = 0;
+
+    const searchLower = args.search?.toLowerCase().trim();
 
     for (const v of vocab) {
+      if (searchLower && !v.term.toLowerCase().includes(searchLower) && !(v.display && v.display.toLowerCase().includes(searchLower))) {
+        continue;
+      }
+
+      total++;
+
       if (v.status === STATUS_NEW) newCount++;
       else if (v.status === STATUS_LEARNING_MIN) recognizedCount++;
       else if (v.status === STATUS_LEARNING_MIN + 1) learningCount++;
@@ -70,7 +80,7 @@ export const getVocabCounts = query({
       familiar: familiarCount,
       known: knownCount,
       ignored: ignoredCount,
-      total: vocab.length,
+      total: total,
     };
   },
 });
@@ -124,34 +134,58 @@ export const listVocab = query({
       return { page: [], continueCursor: "", isDone: true };
     }
 
-    let paginatedResult = await ctx.db
-      .query("vocab")
-      .withIndex("by_user_language_term", (q) =>
+    const sortBy = (args.sortBy as SortBy) || "dateAdded";
+    const sortOrder = args.sortOrder || "desc";
+
+    let query;
+
+    // Select index based on sort
+    if (sortBy === "alphabetical") {
+      query = ctx.db.query("vocab").withIndex("by_user_language_term", (q) =>
         q.eq("userId", userId).eq("language", args.language)
-      )
-      .paginate(args.paginationOpts);
+      );
+    } else if (sortBy === "status") {
+      query = ctx.db.query("vocab").withIndex("by_user_language_status", (q) =>
+        q.eq("userId", userId).eq("language", args.language)
+      );
+    } else if (sortBy === "nextReview") {
+      query = ctx.db.query("vocab").withIndex("by_user_language_nextReviewAt", (q) =>
+        q.eq("userId", userId).eq("language", args.language)
+      );
+    } else {
+      // Default to dateAdded
+      query = ctx.db.query("vocab").withIndex("by_user_language_createdAt", (q) =>
+        q.eq("userId", userId).eq("language", args.language)
+      );
+    }
+
+    // Apply sort order
+    const orderedQuery = sortOrder === "desc" ? query.order("desc") : query.order("asc");
+
+    const paginatedResult = await orderedQuery.paginate(args.paginationOpts);
 
     let vocab = paginatedResult.page;
 
     if (args.search && args.search.trim().length > 0) {
       const searchLower = args.search.toLowerCase().trim();
-      vocab = vocab.filter(v =>
-        v.term.toLowerCase().includes(searchLower) ||
-        (v.display && v.display.toLowerCase().includes(searchLower))
+      vocab = vocab.filter(
+        (v) =>
+          v.term.toLowerCase().includes(searchLower) ||
+          (v.display && v.display.toLowerCase().includes(searchLower))
       );
     }
 
     if (args.statusFilter && args.statusFilter.length > 0) {
-      vocab = vocab.filter(v => args.statusFilter!.includes(v.status));
+      vocab = vocab.filter((v) => args.statusFilter!.includes(v.status));
     } else {
-      vocab = vocab.filter(v => v.status !== STATUS_IGNORED);
+      vocab = vocab.filter((v) => v.status !== STATUS_IGNORED);
     }
 
-    const sortBy = (args.sortBy as SortBy) || 'dateAdded';
-    const sortOrder = args.sortOrder || 'desc';
-    vocab = sortVocab(vocab, sortBy, sortOrder);
-
-    return { page: vocab, continueCursor: paginatedResult.continueCursor, isDone: paginatedResult.isDone };
+    return {
+      page: vocab,
+      continueCursor: paginatedResult.continueCursor,
+      isDone: paginatedResult.isDone,
+    };
   },
 });
 

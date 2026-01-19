@@ -74,6 +74,7 @@ export default defineSchema({
     .index("by_user_language_term", ["userId", "language", "term"])
     .index("by_user_language_status", ["userId", "language", "status"])
     .index("by_user_language_nextReviewAt", ["userId", "language", "nextReviewAt"])
+    .index("by_user_language_createdAt", ["userId", "language", "createdAt"])
     .index("by_userId", ["userId"]),
 
   vocabStats: defineTable({
