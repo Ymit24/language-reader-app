@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { cn } from '../../lib/utils';
 
@@ -9,6 +9,7 @@ interface WordDetailsProps {
   currentStatus: number; // 0..4
   onUpdateStatus: (status: number) => void;
   onClose: () => void;
+  mode?: 'popup' | 'sidebar';
 }
 
 export function WordDetails({
@@ -17,7 +18,10 @@ export function WordDetails({
   currentStatus,
   onUpdateStatus,
   onClose,
+  mode = 'popup',
 }: WordDetailsProps) {
+  const isSidebar = mode === 'sidebar';
+
   const statusOptions = [
     {
       value: 0,
@@ -61,105 +65,119 @@ export function WordDetails({
     },
   ];
 
-  return (
-    <View className="absolute bottom-0 left-0 right-0 md:left-auto md:right-8 md:bottom-24 md:w-[380px] md:rounded-2xl bg-white shadow-pop border-t md:border border-border/50 overflow-hidden">
-      {/* Header Area */}
-      <View className="p-6 pb-4">
-        <View className="flex-row justify-between items-start">
-          <View className="flex-1 pr-4">
-            <Text className="text-3xl font-bold text-ink tracking-tight">
-              {surface}
-            </Text>
-            {surface.toLowerCase() !== normalized.toLowerCase() && (
-              <Text className="text-sm text-faint mt-0.5 font-medium italic">
-                {normalized}
-              </Text>
-            )}
-          </View>
-          <Pressable
-            onPress={onClose}
-            className="h-8 w-8 items-center justify-center rounded-full bg-muted active:bg-border"
-            hitSlop={20}
-          >
-            <Ionicons name="close" size={18} color="#4b5563" />
-          </Pressable>
-        </View>
-      </View>
+  const containerStyle = isSidebar
+    ? "flex-1 bg-white border-l border-border/50"
+    : "absolute bottom-0 left-0 right-0 bg-white shadow-pop border-t border-border/50 overflow-hidden rounded-t-3xl pb-safe";
 
-      {/* Dictionary Section */}
-      <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
-        <View className="flex-row items-center mb-2 opacity-50">
-          <Ionicons name="search-outline" size={14} color="#4b5563" />
-          <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
-            Wiktionary Definition
+  return (
+    <View className={containerStyle}>
+      <ScrollView 
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: isSidebar ? 40 : 20 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header Area */}
+        <View className="p-6 pb-4">
+          <View className="flex-row justify-between items-start">
+            <View className="flex-1 pr-4">
+              <Text className="text-3xl font-bold text-ink tracking-tight">
+                {surface}
+              </Text>
+              {surface.toLowerCase() !== normalized.toLowerCase() && (
+                <Text className="text-sm text-faint mt-0.5 font-medium italic">
+                  {normalized}
+                </Text>
+              )}
+            </View>
+            <Pressable
+              onPress={onClose}
+              className="h-8 w-8 items-center justify-center rounded-full bg-muted active:bg-border"
+              hitSlop={20}
+            >
+              <Ionicons name="close" size={18} color="#4b5563" />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Dictionary Section */}
+        <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
+          <View className="flex-row items-center mb-2 opacity-50">
+            <Ionicons name="search-outline" size={14} color="#4b5563" />
+            <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
+              Wiktionary Definition
+            </Text>
+          </View>
+          <Text className="text-sm text-subink leading-5 italic">
+            Definition lookup is currently unavailable in offline mode.
           </Text>
         </View>
-        <Text className="text-sm text-subink leading-5 italic">
-          Definition lookup is currently unavailable in offline mode.
-        </Text>
-      </View>
 
-      {/* Status Selection Grid */}
-      <View className="p-6">
-        <Text className="text-[10px] font-bold uppercase tracking-widest text-faint mb-4">
-          Set Word Status
-        </Text>
-        <View className="flex-row flex-wrap gap-3">
-          {statusOptions.map((opt) => {
-            const isActive = currentStatus === opt.value;
-            return (
-              <Pressable
-                key={opt.value}
-                onPress={() => onUpdateStatus(opt.value)}
-                className={cn(
-                  'flex-1 min-w-[140px] p-3 rounded-xl border',
-                  isActive
-                    ? `${opt.bg} ${opt.border}`
-                    : 'bg-white border-border active:bg-muted'
-                )}
-              >
-                <View className="flex-row items-center">
-                  <View
-                    className={cn(
-                      'w-8 h-8 rounded-lg items-center justify-center mr-3',
-                      isActive ? 'bg-white/50' : 'bg-canvas'
-                    )}
-                  >
-                    <Ionicons
-                      name={(isActive ? opt.activeIcon : opt.icon) as any}
-                      size={18}
-                      color={isActive ? opt.color : '#6b7280'}
-                    />
-                  </View>
-                  <View>
-                    <Text
+        {/* Status Selection Grid */}
+        <View className="p-6">
+          <Text className="text-[10px] font-bold uppercase tracking-widest text-faint mb-4">
+            Set Word Status
+          </Text>
+          <View className={cn(
+            "flex-row flex-wrap gap-3",
+            isSidebar ? "flex-col" : "flex-row"
+          )}>
+            {statusOptions.map((opt) => {
+              const isActive = currentStatus === opt.value;
+              return (
+                <Pressable
+                  key={opt.value}
+                  onPress={() => onUpdateStatus(opt.value)}
+                  className={cn(
+                    'p-3 rounded-xl border',
+                    isSidebar ? 'w-full' : 'flex-1 min-w-[140px]',
+                    isActive
+                      ? `${opt.bg} ${opt.border}`
+                      : 'bg-white border-border active:bg-muted'
+                  )}
+                >
+                  <View className="flex-row items-center">
+                    <View
                       className={cn(
-                        'text-sm font-bold',
-                        isActive ? 'text-ink' : 'text-subink'
+                        'w-8 h-8 rounded-lg items-center justify-center mr-3',
+                        isActive ? 'bg-white/50' : 'bg-canvas'
                       )}
                     >
-                      {opt.label}
-                    </Text>
-                    <Text className="text-[10px] text-faint font-medium">
-                      {opt.desc}
-                    </Text>
+                      <Ionicons
+                        name={(isActive ? opt.activeIcon : opt.icon) as any}
+                        size={18}
+                        color={isActive ? opt.color : '#6b7280'}
+                      />
+                    </View>
+                    <View>
+                      <Text
+                        className={cn(
+                          'text-sm font-bold',
+                          isActive ? 'text-ink' : 'text-subink'
+                        )}
+                      >
+                        {opt.label}
+                      </Text>
+                      <Text className="text-[10px] text-faint font-medium">
+                        {opt.desc}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
+                </Pressable>
+              );
+            })}
+          </View>
 
-        {/* Action Bar */}
-        <View className="mt-6 pt-5 border-t border-border/50 flex-row justify-end items-center">
-          <Pressable
-            onPress={onClose}
-            className="bg-ink px-6 py-2 rounded-full active:opacity-90"
-          >
-            <Text className="text-white text-xs font-bold">Done</Text>
-          </Pressable>
+          {/* Action Bar */}
+          <View className="mt-6 pt-5 border-t border-border/50 flex-row justify-end items-center">
+            <Pressable
+              onPress={onClose}
+              className="bg-ink px-6 py-2 rounded-full active:opacity-90"
+            >
+              <Text className="text-white text-xs font-bold">Done</Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
