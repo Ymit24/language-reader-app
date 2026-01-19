@@ -6,9 +6,9 @@ export const STATUS_KNOWN = 4;
 
 export const STATUS_OPTIONS = [
   { value: STATUS_NEW, label: 'New', color: 'blue' },
-  { value: STATUS_LEARNING_1, label: 'Recognized', color: 'amber' },
-  { value: STATUS_LEARNING_2, label: 'Learning', color: 'amber' },
-  { value: STATUS_LEARNING_3, label: 'Familiar', color: 'amber' },
+  { value: STATUS_LEARNING_1, label: 'Recognized', color: 'amber-light' },
+  { value: STATUS_LEARNING_2, label: 'Learning', color: 'amber-medium' },
+  { value: STATUS_LEARNING_3, label: 'Familiar', color: 'amber-dark' },
   { value: STATUS_KNOWN, label: 'Known', color: 'emerald' },
 ] as const;
 
@@ -18,6 +18,9 @@ export function getStatusLabel(status: VocabStatus): string {
   return STATUS_OPTIONS.find((s) => s.value === status)?.label ?? 'Unknown';
 }
 
-export function getStatusColor(status: VocabStatus): 'blue' | 'amber' | 'emerald' {
-  return STATUS_OPTIONS.find((s) => s.value === status)?.color ?? 'blue';
+export type StatusColor = 'blue' | 'amber-light' | 'amber-medium' | 'amber-dark' | 'emerald';
+
+export function getStatusColor(status: VocabStatus): StatusColor {
+  const option = STATUS_OPTIONS.find((s) => s.value === status);
+  return (option?.color as StatusColor) ?? 'blue';
 }

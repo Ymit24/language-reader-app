@@ -287,8 +287,6 @@ export default function VocabPage() {
                   { status: STATUS_KNOWN as VocabStatus, label: 'Known' },
                 ].map(({ status, label }) => {
                   const color = getStatusColor(status);
-                  const isBlue = color === 'blue';
-                  const isAmber = color === 'amber';
 
                   return (
                     <Pressable
@@ -296,19 +294,27 @@ export default function VocabPage() {
                       onPress={() => handleBulkUpdateStatus(status)}
                       className={cn(
                         "flex-1 py-2 px-2 rounded-lg items-center justify-center border",
-                        isBlue
+                        color === 'blue'
                           ? "bg-blue-50 border-blue-200"
-                          : isAmber
+                          : color === 'amber-light'
                           ? "bg-amber-50 border-amber-200"
+                          : color === 'amber-medium'
+                          ? "bg-amber-100 border-amber-200"
+                          : color === 'amber-dark'
+                          ? "bg-amber-200 border-amber-300"
                           : "bg-emerald-50 border-emerald-200"
                       )}
                     >
                       <Text className={cn(
                         "text-xs font-medium",
-                        isBlue
+                        color === 'blue'
                           ? "text-blue-700"
-                          : isAmber
+                          : color === 'amber-light'
                           ? "text-amber-700"
+                          : color === 'amber-medium'
+                          ? "text-amber-800"
+                          : color === 'amber-dark'
+                          ? "text-amber-900"
                           : "text-emerald-700"
                       )}>
                         {label}

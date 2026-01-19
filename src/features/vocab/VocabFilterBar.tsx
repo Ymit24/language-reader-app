@@ -8,6 +8,8 @@ import {
   STATUS_LEARNING_2,
   STATUS_LEARNING_3,
   STATUS_KNOWN,
+  getStatusColor,
+  type VocabStatus,
 } from '../../lib/vocabStatus';
 
 interface VocabCounts {
@@ -52,13 +54,6 @@ const SORT_OPTIONS = [
   { value: 'status', label: 'Status' },
   { value: 'nextReview', label: 'Next review' },
 ];
-
-function getStatusColor(status: number): 'blue' | 'amber' | 'emerald' | 'gray' {
-  if (status === STATUS_NEW) return 'blue';
-  if (status >= STATUS_LEARNING_1 && status <= STATUS_LEARNING_3) return 'amber';
-  if (status === STATUS_KNOWN) return 'emerald';
-  return 'gray';
-}
 
 export function VocabFilterBar({
   selectedLanguage,
@@ -193,7 +188,7 @@ export function VocabFilterBar({
         {STATUS_FILTER_OPTIONS.map((option) => {
           const isActive = statusFilter.includes(option.value);
           const count = counts[option.countKey];
-          const color = getStatusColor(option.value);
+          const color = getStatusColor(option.value as VocabStatus);
 
           return (
             <Pressable
@@ -204,8 +199,12 @@ export function VocabFilterBar({
                 isActive
                   ? color === 'blue'
                     ? "bg-blue-50 border-blue-200"
-                    : color === 'amber'
+                    : color === 'amber-light'
                     ? "bg-amber-50 border-amber-200"
+                    : color === 'amber-medium'
+                    ? "bg-amber-100 border-amber-200"
+                    : color === 'amber-dark'
+                    ? "bg-amber-200 border-amber-300"
                     : "bg-emerald-50 border-emerald-200"
                   : "bg-white border-gray-200 active:bg-gray-50"
               )}
@@ -215,8 +214,12 @@ export function VocabFilterBar({
                 isActive
                   ? color === 'blue'
                     ? "text-blue-700"
-                    : color === 'amber'
+                    : color === 'amber-light'
                     ? "text-amber-700"
+                    : color === 'amber-medium'
+                    ? "text-amber-800"
+                    : color === 'amber-dark'
+                    ? "text-amber-900"
                     : "text-emerald-700"
                   : "text-gray-700"
               )}>
