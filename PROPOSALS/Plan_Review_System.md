@@ -45,7 +45,7 @@ The vocab table already has the required fields:
 - `intervalDays`: optional number
 - `ease`: optional number
 - `lastReviewedAt`: optional number
-- `status`: number (0=new, 1-3=learning, 4=known, 99=ignored)
+- `status`: number (0=new, 1-3=learning, 4=known)
 
 Index `by_user_language_nextReviewAt` already exists.
 
@@ -210,7 +210,6 @@ Add "Review Settings" section to settings page:
 - [ ] Grade words, verify dates update correctly
 - [ ] Complete session, verify summary shows
 - [ ] Verify words with status 4 don't appear in review
-- [ ] Verify words with status 99 don't appear in review
 - [ ] Verify words with nextReviewAt in future don't appear
 - [ ] Test on iPad (touch interactions)
 - [ ] Test on desktop web (keyboard shortcuts)

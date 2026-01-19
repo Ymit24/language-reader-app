@@ -6,7 +6,7 @@ import { cn } from '../../lib/utils';
 interface WordDetailsProps {
   surface: string;
   normalized: string;
-  currentStatus: number; // 0..4 or 99
+  currentStatus: number; // 0..4
   onUpdateStatus: (status: number) => void;
   onClose: () => void;
 }
@@ -151,29 +151,7 @@ export function WordDetails({
         </View>
 
         {/* Action Bar */}
-        <View className="mt-6 pt-5 border-t border-border/50 flex-row justify-between items-center">
-          <Pressable
-            onPress={() => onUpdateStatus(99)}
-            className={cn(
-              'flex-row items-center px-3 py-1.5 rounded-lg',
-              currentStatus === 99 ? 'bg-gray-100' : 'active:bg-gray-50'
-            )}
-          >
-            <Ionicons
-              name="eye-off-outline"
-              size={14}
-              color={currentStatus === 99 ? '#111827' : '#6b7280'}
-            />
-            <Text
-              className={cn(
-                'text-xs font-semibold ml-2',
-                currentStatus === 99 ? 'text-ink' : 'text-faint'
-              )}
-            >
-              Ignore Word
-            </Text>
-          </Pressable>
-
+        <View className="mt-6 pt-5 border-t border-border/50 flex-row justify-end items-center">
           <Pressable
             onPress={onClose}
             className="bg-ink px-6 py-2 rounded-full active:opacity-90"

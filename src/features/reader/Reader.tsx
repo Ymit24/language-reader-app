@@ -17,7 +17,6 @@ const STATUS_NEW = 0;
 const STATUS_LEARNING_MIN = 1;
 const STATUS_LEARNING_MAX = 3;
 const STATUS_KNOWN = 4;
-const STATUS_IGNORED = 99;
 
 export function Reader({ lessonId }: ReaderProps) {
   const router = useRouter();
@@ -55,7 +54,7 @@ export function Reader({ lessonId }: ReaderProps) {
 
   // 4b. Calculate vocab status counts for entire lesson
   const vocabCounts = useMemo(() => {
-    const counts = { new: 0, learning: 0, known: 0, ignored: 0 };
+    const counts = { new: 0, learning: 0, known: 0 };
     if (!lessonData?.tokens) return counts;
 
     const seenTerms = new Set<string>();
@@ -70,7 +69,6 @@ export function Reader({ lessonId }: ReaderProps) {
       if (status === STATUS_NEW) counts.new++;
       else if (status >= STATUS_LEARNING_MIN && status <= STATUS_LEARNING_MAX) counts.learning++;
       else if (status === STATUS_KNOWN) counts.known++;
-      else if (status === STATUS_IGNORED) counts.ignored++;
     }
 
     return counts;
@@ -141,7 +139,7 @@ export function Reader({ lessonId }: ReaderProps) {
       status: newStatus,
     });
 
-    if (newStatus === 4 || newStatus === 99) {
+    if (newStatus === 4) {
         setSelectedToken(null);
         setSelectedNormalized(null);
     }
@@ -207,7 +205,7 @@ export function Reader({ lessonId }: ReaderProps) {
           />
           <StackedProgressBar
             counts={vocabCounts}
-            total={vocabCounts.new + vocabCounts.learning + vocabCounts.known + vocabCounts.ignored}
+            total={vocabCounts.new + vocabCounts.learning + vocabCounts.known}
             height={6}
           />
         </View>

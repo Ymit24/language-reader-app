@@ -18,7 +18,6 @@ interface VocabCounts {
   learning: number;
   familiar: number;
   known: number;
-  ignored: number;
   total: number;
 }
 

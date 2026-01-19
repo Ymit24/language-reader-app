@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, Pressable } from 'react-native';
 import { cn } from '../../lib/utils';
 
-export type TokenStatus = 'new' | 'learning' | 'known' | 'ignored';
+export type TokenStatus = 'new' | 'learning' | 'known';
 
 interface TokenProps {
   surface: string;
@@ -59,10 +59,6 @@ export function Token({ surface, isWord, status, learningLevel, onPress, isSelec
       case 'known':
         bgClass = 'bg-transparent';
         textClass = 'text-ink'; 
-        break;
-      case 'ignored':
-        bgClass = 'bg-transparent';
-        textClass = 'text-gray-300';
         break;
     }
   }

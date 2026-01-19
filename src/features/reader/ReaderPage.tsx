@@ -47,9 +47,7 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, se
               if (isWord && token.normalized) {
                 const vocabStatus = vocabMap[token.normalized];
                 if (vocabStatus !== undefined) {
-                  if (vocabStatus === 99) {
-                    status = 'ignored';
-                  } else if (vocabStatus === 4) {
+                  if (vocabStatus === 4) {
                     status = 'known';
                   } else if (vocabStatus >= 1 && vocabStatus <= 3) {
                     status = 'learning';

@@ -84,7 +84,6 @@ export default defineSchema({
     newCount: v.number(),
     learningCount: v.number(),
     knownCount: v.number(),
-    ignoredCount: v.number(),
     updatedAt: v.number(),
   }).index("by_user_language", ["userId", "language"]),
 

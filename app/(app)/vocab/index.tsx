@@ -141,7 +141,7 @@ export default function VocabPage() {
     setSelectedIds(new Set());
   }, []);
 
-  const counts = vocabCounts || { new: 0, recognized: 0, learning: 0, familiar: 0, known: 0, ignored: 0, total: 0 };
+  const counts = vocabCounts || { new: 0, recognized: 0, learning: 0, familiar: 0, known: 0, total: 0 };
 
   return (
     <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>

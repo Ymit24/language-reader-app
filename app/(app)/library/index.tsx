@@ -17,7 +17,6 @@ const STATUS_NEW = 0;
 const STATUS_LEARNING_MIN = 1;
 const STATUS_LEARNING_MAX = 3;
 const STATUS_KNOWN = 4;
-const STATUS_IGNORED = 99;
 
 export default function LibraryScreen() {
   const router = useRouter();
@@ -102,14 +101,13 @@ export default function LibraryScreen() {
   };
 
   const calculateVocabCounts = (uniqueTerms: string[]): VocabCounts => {
-    const counts: VocabCounts = { new: 0, learning: 0, known: 0, ignored: 0 };
+    const counts: VocabCounts = { new: 0, learning: 0, known: 0 };
 
     for (const term of uniqueTerms) {
       const status = vocabMap[term] ?? STATUS_NEW;
       if (status === STATUS_NEW) counts.new++;
       else if (status >= STATUS_LEARNING_MIN && status <= STATUS_LEARNING_MAX) counts.learning++;
       else if (status === STATUS_KNOWN) counts.known++;
-      else if (status === STATUS_IGNORED) counts.ignored++;
     }
 
     return counts;

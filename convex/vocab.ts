@@ -7,7 +7,6 @@ const STATUS_NEW = 0;
 const STATUS_LEARNING_MIN = 1;
 const STATUS_LEARNING_MAX = 3;
 const STATUS_KNOWN = 4;
-const STATUS_IGNORED = 99;
 
 export const getVocabProfile = query({
   args: {
@@ -38,7 +37,7 @@ export const getVocabCounts = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      return { new: 0, recognized: 0, learning: 0, familiar: 0, known: 0, ignored: 0, total: 0 };
+      return { new: 0, recognized: 0, learning: 0, familiar: 0, known: 0, total: 0 };
     }
 
     const vocab = await ctx.db
@@ -53,7 +52,6 @@ export const getVocabCounts = query({
     let learningCount = 0;
     let familiarCount = 0;
     let knownCount = 0;
-    let ignoredCount = 0;
     let total = 0;
 
     const searchLower = args.search?.toLowerCase().trim();
@@ -70,7 +68,6 @@ export const getVocabCounts = query({
       else if (v.status === STATUS_LEARNING_MIN + 1) learningCount++;
       else if (v.status === STATUS_LEARNING_MAX) familiarCount++;
       else if (v.status === STATUS_KNOWN) knownCount++;
-      else if (v.status === STATUS_IGNORED) ignoredCount++;
     }
 
     return {
@@ -79,7 +76,6 @@ export const getVocabCounts = query({
       learning: learningCount,
       familiar: familiarCount,
       known: knownCount,
-      ignored: ignoredCount,
       total: total,
     };
   },
@@ -177,8 +173,6 @@ export const listVocab = query({
 
     if (args.statusFilter && args.statusFilter.length > 0) {
       vocab = vocab.filter((v) => args.statusFilter!.includes(v.status));
-    } else {
-      vocab = vocab.filter((v) => v.status !== STATUS_IGNORED);
     }
 
     return {
@@ -476,5 +470,34 @@ export const deleteVocab = mutation({
     }
 
     await ctx.db.delete(args.termId);
+  },
+});
+
+/**
+ * Migration: Converts all 'ignored' (status 99) words to 'new' (status 0).
+ * This can be run once to clean up the database.
+ */
+export const migrateIgnoredToNew = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const ignoredWords = await ctx.db
+      .query("vocab")
+      .withIndex("by_user_language_status", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("status"), 99))
+      .collect();
+
+    for (const word of ignoredWords) {
+      await ctx.db.patch(word._id, {
+        status: 0,
+        updatedAt: Date.now(),
+      });
+    }
+
+    return ignoredWords.length;
   },
 });

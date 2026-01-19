@@ -4,7 +4,6 @@ export interface VocabCounts {
   new: number;
   learning: number;
   known: number;
-  ignored: number;
 }
 
 interface StackedProgressBarProps {
@@ -20,7 +19,7 @@ export function StackedProgressBar({
   showLegend = true,
   height,
 }: StackedProgressBarProps) {
-  const actualTotal = total ?? counts.new + counts.learning + counts.known + counts.ignored;
+  const actualTotal = total ?? counts.new + counts.learning + counts.known;
 
   if (actualTotal === 0) {
     return null;
@@ -30,7 +29,6 @@ export function StackedProgressBar({
     { key: 'known', label: 'Known', count: counts.known, color: 'bg-success' },
     { key: 'learning', label: 'Learning', count: counts.learning, color: 'bg-amber-500' },
     { key: 'new', label: 'New', count: counts.new, color: 'bg-blue-500' },
-    { key: 'ignored', label: 'Ignored', count: counts.ignored, color: 'bg-gray-400' },
   ].filter(seg => seg.count > 0);
 
   const formatPercent = (count: number) => Math.round((count / actualTotal) * 100);
