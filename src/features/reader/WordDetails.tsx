@@ -15,9 +15,9 @@ interface WordDetailsProps {
 export function WordDetails({ surface, normalized, currentStatus, onUpdateStatus, onClose }: WordDetailsProps) {
   const statusOptions = [
     { value: 0, label: 'New', color: 'bg-blue-50 border-blue-200', activeColor: 'bg-blue-200 border-blue-300' },
-    { value: 1, label: '1', color: 'bg-amber-50 border-amber-200', activeColor: 'bg-amber-200 border-amber-300' },
-    { value: 2, label: '2', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-300 border-amber-400' },
-    { value: 3, label: '3', color: 'bg-amber-200 border-amber-300', activeColor: 'bg-amber-400 border-amber-500' },
+    { value: 1, label: 'Recognized', color: 'bg-amber-50 border-amber-200', activeColor: 'bg-amber-200 border-amber-300' },
+    { value: 2, label: 'Learning', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-300 border-amber-400' },
+    { value: 3, label: 'Familiar', color: 'bg-amber-200 border-amber-300', activeColor: 'bg-amber-400 border-amber-500' },
     { value: 4, label: 'Known', icon: 'checkmark', color: 'bg-white border-gray-200', activeColor: 'bg-green-100 border-green-400' },
   ];
 
