@@ -1,8 +1,24 @@
-# Welcome to your Expo app 👋
+# Reader App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A cross-platform LingQ-style reader built with React Native, Expo Router, NativeWind, and Convex.
 
-## Get started
+## Features
+
+- Email/password authentication via Convex Auth
+- Library: create lessons by pasting text
+- Reader: tap words to view details and set status (unknown/learning/known)
+- Vocabulary: global per user + language, persists across lessons
+- Review: spaced repetition review queue
+
+## Tech Stack
+
+- **Expo** (React Native)
+- **Expo Router** for routing (web + native)
+- **NativeWind** for styling
+- **Convex** for backend DB + state sync
+- **Convex Auth** for authentication
+
+## Getting Started
 
 1. Install dependencies
 
@@ -10,41 +26,28 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Start the development server
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. Run on your preferred platform:
+   - iOS Simulator
+   - Android Emulator
+   - Web (desktop browser)
+   - Expo Go (iOS/Android)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Project Structure
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- `app/` - Expo Router routes
+- `src/components/` - Reusable UI components
+- `src/features/` - Feature-specific logic and components
+- `src/lib/` - Utilities
+- `convex/` - Convex schema, queries, mutations, and actions
 
-## Get a fresh project
+## Learn More
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [Expo documentation](https://docs.expo.dev/)
+- [Convex documentation](https://docs.convex.dev/)
+- [NativeWind documentation](https://www.nativewind.dev/)
