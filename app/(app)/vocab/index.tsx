@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -53,10 +53,19 @@ export default function VocabPage() {
 
   const [selectedLanguage, setSelectedLanguage] = useState<'de' | 'fr' | 'ja'>('de');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<number[]>([]);
   const [sortBy, setSortBy] = useState('dateAdded');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedVocab, setSelectedVocab] = useState<VocabItem | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const vocabCounts = useQuery(api.vocab.getVocabCounts, {
     language: selectedLanguage,
@@ -66,7 +75,7 @@ export default function VocabPage() {
     api.vocab.listVocab,
     {
       language: selectedLanguage,
-      search: searchQuery || undefined,
+      search: debouncedSearchQuery || undefined,
       statusFilter: statusFilter.length > 0 ? statusFilter : undefined,
       sortBy,
       sortOrder: 'desc',
@@ -213,16 +222,6 @@ export default function VocabPage() {
   }, []);
 
   const counts = vocabCounts || { new: 0, recognized: 0, learning: 0, familiar: 0, known: 0, ignored: 0, total: 0 };
-
-  if (isLoading) {
-    return (
-      <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" />
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
