@@ -37,7 +37,7 @@ export const getVocabCounts = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      return { new: 0, learning: 0, known: 0, ignored: 0, total: 0 };
+      return { new: 0, recognized: 0, learning: 0, familiar: 0, known: 0, ignored: 0, total: 0 };
     }
 
     const vocab = await ctx.db
@@ -48,20 +48,26 @@ export const getVocabCounts = query({
       .collect();
 
     let newCount = 0;
+    let recognizedCount = 0;
     let learningCount = 0;
+    let familiarCount = 0;
     let knownCount = 0;
     let ignoredCount = 0;
 
     for (const v of vocab) {
       if (v.status === STATUS_NEW) newCount++;
-      else if (v.status >= STATUS_LEARNING_MIN && v.status <= STATUS_LEARNING_MAX) learningCount++;
+      else if (v.status === STATUS_LEARNING_MIN) recognizedCount++;
+      else if (v.status === STATUS_LEARNING_MIN + 1) learningCount++;
+      else if (v.status === STATUS_LEARNING_MAX) familiarCount++;
       else if (v.status === STATUS_KNOWN) knownCount++;
       else if (v.status === STATUS_IGNORED) ignoredCount++;
     }
 
     return {
       new: newCount,
+      recognized: recognizedCount,
       learning: learningCount,
+      familiar: familiarCount,
       known: knownCount,
       ignored: ignoredCount,
       total: vocab.length,

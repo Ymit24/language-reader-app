@@ -20,10 +20,17 @@ import { VocabList } from '@/src/features/vocab/VocabList';
 import { VocabDetailPanel } from '@/src/features/vocab/VocabDetailPanel';
 import { Ionicons } from '@expo/vector-icons';
 import { cn } from '@/src/lib/utils';
+import {
+  STATUS_NEW,
+  STATUS_LEARNING_1,
+  STATUS_LEARNING_2,
+  STATUS_LEARNING_3,
+  STATUS_KNOWN,
+  getStatusColor,
+  type VocabStatus,
+} from '@/src/lib/vocabStatus';
 
 const PAGE_SIZE = 50;
-
-const STATUS_KNOWN = 4;
 
 type VocabItem = {
   _id: Id<"vocab">;
@@ -121,20 +128,23 @@ export default function VocabPage() {
     }
   }, [selectedVocab, selectedLanguage, updateVocabStatus]);
 
-  const handleBulkMarkKnown = useCallback(async () => {
+  const handleBulkUpdateStatus = useCallback(async (status: VocabStatus) => {
     if (selectedIds.size === 0) return;
 
     const termsToUpdate = results
-      .filter((v: VocabItem) => selectedIds.has(v._id) && v.status !== STATUS_KNOWN)
+      .filter((v: VocabItem) => selectedIds.has(v._id) && v.status !== status)
       .map((v: VocabItem) => v.term);
 
-    if (termsToUpdate.length === 0) return;
+    if (termsToUpdate.length === 0) {
+      setSelectedIds(new Set());
+      return;
+    }
 
     try {
       await bulkUpdateStatus({
         language: selectedLanguage,
         terms: termsToUpdate,
-        status: STATUS_KNOWN,
+        status,
       });
       setSelectedIds(new Set());
     } catch (error) {
@@ -202,7 +212,7 @@ export default function VocabPage() {
     setSelectedIds(new Set());
   }, []);
 
-  const counts = vocabCounts || { new: 0, learning: 0, known: 0, ignored: 0, total: 0 };
+  const counts = vocabCounts || { new: 0, recognized: 0, learning: 0, familiar: 0, known: 0, ignored: 0, total: 0 };
 
   if (isLoading) {
     return (
@@ -246,34 +256,66 @@ export default function VocabPage() {
           </View>
 
           {selectedIds.size > 0 && (
-            <View className="bg-white border-t border-gray-200 px-4 py-3 flex-row items-center justify-between">
-              <Text className="text-sm text-gray-600">
-                {selectedIds.size} word{selectedIds.size !== 1 ? 's' : ''} selected
-              </Text>
-              <View className="flex-row items-center gap-2">
-                <Pressable
-                  onPress={handleSelectAll}
-                  className="px-3 py-1.5 rounded-lg active:bg-gray-100"
-                >
-                  <Text className="text-sm font-medium text-gray-600">
-                    {selectedIds.size === results.length ? 'Deselect all' : 'Select all'}
+            <View className="bg-white border-t border-gray-200 px-4 py-3">
+              <View className="flex-row items-center justify-between mb-3">
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-sm text-gray-600">
+                    {selectedIds.size} word{selectedIds.size !== 1 ? 's' : ''} selected
                   </Text>
-                </Pressable>
-                <Pressable
-                  onPress={handleBulkMarkKnown}
-                  className="flex-row items-center px-4 py-2 bg-emerald-50 rounded-lg active:bg-emerald-100"
-                >
-                  <Ionicons name="checkmark-circle" size={18} color="#059669" />
-                  <Text className="ml-2 text-sm font-medium text-emerald-700">
-                    Mark known
-                  </Text>
-                </Pressable>
+                  <Pressable
+                    onPress={handleSelectAll}
+                    className="px-2 py-1 rounded active:bg-gray-100"
+                  >
+                    <Text className="text-xs text-gray-500 underline">
+                      {selectedIds.size === results.length ? 'Deselect all' : 'Select all'}
+                    </Text>
+                  </Pressable>
+                </View>
                 <Pressable
                   onPress={handleCloseBulkActions}
-                  className="p-2 rounded-lg active:bg-gray-100"
+                  className="p-1 rounded active:bg-gray-100"
                 >
-                  <Ionicons name="close" size={20} color="#6b7280" />
+                  <Ionicons name="close" size={18} color="#6b7280" />
                 </Pressable>
+              </View>
+              <View className="flex-row gap-2">
+                {[
+                  { status: STATUS_NEW as VocabStatus, label: 'New' },
+                  { status: STATUS_LEARNING_1 as VocabStatus, label: 'Recognized' },
+                  { status: STATUS_LEARNING_2 as VocabStatus, label: 'Learning' },
+                  { status: STATUS_LEARNING_3 as VocabStatus, label: 'Familiar' },
+                  { status: STATUS_KNOWN as VocabStatus, label: 'Known' },
+                ].map(({ status, label }) => {
+                  const color = getStatusColor(status);
+                  const isBlue = color === 'blue';
+                  const isAmber = color === 'amber';
+
+                  return (
+                    <Pressable
+                      key={status}
+                      onPress={() => handleBulkUpdateStatus(status)}
+                      className={cn(
+                        "flex-1 py-2 px-2 rounded-lg items-center justify-center border",
+                        isBlue
+                          ? "bg-blue-50 border-blue-200"
+                          : isAmber
+                          ? "bg-amber-50 border-amber-200"
+                          : "bg-emerald-50 border-emerald-200"
+                      )}
+                    >
+                      <Text className={cn(
+                        "text-xs font-medium",
+                        isBlue
+                          ? "text-blue-700"
+                          : isAmber
+                          ? "text-amber-700"
+                          : "text-emerald-700"
+                      )}>
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
             </View>
           )}
@@ -371,11 +413,11 @@ function VocabDetailModal({
                   </Text>
                   <View className="flex-row gap-2 flex-wrap">
                     {[
-                      { value: 0, label: 'New', color: 'bg-blue-50 border-blue-200', activeColor: 'bg-blue-200 border-blue-300', textClass: 'text-blue-700' },
-                      { value: 1, label: '1', color: 'bg-amber-50 border-amber-200', activeColor: 'bg-amber-200 border-amber-300', textClass: 'text-amber-700' },
-                      { value: 2, label: '2', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-300 border-amber-400', textClass: 'text-amber-800' },
-                      { value: 3, label: '3', color: 'bg-amber-200 border-amber-300', activeColor: 'bg-amber-400 border-amber-500', textClass: 'text-amber-900' },
-                      { value: 4, label: 'Known', color: 'bg-white border-gray-200', activeColor: 'bg-emerald-200 border-emerald-400', textClass: 'text-emerald-700' },
+                      { value: STATUS_NEW, label: 'New', color: 'bg-blue-50 border-blue-200', activeColor: 'bg-blue-200 border-blue-300', textClass: 'text-blue-700' },
+                      { value: STATUS_LEARNING_1, label: 'Recognized', color: 'bg-amber-50 border-amber-200', activeColor: 'bg-amber-200 border-amber-300', textClass: 'text-amber-700' },
+                      { value: STATUS_LEARNING_2, label: 'Learning', color: 'bg-amber-100 border-amber-200', activeColor: 'bg-amber-300 border-amber-400', textClass: 'text-amber-800' },
+                      { value: STATUS_LEARNING_3, label: 'Familiar', color: 'bg-amber-200 border-amber-300', activeColor: 'bg-amber-400 border-amber-500', textClass: 'text-amber-900' },
+                      { value: STATUS_KNOWN, label: 'Known', color: 'bg-white border-gray-200', activeColor: 'bg-emerald-200 border-emerald-400', textClass: 'text-emerald-700' },
                     ].map((opt) => (
                       <Pressable
                         key={opt.value}
@@ -387,7 +429,7 @@ function VocabDetailModal({
                             : `bg-white ${opt.color.split(' ')[0]}`
                         )}
                       >
-                        {opt.value === 4 ? (
+                        {opt.value === STATUS_KNOWN ? (
                           <Ionicons
                             name="checkmark-circle"
                             size={24}
@@ -395,7 +437,7 @@ function VocabDetailModal({
                           />
                         ) : (
                           <Text className={cn(
-                            "text-lg font-bold",
+                            "text-sm font-medium",
                             vocab.status === opt.value
                               ? opt.textClass
                               : "text-gray-400"

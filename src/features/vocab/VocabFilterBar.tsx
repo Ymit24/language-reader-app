@@ -2,10 +2,19 @@ import React from 'react';
 import { View, Text, Pressable, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { cn } from '../../lib/utils';
+import {
+  STATUS_NEW,
+  STATUS_LEARNING_1,
+  STATUS_LEARNING_2,
+  STATUS_LEARNING_3,
+  STATUS_KNOWN,
+} from '../../lib/vocabStatus';
 
 interface VocabCounts {
   new: number;
+  recognized: number;
   learning: number;
+  familiar: number;
   known: number;
   ignored: number;
   total: number;
@@ -23,20 +32,17 @@ interface VocabFilterBarProps {
   counts: VocabCounts;
 }
 
-const STATUS_NEW = 0;
-const STATUS_LEARNING_MIN = 1;
-const STATUS_LEARNING_MAX = 3;
-const STATUS_KNOWN = 4;
-
 const LANGUAGE_OPTIONS = [
   { value: 'de' as const, label: 'German', flag: '🇩🇪' },
   { value: 'fr' as const, label: 'French', flag: '🇫🇷' },
   { value: 'ja' as const, label: 'Japanese', flag: '🇯🇵' },
 ];
 
-const STATUS_OPTIONS = [
+const STATUS_FILTER_OPTIONS = [
   { value: STATUS_NEW, label: 'New', countKey: 'new' as const },
-  { value: -1, label: 'Learning', countKey: 'learning' as const },
+  { value: STATUS_LEARNING_1, label: 'Recognized', countKey: 'recognized' as const },
+  { value: STATUS_LEARNING_2, label: 'Learning', countKey: 'learning' as const },
+  { value: STATUS_LEARNING_3, label: 'Familiar', countKey: 'familiar' as const },
   { value: STATUS_KNOWN, label: 'Known', countKey: 'known' as const },
 ];
 
@@ -46,6 +52,13 @@ const SORT_OPTIONS = [
   { value: 'status', label: 'Status' },
   { value: 'nextReview', label: 'Next review' },
 ];
+
+function getStatusColor(status: number): 'blue' | 'amber' | 'emerald' | 'gray' {
+  if (status === STATUS_NEW) return 'blue';
+  if (status >= STATUS_LEARNING_1 && status <= STATUS_LEARNING_3) return 'amber';
+  if (status === STATUS_KNOWN) return 'emerald';
+  return 'gray';
+}
 
 export function VocabFilterBar({
   selectedLanguage,
@@ -61,23 +74,12 @@ export function VocabFilterBar({
   const [showSortMenu, setShowSortMenu] = React.useState(false);
 
   const toggleStatus = (status: number) => {
-    if (status === -1) {
-      const hasLearning = statusFilter.some(s => s >= STATUS_LEARNING_MIN && s <= STATUS_LEARNING_MAX);
-      if (hasLearning) {
-        onStatusFilterChange(statusFilter.filter(s => s < STATUS_LEARNING_MIN || s > STATUS_LEARNING_MAX));
-      } else {
-        onStatusFilterChange([...statusFilter, STATUS_LEARNING_MIN, STATUS_LEARNING_MIN + 1, STATUS_LEARNING_MAX]);
-      }
+    if (statusFilter.includes(status)) {
+      onStatusFilterChange(statusFilter.filter(s => s !== status));
     } else {
-      if (statusFilter.includes(status)) {
-        onStatusFilterChange(statusFilter.filter(s => s !== status));
-      } else {
-        onStatusFilterChange([...statusFilter, status]);
-      }
+      onStatusFilterChange([...statusFilter, status]);
     }
   };
-
-  const hasLearningFilter = statusFilter.some(s => s >= STATUS_LEARNING_MIN && s <= STATUS_LEARNING_MAX);
 
   return (
     <View className="bg-white border-b border-gray-200">
@@ -188,16 +190,10 @@ export function VocabFilterBar({
           </Text>
         </Pressable>
 
-        {STATUS_OPTIONS.map((option) => {
-          let isActive = false;
-          if (option.value === -1) {
-            isActive = hasLearningFilter;
-          } else {
-            isActive = statusFilter.includes(option.value);
-          }
-
+        {STATUS_FILTER_OPTIONS.map((option) => {
+          const isActive = statusFilter.includes(option.value);
           const count = counts[option.countKey];
-          if (count === 0 && !isActive) return null;
+          const color = getStatusColor(option.value);
 
           return (
             <Pressable
@@ -206,22 +202,22 @@ export function VocabFilterBar({
               className={cn(
                 "px-3 py-1.5 rounded-full flex-row items-center gap-1.5 border",
                 isActive
-                  ? option.value === STATUS_NEW
+                  ? color === 'blue'
                     ? "bg-blue-50 border-blue-200"
-                    : option.value === STATUS_KNOWN
-                    ? "bg-emerald-50 border-emerald-200"
-                    : "bg-amber-50 border-amber-200"
+                    : color === 'amber'
+                    ? "bg-amber-50 border-amber-200"
+                    : "bg-emerald-50 border-emerald-200"
                   : "bg-white border-gray-200 active:bg-gray-50"
               )}
             >
               <Text className={cn(
                 "text-sm font-medium",
                 isActive
-                  ? option.value === STATUS_NEW
+                  ? color === 'blue'
                     ? "text-blue-700"
-                    : option.value === STATUS_KNOWN
-                    ? "text-emerald-700"
-                    : "text-amber-700"
+                    : color === 'amber'
+                    ? "text-amber-700"
+                    : "text-emerald-700"
                   : "text-gray-700"
               )}>
                 {option.label}
