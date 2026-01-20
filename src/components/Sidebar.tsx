@@ -82,12 +82,14 @@ export function Sidebar() {
         
         <Pressable
           onPress={toggleCollapse}
-          className="p-2 -mr-2 rounded-lg active:bg-muted/50"
+          className="rounded-lg active:bg-muted/50"
           hitSlop={8}
         >
-          <Animated.View style={chevronRotationStyle}>
-            <PanelLeft size={20} color="#4b5563" />
-          </Animated.View>
+          <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
+            <Animated.View style={chevronRotationStyle}>
+              <PanelLeft size={20} color="#4b5563" />
+            </Animated.View>
+          </View>
         </Pressable>
       </View>
 

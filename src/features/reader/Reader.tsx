@@ -35,6 +35,7 @@ export function Reader({ lessonId }: ReaderProps) {
   // 3. Local State
   const [selectedToken, setSelectedToken] = useState<any | null>(null);
   const [selectedNormalized, setSelectedNormalized] = useState<string | null>(null);
+  const [targetTokenIndex, setTargetTokenIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(() => {
     if (lessonData?.currentPage !== undefined) {
       return Math.max(0, lessonData.currentPage);
