@@ -1,46 +1,94 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { View, ScrollView, Text } from 'react-native';
 import { Token, TokenStatus } from './Token';
 
-interface ReaderPageProps {
-  tokens: any[];
-  vocabMap: Record<string, number>;
-  onTokenPress: (token: any) => void;
-  selectedTokenId: string | null;
-  selectedNormalized: string | null;
+interface TokenType {
+  _id?: string;
+  index?: number;
+  isWord: boolean;
+  surface: string;
+  normalized?: string;
 }
 
-export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, selectedNormalized }: ReaderPageProps) {
+interface ReaderPageProps {
+  tokens: TokenType[];
+  vocabMap: Record<string, number>;
+  onTokenPress: (token: TokenType) => void;
+  selectedTokenId: string | null;
+  selectedNormalized: string | null;
+  scrollToSelectedToken?: () => void;
+}
 
-  const paragraphs = useMemo(() => {
-    const paras: any[][] = [[]];
+interface ParagraphToken extends TokenType {}
+
+export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, selectedNormalized, scrollToSelectedToken }: ReaderPageProps) {
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [paragraphLayouts, setParagraphLayouts] = useState<Record<number, number>>({});
+
+  const { paragraphs, tokenToParagraphMap } = useMemo(() => {
+    const paras: ParagraphToken[][] = [[]];
+    const tokenToPara: Record<string, number> = {};
+    let currentParaIndex = 0;
+
     tokens.forEach((token) => {
-      // Split by double newline for paragraphs
+      const key = token._id || `token-${token.index}`;
       if (!token.isWord && token.surface.includes('\n\n')) {
         const parts = token.surface.split('\n\n');
-        // Add current tokens to last para, then start new ones
         paras[paras.length - 1].push({ ...token, surface: parts[0] });
+        tokenToPara[key] = currentParaIndex;
         for (let j = 1; j < parts.length; j++) {
+          currentParaIndex++;
           paras.push([{ ...token, surface: parts[j] }]);
+          tokenToPara[key] = currentParaIndex;
         }
       } else {
+        tokenToPara[key] = currentParaIndex;
         paras[paras.length - 1].push(token);
       }
     });
-    return paras;
+    return { paragraphs: paras, tokenToParagraphMap: tokenToPara };
   }, [tokens]);
+
+  const triggerScroll = useCallback(() => {
+    if (selectedTokenId && paragraphLayouts) {
+      const paraIndex = tokenToParagraphMap[selectedTokenId];
+      if (paraIndex !== undefined && paragraphLayouts[paraIndex] !== undefined) {
+        scrollViewRef.current?.scrollTo({
+          y: paragraphLayouts[paraIndex] - 80,
+          animated: true,
+        });
+      }
+    }
+  }, [selectedTokenId, paragraphLayouts, tokenToParagraphMap]);
+
+  useEffect(() => {
+    if (selectedTokenId && scrollToSelectedToken) {
+      const timeout = setTimeout(triggerScroll, 100);
+      return () => clearTimeout(timeout);
+    }
+  }, [selectedTokenId, scrollToSelectedToken, triggerScroll]);
 
   return (
     <ScrollView
+      ref={scrollViewRef}
       className="flex-1 px-6 md:px-12 lg:px-24 py-8"
       contentContainerStyle={{ paddingBottom: 120 }}
       showsVerticalScrollIndicator={false}
     >
       <View className="flex-col items-start justify-start">
         {paragraphs.map((paraTokens, paraIndex) => (
-          <Text key={`para-${paraIndex}`} className="mb-6">
+          <Text
+            key={`para-${paraIndex}`}
+            className="mb-6"
+            onLayout={(e) => {
+              setParagraphLayouts((prev) => ({
+                ...prev,
+                [paraIndex]: e.nativeEvent.layout.y,
+              }));
+            }}
+          >
             {paraTokens.map((token) => {
-              const isWord = token.isWord;
+              const isWord: boolean = token.isWord;
               let status: TokenStatus = 'new';
               let learningLevel: number | undefined;
 
@@ -60,7 +108,7 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, se
 
               const key = token._id || `token-${token.index}`;
               const isSelected = selectedTokenId === key;
-              const isWordSelected = isWord && token.normalized && token.normalized === selectedNormalized;
+              const isWordSelected = Boolean(isWord && token.normalized && token.normalized === selectedNormalized);
 
               return (
                 <Token
@@ -72,7 +120,7 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, se
                   isSelected={isSelected}
                   normalized={token.normalized}
                   isWordSelected={isWordSelected}
-                  onPress={isWord ? () => onTokenPress(token) : undefined}
+                  onPress={isWord ? (() => onTokenPress(token)) : undefined}
                 />
               );
             })}

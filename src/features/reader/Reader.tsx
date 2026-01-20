@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
 import { useQuery, useMutation } from 'convex/react';
 import { useRouter } from 'expo-router';
@@ -35,7 +35,7 @@ export function Reader({ lessonId }: ReaderProps) {
   // 3. Local State
   const [selectedToken, setSelectedToken] = useState<any | null>(null);
   const [selectedNormalized, setSelectedNormalized] = useState<string | null>(null);
-  const [targetTokenIndex, setTargetTokenIndex] = useState<number | null>(null);
+  const [shouldScrollToSelected, setShouldScrollToSelected] = useState(false);
   const [currentPage, setCurrentPage] = useState(() => {
     if (lessonData?.currentPage !== undefined) {
       return Math.max(0, lessonData.currentPage);
@@ -143,10 +143,8 @@ export function Reader({ lessonId }: ReaderProps) {
       status: newStatus,
     });
 
-    if (newStatus === 4) {
-        setSelectedToken(null);
-        setSelectedNormalized(null);
-    }
+    setSelectedToken(null);
+    setSelectedNormalized(null);
   };
 
   const handleNextPage = () => {
@@ -220,9 +218,11 @@ export function Reader({ lessonId }: ReaderProps) {
           onTokenPress={(token) => {
             setSelectedToken(token);
             setSelectedNormalized(token.normalized || null);
+            setShouldScrollToSelected(true);
           }}
           selectedTokenId={selectedToken?._id}
           selectedNormalized={selectedNormalized}
+          scrollToSelectedToken={shouldScrollToSelected ? () => setShouldScrollToSelected(false) : undefined}
         />
         
         {/* Pagination Controls */}

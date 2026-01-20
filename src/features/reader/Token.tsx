@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Pressable } from 'react-native';
+import { Text, View } from 'react-native';
 import { cn } from '../../lib/utils';
 
 export type TokenStatus = 'new' | 'learning' | 'known';
@@ -18,7 +18,7 @@ interface TokenProps {
 export function Token({ surface, isWord, status, learningLevel, onPress, isSelected, normalized, isWordSelected }: TokenProps) {
   if (!isWord) {
     return (
-      <Text 
+      <Text
         className="text-2xl text-ink font-serif leading-relaxed"
         style={{ lineHeight: 42 }}
       >
@@ -68,13 +68,12 @@ export function Token({ surface, isWord, status, learningLevel, onPress, isSelec
       onPress={onPress}
       suppressHighlighting={true}
       className={cn(
-        "text-2xl font-serif rounded-sm",
+        "text-2xl font-serif rounded-sm inline",
         textClass,
         bgClass
       )}
       style={{ 
         lineHeight: 42,
-        // Using style for background to ensure it behaves well in nested text
       }}
     >
       {surface}
