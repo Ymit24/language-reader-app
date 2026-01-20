@@ -135,7 +135,7 @@ export function WordDetails({
 
   const containerStyle = isSidebar
     ? "flex-1 bg-white border-l border-border/50"
-    : "absolute bottom-0 left-0 right-0 max-h-[60%] bg-white shadow-pop border-t border-border/50 overflow-hidden rounded-t-3xl";
+    : "absolute bottom-0 left-0 right-0 max-h-[80%] bg-white shadow-pop border-t border-border/50 overflow-hidden rounded-t-3xl";
 
   const renderEntry = (entry: DictionaryEntry, keyPrefix: string) => (
     <View key={`${keyPrefix}-${JSON.stringify(entry)}`} className="mb-4 last:mb-0">
