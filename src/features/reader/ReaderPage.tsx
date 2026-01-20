@@ -81,10 +81,13 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, se
             key={`para-${paraIndex}`}
             className="mb-6"
             onLayout={(e) => {
-              setParagraphLayouts((prev) => ({
-                ...prev,
-                [paraIndex]: e.nativeEvent.layout.y,
-              }));
+              const event = e.nativeEvent;
+              if (event != null && event.layout != null && event.layout.y !== undefined) {
+                setParagraphLayouts((prev) => ({
+                  ...prev,
+                  [paraIndex]: event.layout.y,
+                }));
+              }
             }}
           >
             {paraTokens.map((token) => {
