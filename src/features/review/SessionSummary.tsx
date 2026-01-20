@@ -11,7 +11,7 @@ interface SessionSummaryProps {
 export function SessionSummary({ reviewedCount, averageEase, onContinue }: SessionSummaryProps) {
   return (
     <View className="flex-1 justify-center items-center px-8">
-      <View className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8 w-full max-w-sm items-center">
+      <View className="bg-panel rounded-2xl border border-border shadow-lg p-8 w-full max-w-sm items-center">
         <View className="w-16 h-16 bg-green-100 rounded-full items-center justify-center mb-6">
           <Ionicons name="checkmark-circle" size={48} color="#15803d" />
         </View>

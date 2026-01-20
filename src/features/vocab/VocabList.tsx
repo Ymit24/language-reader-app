@@ -71,7 +71,7 @@ export function VocabList({
     if (!hasMore && vocab.length > 0) {
       return (
         <View className="py-6 items-center">
-          <Text className="text-sm text-gray-400">No more words</Text>
+          <Text className="text-sm text-faint">No more words</Text>
         </View>
       );
     }
@@ -89,40 +89,40 @@ export function VocabList({
     }
 
     return (
-      <View className="flex-1 items-center justify-center py-20 px-8">
-        <View className="w-16 h-16 bg-gray-100 rounded-full items-center justify-center mb-4">
-          <Ionicons name="book-outline" size={32} color="#9ca3af" />
+        <View className="flex-1 items-center justify-center py-20 px-8">
+          <View className="w-16 h-16 bg-muted rounded-full items-center justify-center mb-4">
+            <Ionicons name="book-outline" size={32} color="#8B7355" />
+          </View>
+          <Text className="text-lg font-medium text-ink mb-2">No words found</Text>
+          <Text className="text-sm text-faint text-center">
+            Start reading lessons to build your vocabulary
+          </Text>
         </View>
-        <Text className="text-lg font-medium text-ink mb-2">No words found</Text>
-        <Text className="text-sm text-gray-400 text-center">
-          Start reading lessons to build your vocabulary
-        </Text>
-      </View>
     );
   };
 
   return (
     <View className="flex-1">
       {vocab.length > 0 && (
-        <Pressable
-          onPress={onSelectAll}
-          className="flex-row items-center px-4 py-2 bg-gray-50 border-b border-gray-100"
-        >
-          <View className={cn(
-            "w-5 h-5 rounded border items-center justify-center mr-2",
-            selectedIds.size === vocab.length
-              ? "bg-blue-500 border-blue-500"
-              : "border-gray-300 bg-white"
-          )}>
+          <Pressable
+            onPress={onSelectAll}
+            className="flex-row items-center px-4 py-2 bg-muted border-b border-border"
+          >
+            <View className={cn(
+              "w-5 h-5 rounded border items-center justify-center mr-2",
+              selectedIds.size === vocab.length
+                ? "bg-brand border-brand"
+                : "border-border bg-panel"
+            )}>
             {selectedIds.size === vocab.length && (
               <Ionicons name="checkmark" size={14} color="white" />
             )}
           </View>
-          <Text className="text-sm text-gray-600">
-            {selectedIds.size > 0
-              ? `Selected ${selectedIds.size} of ${vocab.length}`
-              : `Select all (${vocab.length} words)`}
-          </Text>
+           <Text className="text-sm text-subink">
+             {selectedIds.size > 0
+               ? `Selected ${selectedIds.size} of ${vocab.length}`
+               : `Select all (${vocab.length} words)`}
+           </Text>
         </Pressable>
       )}
 

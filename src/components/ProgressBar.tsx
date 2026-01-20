@@ -18,7 +18,7 @@ export function ProgressBar({
   const colorMap: Record<string, string> = {
     success: 'bg-success',
     brand: 'bg-brand',
-    neutral: 'bg-gray-400',
+    neutral: 'bg-amber-500',
   };
 
   const colorClass = colorMap[color] || colorMap.brand;

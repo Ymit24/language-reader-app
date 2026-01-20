@@ -20,12 +20,12 @@ export function Card({ children, className = '' }: CardProps) {
 
 function LanguageThumbnail({ language, variant }: { language: string, variant: 'list' | 'grid' }) {
   const colors: Record<string, string> = {
-    DE: 'bg-yellow-100 text-yellow-800',
-    FR: 'bg-blue-100 text-blue-800',
-    JA: 'bg-red-100 text-red-800',
+    DE: 'bg-amber-200 text-amber-900',
+    FR: 'bg-orange-200 text-orange-900',
+    JA: 'bg-red-200 text-red-900',
   };
   
-  const style = colors[language] || 'bg-gray-100 text-gray-800';
+  const style = colors[language] || 'bg-muted text-subink';
   const [bgClass, textClass] = style.split(' ');
 
   if (variant === 'list') {
@@ -66,7 +66,7 @@ export function LessonCard({
   className = '',
   ...props
 }: LessonCardProps) {
-  const cardBackground = isCompleted ? 'bg-stone-50' : 'bg-panel';
+  const cardBackground = isCompleted ? 'bg-muted' : 'bg-panel';
 
   if (variant === 'grid') {
     return (

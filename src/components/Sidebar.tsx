@@ -70,10 +70,14 @@ export function Sidebar() {
   });
 
   return (
-    <AnimatedView 
+    <View 
       className="flex-col h-full bg-canvas border-r border-border"
-      style={[sidebarWidthStyle, { paddingTop: insets.top, paddingBottom: insets.bottom, overflow: 'hidden' }]}
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
+      <AnimatedView 
+        className="flex-col h-full"
+        style={[sidebarWidthStyle, { overflow: 'hidden' }]}
+      >
       {/* Header */}
       <View className="h-20 flex-row items-center px-[28px] justify-between">
         <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
@@ -103,7 +107,7 @@ export function Sidebar() {
               <Pressable
                 className={cn(
                   "flex-row items-center h-12 px-[28px] mb-1 transition-colors",
-                  isActive ? "bg-brandSoft" : "active:bg-muted/50 hover:bg-muted/30"
+                  isActive ? "bg-brandSoft" : "active:bg-muted/70 hover:bg-muted/50"
                 )}
               >
                 <View style={{ width: 24, alignItems: 'center', justifyContent: 'center' }}>
@@ -138,5 +142,6 @@ export function Sidebar() {
         </AnimatedView>
       </View>
     </AnimatedView>
+    </View>
   );
 }

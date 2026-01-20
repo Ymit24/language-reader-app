@@ -76,17 +76,17 @@ export function VocabFilterBar({
   };
 
   return (
-    <View className="bg-white border-b border-gray-200" style={{ zIndex: 10, overflow: 'visible' }}>
+    <View className="bg-panel border-b border-border" style={{ zIndex: 10, overflow: 'visible' }}>
       <View className="px-4 py-3">
         <View className="flex-row items-center gap-2 mb-3">
-          <View className="flex-row bg-gray-100 rounded-lg p-1">
+          <View className="flex-row bg-muted rounded-lg p-1">
             {LANGUAGE_OPTIONS.map((lang) => (
               <Pressable
                 key={lang.value}
                 onPress={() => onLanguageChange(lang.value)}
                 className={cn(
                   "px-3 py-1.5 rounded-md",
-                  selectedLanguage === lang.value ? "bg-white shadow-sm" : "active:bg-gray-200"
+                  selectedLanguage === lang.value ? "bg-panel shadow-sm" : "active:bg-muted"
                 )}
               >
                 <Text className={cn(
@@ -101,7 +101,7 @@ export function VocabFilterBar({
         </View>
 
         <View className="flex-row items-center gap-2" style={{ zIndex: 20, overflow: 'visible' }}>
-          <View className="flex-1 flex-row items-center bg-gray-100 rounded-lg px-3 py-2">
+          <View className="flex-1 flex-row items-center bg-muted rounded-lg px-3 py-2">
             <Ionicons name="search" size={18} color="#9ca3af" />
             <TextInput
               value={searchQuery}
@@ -120,16 +120,16 @@ export function VocabFilterBar({
           <View className="relative" style={{ zIndex: 30 }}>
             <Pressable
               onPress={() => setShowSortMenu(!showSortMenu)}
-              className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg active:bg-gray-200"
+              className="flex-row items-center bg-muted px-3 py-2 rounded-lg active:bg-muted/70"
             >
               <Ionicons name="options" size={18} color="#6b7280" />
-              <Text className="ml-2 text-sm font-medium text-gray-700">Sort</Text>
+              <Text className="ml-2 text-sm font-medium text-subink">Sort</Text>
               <Ionicons name="chevron-down" size={14} color="#6b7280" className="ml-1" />
             </Pressable>
 
             {showSortMenu && (
               <View 
-                className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[160px]"
+                className="absolute top-full right-0 mt-1 bg-panel rounded-lg shadow-lg border border-border py-1 min-w-[160px]"
                 style={{ zIndex: 1000, elevation: 5 }}
               >
                 {SORT_OPTIONS.map((option) => (
@@ -140,8 +140,8 @@ export function VocabFilterBar({
                       setShowSortMenu(false);
                     }}
                     className={cn(
-                      "px-4 py-2 active:bg-gray-100",
-                      sortBy === option.value && "bg-gray-50"
+                      "px-4 py-2 active:bg-muted",
+                      sortBy === option.value && "bg-muted/50"
                     )}
                   >
                     <Text className={cn(
@@ -161,7 +161,7 @@ export function VocabFilterBar({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="border-t border-gray-100 px-4 py-2"
+        className="border-t border-border px-4 py-2"
         contentContainerStyle={{ gap: 8 }}
       >
         <Pressable
@@ -170,18 +170,18 @@ export function VocabFilterBar({
             "px-3 py-1.5 rounded-full flex-row items-center gap-1.5 border",
             statusFilter.length === 0
               ? "bg-ink border-ink"
-              : "bg-white border-gray-200 active:bg-gray-50"
+              : "bg-panel border-border active:bg-muted"
           )}
         >
           <Text className={cn(
             "text-sm font-medium",
-            statusFilter.length === 0 ? "text-white" : "text-gray-700"
+            statusFilter.length === 0 ? "text-white" : "text-subink"
           )}>
             All
           </Text>
           <Text className={cn(
             "text-xs",
-            statusFilter.length === 0 ? "text-blue-100" : "text-gray-400"
+            statusFilter.length === 0 ? "text-amber-200" : "text-faint"
           )}>
             {counts.total}
           </Text>
@@ -200,36 +200,36 @@ export function VocabFilterBar({
                 "px-3 py-1.5 rounded-full flex-row items-center gap-1.5 border",
                 isActive
                   ? color === 'blue'
-                    ? "bg-blue-50 border-blue-200"
+                    ? "bg-amber-100 border-amber-300"
                     : color === 'amber-light'
-                    ? "bg-amber-50 border-amber-200"
+                    ? "bg-amber-100 border-amber-300"
                     : color === 'amber-medium'
-                    ? "bg-amber-100 border-amber-200"
-                    : color === 'amber-dark'
                     ? "bg-amber-200 border-amber-300"
-                    : "bg-emerald-50 border-emerald-200"
-                  : "bg-white border-gray-200 active:bg-gray-50"
+                    : color === 'amber-dark'
+                    ? "bg-amber-300 border-amber-400"
+                    : "bg-emerald-100 border-emerald-300"
+                    : "bg-panel border-border active:bg-muted"
               )}
             >
               <Text className={cn(
                 "text-sm font-medium",
                 isActive
                   ? color === 'blue'
-                    ? "text-blue-700"
-                    : color === 'amber-light'
-                    ? "text-amber-700"
-                    : color === 'amber-medium'
                     ? "text-amber-800"
-                    : color === 'amber-dark'
+                    : color === 'amber-light'
+                    ? "text-amber-800"
+                    : color === 'amber-medium'
                     ? "text-amber-900"
-                    : "text-emerald-700"
-                  : "text-gray-700"
+                    : color === 'amber-dark'
+                    ? "text-amber-950"
+                    : "text-emerald-800"
+                  : "text-subink"
               )}>
                 {option.label}
               </Text>
               <Text className={cn(
                 "text-xs",
-                isActive ? "text-gray-500" : "text-gray-400"
+                isActive ? "text-subink" : "text-faint"
               )}>
                 {count}
               </Text>

@@ -37,9 +37,9 @@ export default function AppLayout() {
             tabBarStyle: isLargeScreen
               ? { display: 'none' }
               : {
-                  backgroundColor: '#fbfbfa',
+                  backgroundColor: '#FDFBF7',
                   borderTopWidth: 1,
-                  borderTopColor: '#e5e7eb',
+                  borderTopColor: '#E5E4DD',
                 },
           }}
         >

@@ -33,27 +33,27 @@ export function Token({ surface, isWord, status, learningLevel, onPress, isSelec
   let textClass = 'text-ink';
 
   if (isWordSelected && normalized) {
-    bgClass = 'bg-brand/30';
-    textClass = 'text-brand';
+    bgClass = 'bg-brand';
+    textClass = 'text-white';
   } else if (isSelected) {
-    bgClass = 'bg-brand/30';
-    textClass = 'text-brand';
+    bgClass = 'bg-brand';
+    textClass = 'text-white';
   } else {
     switch (effectiveStatus) {
       case 'new':
-        bgClass = 'bg-blue-100/60';
-        textClass = 'text-blue-900';
+        bgClass = 'bg-amber-300';
+        textClass = 'text-amber-950';
         break;
       case 'learning':
         if (learningLevel === 1) {
-          bgClass = 'bg-orange-200/60';
-          textClass = 'text-orange-900';
+          bgClass = 'bg-orange-400';
+          textClass = 'text-orange-950';
         } else if (learningLevel === 2) {
-          bgClass = 'bg-amber-200/60';
-          textClass = 'text-amber-900';
+          bgClass = 'bg-amber-500';
+          textClass = 'text-amber-950';
         } else {
-          bgClass = 'bg-yellow-100/60';
-          textClass = 'text-yellow-900';
+          bgClass = 'bg-yellow-400';
+          textClass = 'text-yellow-950';
         }
         break;
       case 'known':

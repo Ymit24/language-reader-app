@@ -49,7 +49,7 @@ export function Flashcard({ vocab, isFlipped, onFlip }: FlashcardProps) {
     <View className="perspective-1000">
       <Pressable onPress={handlePress} className="w-full h-full">
         <Animated.View
-          className="w-full h-full bg-white rounded-2xl border-2 border-gray-200 shadow-lg justify-center items-center p-8"
+          className="w-full h-full bg-panel rounded-2xl border-2 border-border shadow-lg justify-center items-center p-8"
           style={{
             transform: [{ rotateY: frontInterpolate }],
           }}
@@ -61,7 +61,7 @@ export function Flashcard({ vocab, isFlipped, onFlip }: FlashcardProps) {
         </Animated.View>
 
         <Animated.View
-          className="absolute inset-0 w-full h-full bg-white rounded-2xl border-2 border-green-200 shadow-lg p-8 justify-center items-center"
+          className="absolute inset-0 w-full h-full bg-panel rounded-2xl border-2 border-success/30 shadow-lg p-8 justify-center items-center"
           style={{
             transform: [{ rotateY: backInterpolate }],
             backfaceVisibility: 'hidden',
@@ -83,7 +83,7 @@ export function Flashcard({ vocab, isFlipped, onFlip }: FlashcardProps) {
               {vocab.meaning}
             </Text>
           ) : (
-            <Text className="text-lg text-gray-400 text-center italic">
+            <Text className="text-lg text-faint text-center italic">
               No definition available
             </Text>
           )}

@@ -47,7 +47,7 @@ function LanguageCard({ language }: { language: LanguageInfo }) {
   };
 
   return (
-    <View className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+    <View className="bg-panel rounded-xl border border-border p-5 mb-4">
       <View className="flex-row items-center justify-between mb-3">
         <View className="flex-row items-center gap-3">
           <LanguageFlag code={language.code} size={32} />
@@ -56,7 +56,7 @@ function LanguageCard({ language }: { language: LanguageInfo }) {
         <View className="flex-row gap-4">
           <View className="items-end">
             <Text className="text-xs text-subink uppercase tracking-wide">Due</Text>
-            <Text className={`text-2xl font-bold ${due > 0 ? 'text-amber-600' : 'text-gray-400'}`}>
+            <Text className={`text-2xl font-bold ${due > 0 ? 'text-amber-700' : 'text-faint'}`}>
               {due}
             </Text>
           </View>
@@ -101,13 +101,13 @@ export default function ReviewScreen() {
         <Text className="text-2xl font-semibold tracking-tight text-ink mb-6">Review</Text>
 
         <View className="flex-row flex-wrap gap-4 mb-6">
-          <View className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
-            <Text className="text-xs text-amber-700 uppercase tracking-wide font-semibold">Today&apos;s Reviews</Text>
-            <Text className="text-2xl font-bold text-amber-800 mt-1">{today}</Text>
+          <View className="bg-amber-200 border border-amber-400 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
+            <Text className="text-xs text-amber-900 uppercase tracking-wide font-semibold">Today&apos;s Reviews</Text>
+            <Text className="text-2xl font-bold text-amber-950 mt-1">{today}</Text>
           </View>
-          <View className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
-            <Text className="text-xs text-green-700 uppercase tracking-wide font-semibold">Learning</Text>
-            <Text className="text-2xl font-bold text-green-800 mt-1">{learning}</Text>
+          <View className="bg-emerald-200 border border-emerald-400 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
+            <Text className="text-xs text-emerald-800 uppercase tracking-wide font-semibold">Learning</Text>
+            <Text className="text-2xl font-bold text-emerald-900 mt-1">{learning}</Text>
           </View>
         </View>
 

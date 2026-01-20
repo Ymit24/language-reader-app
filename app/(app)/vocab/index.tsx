@@ -175,26 +175,26 @@ export default function VocabPage() {
           </View>
 
           {selectedIds.size > 0 && (
-            <View className="bg-white border-t border-gray-200 px-4 py-3">
+            <View className="bg-panel border-t border-border px-4 py-3">
               <View className="flex-row items-center justify-between mb-3">
                 <View className="flex-row items-center gap-2">
-                  <Text className="text-sm text-gray-600">
+                  <Text className="text-sm text-subink">
                     {selectedIds.size} word{selectedIds.size !== 1 ? 's' : ''} selected
                   </Text>
                   <Pressable
                     onPress={handleSelectAll}
-                    className="px-2 py-1 rounded active:bg-gray-100"
+                    className="px-2 py-1 rounded active:bg-muted"
                   >
-                    <Text className="text-xs text-gray-500 underline">
+                    <Text className="text-xs text-faint underline">
                       {selectedIds.size === results.length ? 'Deselect all' : 'Select all'}
                     </Text>
                   </Pressable>
                 </View>
                 <Pressable
                   onPress={handleCloseBulkActions}
-                  className="p-1 rounded active:bg-gray-100"
+                  className="p-1 rounded active:bg-muted"
                 >
-                  <Ionicons name="close" size={18} color="#6b7280" />
+                  <Ionicons name="close" size={18} color="#5C4A32" />
                 </Pressable>
               </View>
               <View className="flex-row gap-2">

@@ -98,8 +98,8 @@ export function WordDetails({
       icon: 'sparkles-outline',
       activeIcon: 'sparkles',
       color: '#d97706',
-      bg: 'bg-amber-50',
-      border: 'border-amber-200',
+      bg: 'bg-amber-300',
+      border: 'border-amber-500',
     },
     {
       value: 1,
@@ -107,9 +107,9 @@ export function WordDetails({
       desc: 'Recognize',
       icon: 'book-outline',
       activeIcon: 'book',
-      color: '#2563eb',
-      bg: 'bg-blue-50',
-      border: 'border-blue-200',
+      color: '#B45309',
+      bg: 'bg-orange-400',
+      border: 'border-orange-600',
     },
     {
       value: 3,
@@ -117,9 +117,9 @@ export function WordDetails({
       desc: 'Almost known',
       icon: 'star-outline',
       activeIcon: 'star',
-      color: '#4f46e5',
-      bg: 'bg-indigo-50',
-      border: 'border-indigo-200',
+      color: '#ca8a04',
+      bg: 'bg-yellow-400',
+      border: 'border-yellow-600',
     },
     {
       value: 4,
@@ -128,14 +128,14 @@ export function WordDetails({
       icon: 'checkmark-circle-outline',
       activeIcon: 'checkmark-circle',
       color: '#047857',
-      bg: 'bg-successSoft',
-      border: 'border-success/20',
+      bg: 'bg-emerald-200',
+      border: 'border-emerald-400',
     },
   ];
 
   const containerStyle = isSidebar
-    ? "flex-1 bg-white border-l border-border/50"
-    : "absolute bottom-0 left-0 right-0 max-h-[80%] bg-white shadow-pop border-t border-border/50 overflow-hidden rounded-t-3xl";
+    ? "flex-1 bg-panel border-l border-border/50"
+    : "absolute bottom-0 left-0 right-0 max-h-[80%] bg-panel shadow-pop border-t border-border/50 overflow-hidden rounded-t-3xl";
 
   const renderEntry = (entry: DictionaryEntry, keyPrefix: string) => (
     <View key={`${keyPrefix}-${JSON.stringify(entry)}`} className="mb-4 last:mb-0">
@@ -149,7 +149,7 @@ export function WordDetails({
           </Text>
         )}
         {entry.tags?.map((tag) => (
-          <Text key={tag} className="text-xs text-faint bg-gray-100 px-2 py-0.5 rounded">
+          <Text key={tag} className="text-xs text-faint bg-muted px-2 py-0.5 rounded">
             {tag}
           </Text>
         ))}
@@ -288,14 +288,14 @@ export function WordDetails({
                   isSidebar ? 'w-full' : 'flex-1 min-w-[140px]',
                   isActive
                     ? `${opt.bg} ${opt.border}`
-                    : 'bg-white border-border active:bg-muted'
+                    : 'bg-panel border-border active:bg-muted'
                 )}
               >
                 <View className="flex-row items-center">
                   <View
                     className={cn(
                       'w-8 h-8 rounded-lg items-center justify-center mr-3',
-                      isActive ? 'bg-white/50' : 'bg-canvas'
+                      isActive ? 'bg-panel/50' : 'bg-canvas'
                     )}
                   >
                     <Ionicons
