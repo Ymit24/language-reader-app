@@ -20,12 +20,12 @@ export function Card({ children, className = '' }: CardProps) {
 
 function LanguageThumbnail({ language, variant }: { language: string, variant: 'list' | 'grid' }) {
   const colors: Record<string, string> = {
-    DE: 'bg-yellow-100 text-yellow-800',
-    FR: 'bg-blue-100 text-blue-800',
-    JA: 'bg-red-100 text-red-800',
+    DE: 'bg-vUnknownBg text-vUnknownLine',
+    FR: 'bg-vLearningBg text-brand',
+    JA: 'bg-dangerSoft text-danger',
   };
   
-  const style = colors[language] || 'bg-gray-100 text-gray-800';
+  const style = colors[language] || 'bg-muted text-subink';
   const [bgClass, textClass] = style.split(' ');
 
   if (variant === 'list') {
@@ -66,7 +66,7 @@ export function LessonCard({
   className = '',
   ...props
 }: LessonCardProps) {
-  const cardBackground = isCompleted ? 'bg-stone-50' : 'bg-panel';
+  const cardBackground = isCompleted ? 'bg-muted' : 'bg-panel';
 
   if (variant === 'grid') {
     return (
@@ -136,7 +136,7 @@ export function LessonCard({
                 {duration} · {openedDate}
               </Text>
               {isCompleted && (
-                <Text className="mt-1 text-xs text-green-600 font-medium">Completed</Text>
+                <Text className="mt-1 text-xs text-vKnownLine font-medium">Completed</Text>
               )}
             </View>
             {isCompleted && <CompletedBadge />}

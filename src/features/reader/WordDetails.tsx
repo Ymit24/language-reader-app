@@ -97,9 +97,9 @@ export function WordDetails({
       desc: 'Never seen',
       icon: 'sparkles-outline',
       activeIcon: 'sparkles',
-      color: '#d97706',
-      bg: 'bg-amber-50',
-      border: 'border-amber-200',
+      color: '#D97706',
+      bg: 'bg-vUnknownBg',
+      border: 'border-vUnknownLine/30',
     },
     {
       value: 1,
@@ -107,9 +107,9 @@ export function WordDetails({
       desc: 'Recognize',
       icon: 'book-outline',
       activeIcon: 'book',
-      color: '#2563eb',
-      bg: 'bg-blue-50',
-      border: 'border-blue-200',
+      color: '#C4643B',
+      bg: 'bg-vLearningBg',
+      border: 'border-vLearningLine/30',
     },
     {
       value: 3,
@@ -117,9 +117,9 @@ export function WordDetails({
       desc: 'Almost known',
       icon: 'star-outline',
       activeIcon: 'star',
-      color: '#4f46e5',
-      bg: 'bg-indigo-50',
-      border: 'border-indigo-200',
+      color: '#7C6A5D',
+      bg: 'bg-muted',
+      border: 'border-border',
     },
     {
       value: 4,
@@ -127,9 +127,9 @@ export function WordDetails({
       desc: 'Mastered',
       icon: 'checkmark-circle-outline',
       activeIcon: 'checkmark-circle',
-      color: '#047857',
-      bg: 'bg-successSoft',
-      border: 'border-success/20',
+      color: '#4A7C59',
+      bg: 'bg-vKnownBg',
+      border: 'border-vKnownLine/30',
     },
   ];
 
@@ -177,7 +177,7 @@ export function WordDetails({
     if (isLoading) {
       return (
         <View className="px-6 py-8 items-center">
-          <ActivityIndicator size="small" color="#6b7280" />
+          <ActivityIndicator size="small" color="#7A7466" />
           <Text className="text-sm text-faint mt-2">Looking up definition...</Text>
         </View>
       );
@@ -187,7 +187,7 @@ export function WordDetails({
       return (
         <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
           <View className="flex-row items-center mb-2 opacity-50">
-            <Ionicons name="search-outline" size={14} color="#4b5563" />
+            <Ionicons name="search-outline" size={14} color="#5C5648" />
             <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
               Definition
             </Text>
@@ -203,7 +203,7 @@ export function WordDetails({
       return (
         <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
           <View className="flex-row items-center mb-2 opacity-50">
-            <Ionicons name="search-outline" size={14} color="#4b5563" />
+            <Ionicons name="search-outline" size={14} color="#5C5648" />
             <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
               Definition
             </Text>
@@ -229,7 +229,7 @@ export function WordDetails({
         {lemma && lemmaEntries.length > 0 && (
           <View className="mt-4 pt-4 border-t border-border/30">
             <View className="flex-row items-center gap-2 mb-3">
-              <Ionicons name="git-branch-outline" size={14} color="#2563eb" />
+              <Ionicons name="git-branch-outline" size={14} color="#C4643B" />
               <Text className="text-xs font-bold text-blue-600">
                 Base form: {lemma}
               </Text>
@@ -260,7 +260,7 @@ export function WordDetails({
             className="h-8 w-8 items-center justify-center rounded-full bg-muted active:bg-border"
             hitSlop={20}
           >
-            <Ionicons name="close" size={18} color="#4b5563" />
+            <Ionicons name="close" size={18} color="#5C5648" />
           </Pressable>
         </View>
       </View>
@@ -301,7 +301,7 @@ export function WordDetails({
                     <Ionicons
                       name={(isActive ? opt.activeIcon : opt.icon) as any}
                       size={18}
-                      color={isActive ? opt.color : '#6b7280'}
+                      color={isActive ? opt.color : '#7A7466'}
                     />
                   </View>
                   <View>

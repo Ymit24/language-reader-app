@@ -27,7 +27,7 @@ export function PageHeader({ title, leftAction, rightAction }: PageHeaderProps) 
         <Ionicons
           name={leftAction?.icon ?? 'chevron-back'}
           size={20}
-          color="#4b5563"
+          color="#5C5648"
         />
       </Pressable>
 
@@ -43,7 +43,7 @@ export function PageHeader({ title, leftAction, rightAction }: PageHeaderProps) 
         <Ionicons
           name={rightAction?.icon ?? 'settings-outline'}
           size={20}
-          color="#4b5563"
+          color="#5C5648"
         />
       </Pressable>
     </View>

@@ -77,7 +77,7 @@ export default function SettingsScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#b91c1c" />
+              <ActivityIndicator color="#B33A3A" />
             ) : (
               'Sign Out'
             )}

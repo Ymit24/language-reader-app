@@ -175,26 +175,26 @@ export default function VocabPage() {
           </View>
 
           {selectedIds.size > 0 && (
-            <View className="bg-white border-t border-gray-200 px-4 py-3">
+            <View className="bg-panel border-t border-border px-4 py-3">
               <View className="flex-row items-center justify-between mb-3">
                 <View className="flex-row items-center gap-2">
-                  <Text className="text-sm text-gray-600">
+                  <Text className="text-sm text-subink">
                     {selectedIds.size} word{selectedIds.size !== 1 ? 's' : ''} selected
                   </Text>
                   <Pressable
                     onPress={handleSelectAll}
-                    className="px-2 py-1 rounded active:bg-gray-100"
+                    className="px-2 py-1 rounded active:bg-muted"
                   >
-                    <Text className="text-xs text-gray-500 underline">
+                    <Text className="text-xs text-faint underline">
                       {selectedIds.size === results.length ? 'Deselect all' : 'Select all'}
                     </Text>
                   </Pressable>
                 </View>
                 <Pressable
                   onPress={handleCloseBulkActions}
-                  className="p-1 rounded active:bg-gray-100"
+                  className="p-1 rounded active:bg-muted"
                 >
-                  <Ionicons name="close" size={18} color="#6b7280" />
+                  <Ionicons name="close" size={18} color="#7A7466" />
                 </Pressable>
               </View>
               <View className="flex-row gap-2">
@@ -214,27 +214,27 @@ export default function VocabPage() {
                       className={cn(
                         "flex-1 py-2 px-2 rounded-lg items-center justify-center border",
                         color === 'blue'
-                          ? "bg-blue-50 border-blue-200"
+                          ? "bg-vLearningBg border-vLearningLine/30"
                           : color === 'amber-light'
-                          ? "bg-amber-50 border-amber-200"
+                          ? "bg-vUnknownBg border-vUnknownLine/30"
                           : color === 'amber-medium'
-                          ? "bg-amber-100 border-amber-200"
+                          ? "bg-vUnknownBg border-vUnknownLine/50"
                           : color === 'amber-dark'
-                          ? "bg-amber-200 border-amber-300"
-                          : "bg-emerald-50 border-emerald-200"
+                          ? "bg-vUnknownBg border-vUnknownLine"
+                          : "bg-vKnownBg border-vKnownLine/30"
                       )}
                     >
                       <Text className={cn(
                         "text-xs font-medium",
                         color === 'blue'
-                          ? "text-blue-700"
+                          ? "text-brand"
                           : color === 'amber-light'
-                          ? "text-amber-700"
+                          ? "text-vUnknownLine"
                           : color === 'amber-medium'
-                          ? "text-amber-800"
+                          ? "text-vUnknownLine"
                           : color === 'amber-dark'
-                          ? "text-amber-900"
-                          : "text-emerald-700"
+                          ? "text-vUnknownLine"
+                          : "text-vKnownLine"
                       )}>
                         {label}
                       </Text>

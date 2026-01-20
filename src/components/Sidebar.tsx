@@ -87,7 +87,7 @@ export function Sidebar() {
         >
           <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
             <Animated.View style={chevronRotationStyle}>
-              <PanelLeft size={20} color="#4b5563" />
+              <PanelLeft size={20} color="#5C5648" />
             </Animated.View>
           </View>
         </Pressable>
@@ -110,7 +110,7 @@ export function Sidebar() {
                   <Ionicons 
                     name={item.iconName as any} 
                     size={22} 
-                    color={isActive ? "#2563eb" : "#4b5563"} 
+                    color={isActive ? "#C4643B" : "#5C5648"} 
                   />
                 </View>
                 

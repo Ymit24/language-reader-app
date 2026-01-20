@@ -21,7 +21,7 @@ export function ReaderHeader({ title }: ReaderHeaderProps) {
         <Ionicons
           name="chevron-back"
           size={20}
-          color="#4b5563"
+          color="#5C5648"
         />
       </Pressable>
 
@@ -37,7 +37,7 @@ export function ReaderHeader({ title }: ReaderHeaderProps) {
         <Ionicons
           name="settings-outline"
           size={20}
-          color="#4b5563"
+          color="#5C5648"
         />
       </Pressable>
     </View>

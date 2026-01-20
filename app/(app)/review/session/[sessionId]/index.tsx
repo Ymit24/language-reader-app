@@ -98,7 +98,7 @@ export default function ReviewSessionScreen() {
     return (
       <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
         <View className="flex-1 justify-center items-center px-8">
-          <Ionicons name="alert-circle-outline" size={64} color="#dc2626" />
+          <Ionicons name="alert-circle-outline" size={64} color="#B33A3A" />
           <Text className="text-2xl font-bold text-ink mt-4 mb-2">Session Not Found</Text>
           <Text className="text-subink text-center mb-6">
             This session may have expired or been abandoned.
@@ -131,7 +131,7 @@ export default function ReviewSessionScreen() {
       <View className="flex-1 px-4 py-4">
         <View className="flex-row items-center justify-between mb-4">
           <Pressable onPress={handleClose} className="p-2">
-            <Ionicons name="close" size={24} color="#666" />
+            <Ionicons name="close" size={24} color="#5C5648" />
           </Pressable>
           <Text className="text-sm font-medium text-subink">
             {reviewedCount + 1} / {items.length}

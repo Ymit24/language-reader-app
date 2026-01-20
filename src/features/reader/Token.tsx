@@ -41,19 +41,19 @@ export function Token({ surface, isWord, status, learningLevel, onPress, isSelec
   } else {
     switch (effectiveStatus) {
       case 'new':
-        bgClass = 'bg-blue-100/60';
-        textClass = 'text-blue-900';
+        bgClass = 'bg-vLearningBg';
+        textClass = 'text-brand';
         break;
       case 'learning':
         if (learningLevel === 1) {
-          bgClass = 'bg-orange-200/60';
-          textClass = 'text-orange-900';
+          bgClass = 'bg-vUnknownBg';
+          textClass = 'text-vUnknownLine';
         } else if (learningLevel === 2) {
-          bgClass = 'bg-amber-200/60';
-          textClass = 'text-amber-900';
+          bgClass = 'bg-vUnknownBg';
+          textClass = 'text-vUnknownLine';
         } else {
-          bgClass = 'bg-yellow-100/60';
-          textClass = 'text-yellow-900';
+          bgClass = 'bg-vUnknownBg';
+          textClass = 'text-vUnknownLine';
         }
         break;
       case 'known':

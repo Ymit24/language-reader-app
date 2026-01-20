@@ -47,7 +47,7 @@ function LanguageCard({ language }: { language: LanguageInfo }) {
   };
 
   return (
-    <View className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+    <View className="bg-panel rounded-xl border border-border p-5 mb-4">
       <View className="flex-row items-center justify-between mb-3">
         <View className="flex-row items-center gap-3">
           <LanguageFlag code={language.code} size={32} />
@@ -56,13 +56,13 @@ function LanguageCard({ language }: { language: LanguageInfo }) {
         <View className="flex-row gap-4">
           <View className="items-end">
             <Text className="text-xs text-subink uppercase tracking-wide">Due</Text>
-            <Text className={`text-2xl font-bold ${due > 0 ? 'text-amber-600' : 'text-gray-400'}`}>
+            <Text className={`text-2xl font-bold ${due > 0 ? 'text-vUnknownLine' : 'text-faint'}`}>
               {due}
             </Text>
           </View>
           <View className="items-end">
             <Text className="text-xs text-subink uppercase tracking-wide">Known</Text>
-            <Text className="text-2xl font-bold text-green-600">{known}</Text>
+            <Text className="text-2xl font-bold text-vKnownLine">{known}</Text>
           </View>
         </View>
       </View>
@@ -101,13 +101,13 @@ export default function ReviewScreen() {
         <Text className="text-2xl font-semibold tracking-tight text-ink mb-6">Review</Text>
 
         <View className="flex-row flex-wrap gap-4 mb-6">
-          <View className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
-            <Text className="text-xs text-amber-700 uppercase tracking-wide font-semibold">Today&apos;s Reviews</Text>
-            <Text className="text-2xl font-bold text-amber-800 mt-1">{today}</Text>
+          <View className="bg-vUnknownBg border border-vUnknownLine/30 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
+            <Text className="text-xs text-vUnknownLine uppercase tracking-wide font-semibold">Today&apos;s Reviews</Text>
+            <Text className="text-2xl font-bold text-vUnknownLine mt-1">{today}</Text>
           </View>
-          <View className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
-            <Text className="text-xs text-green-700 uppercase tracking-wide font-semibold">Learning</Text>
-            <Text className="text-2xl font-bold text-green-800 mt-1">{learning}</Text>
+          <View className="bg-vKnownBg border border-vKnownLine/30 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
+            <Text className="text-xs text-vKnownLine uppercase tracking-wide font-semibold">Learning</Text>
+            <Text className="text-2xl font-bold text-vKnownLine mt-1">{learning}</Text>
           </View>
         </View>
 
@@ -118,7 +118,7 @@ export default function ReviewScreen() {
 
         <View className="mt-8 p-4 bg-muted rounded-lg border border-border">
           <View className="flex-row items-center gap-2 mb-2">
-            <Ionicons name="information-circle-outline" size={18} color="#666" />
+            <Ionicons name="information-circle-outline" size={18} color="#5C5648" />
             <Text className="font-medium text-subink">About Spaced Repetition</Text>
           </View>
           <Text className="text-sm text-subink leading-5">

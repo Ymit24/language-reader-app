@@ -164,7 +164,7 @@ export default function EditLessonScreen() {
               <TextInput
                 className="flex-1 rounded-md border border-border bg-panel p-3 text-base text-ink leading-relaxed"
                 placeholder="Paste your text here..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#7A7466"
                 multiline
                 textAlignVertical="top"
                 value={text}
