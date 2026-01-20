@@ -1,26 +1,80 @@
-import React from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAction } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import { cn } from '../../lib/utils';
 
 interface WordDetailsProps {
   surface: string;
   normalized: string;
-  currentStatus: number; // 0..4
+  language: 'de' | 'fr' | 'ja';
+  currentStatus: number;
   onUpdateStatus: (status: number) => void;
   onClose: () => void;
   mode?: 'popup' | 'sidebar';
 }
 
+interface DictionaryEntry {
+  partOfSpeech: string;
+  phonetic?: string;
+  tags?: string[];
+  definitions: {
+    definition: string;
+    examples?: string[];
+    synonyms?: string[];
+    antonyms?: string[];
+  }[];
+}
+
 export function WordDetails({
   surface,
   normalized,
+  language,
   currentStatus,
   onUpdateStatus,
   onClose,
   mode = 'popup',
 }: WordDetailsProps) {
   const isSidebar = mode === 'sidebar';
+
+  const lookupAction = useAction(api.dictionaryActions.lookupDefinition);
+
+  const [definition, setDefinition] = useState<DictionaryEntry[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasLookupError, setHasLookupError] = useState(false);
+
+  useEffect(() => {
+    setDefinition(null);
+    setIsLoading(false);
+    setHasLookupError(false);
+  }, [normalized]);
+
+  useEffect(() => {
+    if (definition !== null) return;
+
+    const fetchDefinition = async () => {
+      setIsLoading(true);
+      setHasLookupError(false);
+      try {
+        console.log('Looking up:', language, normalized);
+        const result = await lookupAction({ language, term: normalized });
+        console.log('Lookup result:', JSON.stringify(result));
+        if (result.success) {
+          setDefinition(result.entries);
+        } else {
+          setHasLookupError(true);
+        }
+      } catch (error) {
+        console.error('Dictionary lookup error:', error);
+        setHasLookupError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDefinition();
+  }, [definition, language, normalized, lookupAction]);
 
   const statusOptions = [
     {
@@ -29,7 +83,7 @@ export function WordDetails({
       desc: 'Never seen',
       icon: 'sparkles-outline',
       activeIcon: 'sparkles',
-      color: '#d97706', // amber-600
+      color: '#d97706',
       bg: 'bg-amber-50',
       border: 'border-amber-200',
     },
@@ -39,7 +93,7 @@ export function WordDetails({
       desc: 'Recognize',
       icon: 'book-outline',
       activeIcon: 'book',
-      color: '#2563eb', // blue-600
+      color: '#2563eb',
       bg: 'bg-blue-50',
       border: 'border-blue-200',
     },
@@ -49,7 +103,7 @@ export function WordDetails({
       desc: 'Almost known',
       icon: 'star-outline',
       activeIcon: 'star',
-      color: '#4f46e5', // indigo-600
+      color: '#4f46e5',
       bg: 'bg-indigo-50',
       border: 'border-indigo-200',
     },
@@ -59,7 +113,7 @@ export function WordDetails({
       desc: 'Mastered',
       icon: 'checkmark-circle-outline',
       activeIcon: 'checkmark-circle',
-      color: '#047857', // success
+      color: '#047857',
       bg: 'bg-successSoft',
       border: 'border-success/20',
     },
@@ -69,14 +123,102 @@ export function WordDetails({
     ? "flex-1 bg-white border-l border-border/50"
     : "absolute bottom-0 left-0 right-0 bg-white shadow-pop border-t border-border/50 overflow-hidden rounded-t-3xl";
 
+  const renderDictionaryContent = () => {
+    if (isLoading) {
+      return (
+        <View className="px-6 py-8 items-center">
+          <ActivityIndicator size="small" color="#6b7280" />
+          <Text className="text-sm text-faint mt-2">Looking up definition...</Text>
+        </View>
+      );
+    }
+
+    if (hasLookupError) {
+      return (
+        <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
+          <View className="flex-row items-center mb-2 opacity-50">
+            <Ionicons name="search-outline" size={14} color="#4b5563" />
+            <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
+              Definition
+            </Text>
+          </View>
+          <Text className="text-sm text-subink leading-5 italic">
+            Unable to load definition. Tap to retry.
+          </Text>
+        </View>
+      );
+    }
+
+    if (!definition || definition.length === 0) {
+      return (
+        <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
+          <View className="flex-row items-center mb-2 opacity-50">
+            <Ionicons name="search-outline" size={14} color="#4b5563" />
+            <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
+              Definition
+            </Text>
+          </View>
+          <Text className="text-sm text-subink leading-5 italic">
+            No definition found for this word.
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
+        <View className="flex-row items-center mb-3 opacity-50">
+          <Ionicons name="search-outline" size={14} color="#4b5563" />
+          <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
+            Definition
+          </Text>
+        </View>
+        {definition.map((entry, entryIndex) => (
+          <View key={entryIndex} className="mb-4 last:mb-0">
+            <View className="flex-row items-center flex-wrap gap-2 mb-2">
+              <Text className="text-xs font-bold text-brand bg-brand/10 px-2 py-0.5 rounded">
+                {entry.partOfSpeech}
+              </Text>
+              {entry.phonetic && (
+                <Text className="text-xs text-faint font-mono">
+                  {entry.phonetic}
+                </Text>
+              )}
+              {entry.tags?.map((tag) => (
+                <Text key={tag} className="text-xs text-faint bg-gray-100 px-2 py-0.5 rounded">
+                  {tag}
+                </Text>
+              ))}
+            </View>
+            {entry.definitions.map((def, defIndex) => (
+              <View key={defIndex} className="mb-3 last:mb-0">
+                <Text className="text-sm text-ink leading-5">
+                  {defIndex + 1}. {def.definition}
+                </Text>
+                {def.examples && def.examples.length > 0 && (
+                  <View className="mt-1 ml-4">
+                    {def.examples.map((example, exIndex) => (
+                      <Text key={exIndex} className="text-xs text-faint italic leading-5">
+                        &quot;{example}&quot;
+                      </Text>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+    );
+  };
+
   return (
     <View className={containerStyle}>
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: isSidebar ? 40 : 0 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Area */}
         <View className="p-6 pb-4">
           <View className="flex-row justify-between items-start">
             <View className="flex-1 pr-4">
@@ -99,20 +241,8 @@ export function WordDetails({
           </View>
         </View>
 
-        {/* Dictionary Section */}
-        <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
-          <View className="flex-row items-center mb-2 opacity-50">
-            <Ionicons name="search-outline" size={14} color="#4b5563" />
-            <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
-              Wiktionary Definition
-            </Text>
-          </View>
-          <Text className="text-sm text-subink leading-5 italic">
-            Definition lookup is currently unavailable in offline mode.
-          </Text>
-        </View>
+        {renderDictionaryContent()}
 
-        {/* Status Selection Grid */}
         <View className="p-6">
           <Text className="text-[10px] font-bold uppercase tracking-widest text-faint mb-4">
             Set Word Status
@@ -167,7 +297,6 @@ export function WordDetails({
             })}
           </View>
 
-          {/* Action Bar */}
           <View className="mt-4 pt-4 border-t border-border/50 flex-row justify-end items-center">
             <Pressable
               onPress={onClose}

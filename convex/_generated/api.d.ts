@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as dictionaryActions from "../dictionaryActions.js";
 import type * as http from "../http.js";
 import type * as lessons from "../lessons.js";
 import type * as lib_tokenize from "../lib/tokenize.js";
@@ -24,6 +25,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  dictionaryActions: typeof dictionaryActions;
   http: typeof http;
   lessons: typeof lessons;
   "lib/tokenize": typeof lib_tokenize;

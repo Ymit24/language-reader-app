@@ -91,10 +91,20 @@ export default defineSchema({
     language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
     keyTerm: v.string(),
     provider: v.string(),
-    resultTerm: v.optional(v.string()),
-    pos: v.optional(v.string()),
-    glosses: v.optional(v.array(v.string())),
-    raw: v.optional(v.any()),
+    entries: v.optional(v.array(
+      v.object({
+        partOfSpeech: v.string(),
+        phonetic: v.optional(v.string()),
+        definitions: v.array(
+          v.object({
+            definition: v.string(),
+            examples: v.optional(v.array(v.string())),
+            synonyms: v.optional(v.array(v.string())),
+            antonyms: v.optional(v.array(v.string())),
+          })
+        ),
+      })
+    )),
     cachedAt: v.number(),
   }).index("by_language_keyTerm", ["language", "keyTerm"]),
 

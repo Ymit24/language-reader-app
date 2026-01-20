@@ -250,11 +250,12 @@ export function Reader({ lessonId }: ReaderProps) {
             </Pressable>
         </View>
 
-        {selectedToken && !isLargeScreen && (
-            <WordDetails 
+        {selectedToken && !isLargeScreen && language && (
+            <WordDetails
                 mode="popup"
                 surface={selectedToken.surface}
                 normalized={selectedToken.normalized}
+                language={language}
                 currentStatus={vocabMap[selectedToken.normalized] ?? 0}
                 onUpdateStatus={handleUpdateStatus}
                 onClose={() => {
@@ -266,12 +267,13 @@ export function Reader({ lessonId }: ReaderProps) {
       </View>
 
       {/* Sidebar for tablets / web */}
-      {isLargeScreen && selectedToken && (
+      {isLargeScreen && selectedToken && language && (
         <View className="w-[380px] border-l border-border/50 bg-white">
-          <WordDetails 
+          <WordDetails
             mode="sidebar"
             surface={selectedToken.surface}
             normalized={selectedToken.normalized}
+            language={language}
             currentStatus={vocabMap[selectedToken.normalized] ?? 0}
             onUpdateStatus={handleUpdateStatus}
             onClose={() => {
