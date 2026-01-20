@@ -13,7 +13,13 @@ export type DictionaryEntry = {
   }[];
 };
 
-type LookupResult = { success: boolean; entries: DictionaryEntry[]; error?: string };
+type LookupResult = {
+  success: boolean;
+  entries: DictionaryEntry[];
+  lemma?: string;
+  lemmaEntries: DictionaryEntry[];
+  error?: string;
+};
 
 export const lookupDefinition = action({
   args: {
@@ -32,13 +38,13 @@ export const lookupDefinition = action({
 
       if (!response.ok) {
         if (response.status === 404) {
-          return { success: true, entries: [] };
+          return { success: true, entries: [], lemmaEntries: [] };
         }
         throw new Error(`API error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("API response:", JSON.stringify(data).substring(0, 1000));
+      console.log("API response:", JSON.stringify(data).substring(0, 1500));
 
       const entries: DictionaryEntry[] = (data.entries || []).map((entry: any) => ({
         partOfSpeech: entry.pos || "unknown",
@@ -50,12 +56,25 @@ export const lookupDefinition = action({
         })),
       }));
 
-      console.log("Parsed entries:", JSON.stringify(entries).substring(0, 1000));
+      const lemmaEntries: DictionaryEntry[] = (data.lemmaEntries || []).map((entry: any) => ({
+        partOfSpeech: entry.pos || "unknown",
+        phonetic: entry.ipa?.[0],
+        tags: entry.tags,
+        definitions: (entry.senses || []).map((sense: any) => ({
+          definition: sense.glosses?.[0] || "",
+          examples: sense.examples,
+        })),
+      }));
 
-      return { success: true, entries };
+      const lemma = data.lemmas?.[0];
+
+      console.log("Parsed entries:", JSON.stringify(entries).substring(0, 500));
+      console.log("Lemma:", lemma, "Lemma entries:", lemmaEntries.length);
+
+      return { success: true, entries, lemma, lemmaEntries };
     } catch (error) {
       console.error("Dictionary lookup failed:", error);
-      return { success: false, entries: [], error: String(error) };
+      return { success: false, entries: [], lemmaEntries: [], error: String(error) };
     }
   },
 });
