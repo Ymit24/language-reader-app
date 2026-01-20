@@ -51,7 +51,7 @@ export const lookupDefinition = action({
         phonetic: entry.ipa?.[0],
         tags: entry.tags,
         definitions: (entry.senses || []).map((sense: any) => ({
-          definition: sense.glosses?.[0] || "",
+          definition: (sense.glosses || []).join(" - ") || "",
           examples: sense.examples,
         })),
       }));
@@ -61,7 +61,7 @@ export const lookupDefinition = action({
         phonetic: entry.ipa?.[0],
         tags: entry.tags,
         definitions: (entry.senses || []).map((sense: any) => ({
-          definition: sense.glosses?.[0] || "",
+          definition: (sense.glosses || []).join(" - ") || "",
           examples: sense.examples,
         })),
       }));
