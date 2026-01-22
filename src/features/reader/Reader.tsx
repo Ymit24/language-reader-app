@@ -203,7 +203,6 @@ export function Reader({ lessonId }: ReaderProps) {
   };
 
   const swipeGesture = Gesture.Pan()
-    .enabled(!isLargeScreen)
     .activeOffsetX([-30, 30])
     .failOffsetY([-30, 30])
     .onEnd((event) => {
