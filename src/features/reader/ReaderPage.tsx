@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { View, ScrollView, Text } from 'react-native';
+import { View, Text } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import { Token, TokenStatus } from './Token';
 
 interface TokenType {
@@ -21,8 +22,9 @@ interface ReaderPageProps {
 
 interface ParagraphToken extends TokenType {}
 
-export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, selectedNormalized, scrollToSelectedToken }: ReaderPageProps) {
-  const scrollViewRef = useRef<ScrollView>(null);
+export const ReaderPage = React.forwardRef<ScrollView, ReaderPageProps>(({ tokens, vocabMap, onTokenPress, selectedTokenId, selectedNormalized, scrollToSelectedToken }, ref) => {
+  const localRef = useRef<ScrollView>(null);
+  const scrollViewRef = (ref as React.RefObject<ScrollView>) || localRef;
   const [paragraphLayouts, setParagraphLayouts] = useState<Record<number, number>>({});
 
   const { paragraphs, tokenToParagraphMap } = useMemo(() => {
@@ -132,4 +134,6 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, se
       </View>
     </ScrollView>
   );
-}
+});
+
+ReaderPage.displayName = 'ReaderPage';

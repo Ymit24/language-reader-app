@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { View, Text, ActivityIndicator, Pressable, useWindowDimensions, Platform } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useQuery, useMutation } from 'convex/react';
@@ -202,16 +202,18 @@ export function Reader({ lessonId }: ReaderProps) {
     router.push(`/(app)/library/${lessonId}/summary`);
   };
 
-  const swipeGesture = Gesture.Pan()
-    .activeOffsetX([-30, 30])
-    .failOffsetY([-30, 30])
-    .onEnd((event) => {
-      const SWIPE_THRESHOLD = 50;
-      if (event.translationX > SWIPE_THRESHOLD) {
-        handlePrevPage();
-      } else if (event.translationX < -SWIPE_THRESHOLD) {
-        handleNextPage();
-      }
+  const handleSwipeLeft = Gesture.Pan()
+    .activeOffsetX([-50, 0])
+    .failOffsetY([-50, 50])
+    .onEnd(() => {
+      handleNextPage();
+    });
+
+  const handleSwipeRight = Gesture.Pan()
+    .activeOffsetX([0, 50])
+    .failOffsetY([-50, 50])
+    .onEnd(() => {
+      handlePrevPage();
     });
 
   if (lessonData === undefined) {
@@ -247,21 +249,25 @@ export function Reader({ lessonId }: ReaderProps) {
             height={6}
           />
         </View>
-        <GestureDetector gesture={swipeGesture}>
-          <View className="flex-1">
-            <ReaderPage 
-              tokens={currentTokens}
-              vocabMap={vocabMap}
-              onTokenPress={(token) => {
-                setSelectedToken(token);
-                setSelectedNormalized(token.normalized || null);
-                setShouldScrollToSelected(true);
-              }}
-              selectedTokenId={selectedToken?._id}
-              selectedNormalized={selectedNormalized}
-              scrollToSelectedToken={shouldScrollToSelected ? () => setShouldScrollToSelected(false) : undefined}
-            />
-          </View>
+        <ReaderPage 
+          tokens={currentTokens}
+          vocabMap={vocabMap}
+          onTokenPress={(token) => {
+            setSelectedToken(token);
+            setSelectedNormalized(token.normalized || null);
+            setShouldScrollToSelected(true);
+          }}
+          selectedTokenId={selectedToken?._id}
+          selectedNormalized={selectedNormalized}
+          scrollToSelectedToken={shouldScrollToSelected ? () => setShouldScrollToSelected(false) : undefined}
+        />
+        
+        <GestureDetector gesture={handleSwipeLeft}>
+          <View className="absolute top-0 right-0 bottom-0 w-20" />
+        </GestureDetector>
+        
+        <GestureDetector gesture={handleSwipeRight}>
+          <View className="absolute top-0 left-0 bottom-0 w-20" />
         </GestureDetector>
         
         {/* Pagination Controls */}
