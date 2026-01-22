@@ -1,7 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, Text, ActivityIndicator, Pressable, useWindowDimensions, Platform } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useQuery, useMutation } from 'convex/react';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { ReaderPage } from './ReaderPage';
@@ -132,6 +134,25 @@ export function Reader({ lessonId }: ReaderProps) {
   const updateStatusMutation = useMutation(api.vocab.updateVocabStatus);
   const updateProgressMutation = useMutation(api.lessons.updateLessonProgress);
 
+  const triggerHaptic = useCallback((type: 'success' | 'error' | 'warning' | 'selection' | 'impact') => {
+    if (Platform.OS !== 'web') {
+      switch (type) {
+        case 'success':
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          break;
+        case 'error':
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          break;
+        case 'selection':
+          Haptics.selectionAsync();
+          break;
+        case 'impact':
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          break;
+      }
+    }
+  }, []);
+
   const handleUpdateStatus = async (newStatus: number) => {
     if (!selectedToken || !language) return;
 
@@ -147,7 +168,7 @@ export function Reader({ lessonId }: ReaderProps) {
     setSelectedNormalized(null);
   };
 
-  const handleNextPage = () => {
+  const handleNextPage = useCallback(() => {
     if (currentPage < totalPages - 1) {
       setCurrentPage(p => p + 1);
       setSelectedToken(null);
@@ -158,10 +179,11 @@ export function Reader({ lessonId }: ReaderProps) {
         currentPage: newPage,
         lastTokenIndex: newPage * WORDS_PER_PAGE,
       });
+      triggerHaptic('impact');
     }
-  };
+  }, [currentPage, totalPages, lessonId, updateProgressMutation, triggerHaptic]);
 
-  const handlePrevPage = () => {
+  const handlePrevPage = useCallback(() => {
     if (currentPage > 0) {
       setCurrentPage(p => p - 1);
       setSelectedToken(null);
@@ -172,12 +194,26 @@ export function Reader({ lessonId }: ReaderProps) {
         currentPage: newPage,
         lastTokenIndex: newPage * WORDS_PER_PAGE,
       });
+      triggerHaptic('impact');
     }
-  };
+  }, [currentPage, lessonId, updateProgressMutation, triggerHaptic]);
 
   const handleFinishLesson = () => {
     router.push(`/(app)/library/${lessonId}/summary`);
   };
+
+  const swipeGesture = Gesture.Pan()
+    .enabled(!isLargeScreen)
+    .activeOffsetX([-30, 30])
+    .failOffsetY([-30, 30])
+    .onEnd((event) => {
+      const SWIPE_THRESHOLD = 50;
+      if (event.translationX > SWIPE_THRESHOLD) {
+        handlePrevPage();
+      } else if (event.translationX < -SWIPE_THRESHOLD) {
+        handleNextPage();
+      }
+    });
 
   if (lessonData === undefined) {
     return (
@@ -212,18 +248,22 @@ export function Reader({ lessonId }: ReaderProps) {
             height={6}
           />
         </View>
-        <ReaderPage 
-          tokens={currentTokens}
-          vocabMap={vocabMap}
-          onTokenPress={(token) => {
-            setSelectedToken(token);
-            setSelectedNormalized(token.normalized || null);
-            setShouldScrollToSelected(true);
-          }}
-          selectedTokenId={selectedToken?._id}
-          selectedNormalized={selectedNormalized}
-          scrollToSelectedToken={shouldScrollToSelected ? () => setShouldScrollToSelected(false) : undefined}
-        />
+        <GestureDetector gesture={swipeGesture}>
+          <View className="flex-1">
+            <ReaderPage 
+              tokens={currentTokens}
+              vocabMap={vocabMap}
+              onTokenPress={(token) => {
+                setSelectedToken(token);
+                setSelectedNormalized(token.normalized || null);
+                setShouldScrollToSelected(true);
+              }}
+              selectedTokenId={selectedToken?._id}
+              selectedNormalized={selectedNormalized}
+              scrollToSelectedToken={shouldScrollToSelected ? () => setShouldScrollToSelected(false) : undefined}
+            />
+          </View>
+        </GestureDetector>
         
         {/* Pagination Controls */}
         <View className="absolute bottom-0 left-0 right-0 flex-row justify-between items-center px-8 py-4 bg-canvas/95 backdrop-blur-sm border-t border-gray-100/50 md:pb-6">
@@ -287,4 +327,3 @@ export function Reader({ lessonId }: ReaderProps) {
     </View>
   );
 }
-
