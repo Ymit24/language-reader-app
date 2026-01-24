@@ -129,4 +129,27 @@ export default defineSchema({
   })
     .index("by_session", ["sessionId"])
     .index("by_vocab", ["vocabId"]),
+
+  userProgress: defineTable({
+    userId: v.string(),
+    totalXp: v.number(),
+    level: v.number(),
+    currentStreak: v.number(),
+    longestStreak: v.number(),
+    lastReviewDate: v.optional(v.string()), // YYYY-MM-DD
+    streakShields: v.number(), // Earned every 30 days, protects streak
+    totalReviews: v.number(),
+    totalCorrect: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_userId", ["userId"]),
+
+  dailyStats: defineTable({
+    userId: v.string(),
+    date: v.string(), // YYYY-MM-DD
+    reviewCount: v.number(),
+    correctCount: v.number(),
+    xpEarned: v.number(),
+    minutesSpent: v.number(),
+  }).index("by_user_date", ["userId", "date"]),
 });

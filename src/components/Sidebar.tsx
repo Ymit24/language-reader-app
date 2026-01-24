@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { PanelLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery } from 'convex/react';
 import Animated, {
   useSharedValue,
   withTiming,
@@ -11,6 +12,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { cn } from '../lib/utils';
+import { api } from '@/convex/_generated/api';
 
 const AnimatedView = Animated.View;
 
@@ -19,10 +21,12 @@ type NavItemProps = {
   href: any;
   iconName: keyof typeof Ionicons.glyphMap;
   label: string;
+  badge?: number;
 };
 
 const NAV_ITEMS: NavItemProps[] = [
   { name: 'library', href: '/library', iconName: 'book', label: 'Library' },
+  { name: 'review', href: '/review', iconName: 'flash', label: 'Review' },
   { name: 'vocab', href: '/vocab', iconName: 'list', label: 'Vocab' },
   { name: 'settings', href: '/settings', iconName: 'settings', label: 'Settings' },
 ];
@@ -35,6 +39,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const isCollapsed = useSharedValue(false);
+  const dueCount = useQuery(api.review.getTodayReviewCount);
 
   const toggleCollapse = () => {
     isCollapsed.value = !isCollapsed.value;
@@ -104,6 +109,7 @@ export function Sidebar() {
       <View className="flex-1 mt-3">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname.startsWith(item.href);
+          const showBadge = item.name === 'review' && dueCount !== undefined && dueCount > 0;
           
           return (
             <Pressable
@@ -127,6 +133,26 @@ export function Sidebar() {
                   size={22} 
                   color={isActive ? "#2f6b66" : "#524a43"} 
                 />
+                {showBadge && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      right: -8,
+                      top: -6,
+                      backgroundColor: '#b56a2c',
+                      borderRadius: 8,
+                      minWidth: 16,
+                      height: 16,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingHorizontal: 3,
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 9, fontWeight: '600' }}>
+                      {dueCount > 99 ? '99+' : dueCount}
+                    </Text>
+                  </View>
+                )}
               </View>
               
               <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}> 

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { calculateXpForReview, getLevelFromXp } from "./progress";
 
 export const getDueCount = query({
   args: {
@@ -329,5 +330,260 @@ export const abandonSession = mutation({
     await ctx.db.patch(args.sessionId, {
       status: "abandoned",
     });
+  },
+});
+
+// Get all language stats at once for the dashboard
+export const getAllLanguageStats = query({
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    const now = Date.now();
+    const languages: Array<'de' | 'fr' | 'ja'> = ['de', 'fr', 'ja'];
+    const languageNames: Record<string, string> = {
+      de: 'German',
+      fr: 'French',
+      ja: 'Japanese',
+    };
+
+    const stats = await Promise.all(
+      languages.map(async (language) => {
+        // Get due count
+        const dueItems = await ctx.db
+          .query("vocab")
+          .withIndex("by_user_language_nextReviewAt", (q) =>
+            q
+              .eq("userId", userId)
+              .eq("language", language)
+              .lte("nextReviewAt", now)
+          )
+          .collect();
+
+        // Get learning count (status 1-3)
+        let learningCount = 0;
+        for (let status = 1; status <= 3; status++) {
+          const items = await ctx.db
+            .query("vocab")
+            .withIndex("by_user_language_status", (q) =>
+              q.eq("userId", userId).eq("language", language).eq("status", status)
+            )
+            .collect();
+          learningCount += items.length;
+        }
+
+        // Get known count (status 4)
+        const knownItems = await ctx.db
+          .query("vocab")
+          .withIndex("by_user_language_status", (q) =>
+            q.eq("userId", userId).eq("language", language).eq("status", 4)
+          )
+          .collect();
+
+        return {
+          language,
+          languageName: languageNames[language],
+          dueCount: dueItems.length,
+          learningCount,
+          knownCount: knownItems.length,
+          totalCount: learningCount + knownItems.length,
+        };
+      })
+    );
+
+    // Only return languages with some vocab
+    return stats.filter((s) => s.totalCount > 0 || s.dueCount > 0);
+  },
+});
+
+// Enhanced gradeCard that also handles XP
+export const gradeCardWithXp = mutation({
+  args: {
+    sessionItemId: v.id("reviewSessionItems"),
+    quality: v.number(),
+    sessionStartTime: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const sessionItem = await ctx.db.get(args.sessionItemId);
+    if (!sessionItem) {
+      throw new Error("Session item not found");
+    }
+
+    const session = await ctx.db.get(sessionItem.sessionId);
+    if (!session || session.userId !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const vocab = await ctx.db.get(sessionItem.vocabId);
+    if (!vocab || vocab.userId !== userId) {
+      throw new Error("Vocab not found");
+    }
+
+    const now = Date.now();
+    const today = new Date().toISOString().split("T")[0];
+    const sm2Result = calculateSm2(vocab, args.quality);
+
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const nextReviewAt = now + sm2Result.intervalDays * msPerDay;
+
+    // Update vocab with SRS data
+    await ctx.db.patch(sessionItem.vocabId, {
+      intervalDays: sm2Result.intervalDays,
+      ease: sm2Result.ease,
+      reviews: sm2Result.reviews,
+      lastReviewedAt: now,
+      nextReviewAt,
+      updatedAt: now,
+    });
+
+    // Update session item
+    await ctx.db.patch(args.sessionItemId, {
+      quality: args.quality,
+      reviewedAt: now,
+    });
+
+    // Get or create user progress for XP calculation
+    let progress = await ctx.db
+      .query("userProgress")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+
+    const isFirstReviewOfDay = progress?.lastReviewDate !== today;
+    let currentStreak = progress?.currentStreak ?? 0;
+
+    // Streak logic
+    if (isFirstReviewOfDay && progress) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+      if (progress.lastReviewDate === yesterdayStr) {
+        currentStreak = progress.currentStreak + 1;
+      } else if (progress.lastReviewDate !== today) {
+        if (progress.streakShields > 0) {
+          await ctx.db.patch(progress._id, {
+            streakShields: progress.streakShields - 1,
+          });
+        } else {
+          currentStreak = 1;
+        }
+      }
+    } else if (!progress) {
+      currentStreak = 1;
+    }
+
+    // Calculate XP
+    const xpResult = calculateXpForReview(
+      args.quality,
+      currentStreak,
+      isFirstReviewOfDay
+    );
+
+    const isCorrect = args.quality >= 3;
+
+    // Update or create user progress
+    if (progress) {
+      const newTotalXp = progress.totalXp + xpResult.totalXp;
+      const newLongestStreak = Math.max(progress.longestStreak, currentStreak);
+      const shouldAwardShield =
+        currentStreak > 0 && currentStreak % 30 === 0 && isFirstReviewOfDay;
+
+      await ctx.db.patch(progress._id, {
+        totalXp: newTotalXp,
+        level: getLevelFromXp(newTotalXp).level,
+        currentStreak,
+        longestStreak: newLongestStreak,
+        lastReviewDate: today,
+        totalReviews: progress.totalReviews + 1,
+        totalCorrect: progress.totalCorrect + (isCorrect ? 1 : 0),
+        streakShields: shouldAwardShield
+          ? progress.streakShields + 1
+          : progress.streakShields,
+        updatedAt: now,
+      });
+    } else {
+      await ctx.db.insert("userProgress", {
+        userId,
+        totalXp: xpResult.totalXp,
+        level: 1,
+        currentStreak: 1,
+        longestStreak: 1,
+        lastReviewDate: today,
+        streakShields: 0,
+        totalReviews: 1,
+        totalCorrect: isCorrect ? 1 : 0,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    // Update daily stats
+    let dailyStats = await ctx.db
+      .query("dailyStats")
+      .withIndex("by_user_date", (q) =>
+        q.eq("userId", userId).eq("date", today)
+      )
+      .first();
+
+    if (dailyStats) {
+      await ctx.db.patch(dailyStats._id, {
+        reviewCount: dailyStats.reviewCount + 1,
+        correctCount: dailyStats.correctCount + (isCorrect ? 1 : 0),
+        xpEarned: dailyStats.xpEarned + xpResult.totalXp,
+      });
+    } else {
+      await ctx.db.insert("dailyStats", {
+        userId,
+        date: today,
+        reviewCount: 1,
+        correctCount: isCorrect ? 1 : 0,
+        xpEarned: xpResult.totalXp,
+        minutesSpent: 0,
+      });
+    }
+
+    // Update session counts
+    const newReviewedCount = session.reviewedCount + 1;
+    const newEaseSum = session.easeSum + sm2Result.ease;
+
+    if (newReviewedCount >= session.cardCount) {
+      await ctx.db.patch(session._id, {
+        status: "completed",
+        reviewedCount: newReviewedCount,
+        easeSum: newEaseSum,
+        completedAt: now,
+      });
+    } else {
+      await ctx.db.patch(session._id, {
+        reviewedCount: newReviewedCount,
+        easeSum: newEaseSum,
+      });
+    }
+
+    // Check for level up
+    const oldLevel = progress ? getLevelFromXp(progress.totalXp).level : 0;
+    const newTotalXp = (progress?.totalXp ?? 0) + xpResult.totalXp;
+    const newLevelInfo = getLevelFromXp(newTotalXp);
+    const leveledUp = newLevelInfo.level > oldLevel;
+
+    return {
+      ease: sm2Result.ease,
+      isComplete: newReviewedCount >= session.cardCount,
+      xpEarned: xpResult.totalXp,
+      baseXp: xpResult.baseXp,
+      bonusXp: xpResult.bonusXp,
+      leveledUp,
+      newLevel: leveledUp ? newLevelInfo.level : null,
+      newTitle: leveledUp ? newLevelInfo.title : null,
+      currentStreak,
+      isFirstReviewOfDay,
+    };
   },
 });
