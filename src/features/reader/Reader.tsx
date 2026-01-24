@@ -22,15 +22,14 @@ const STATUS_KNOWN = 4;
 
 export function Reader({ lessonId }: ReaderProps) {
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width, height: windowHeight } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const carouselRef = useRef<ICarouselInstance>(null);
   const hasSetInitialPage = useRef(false);
-  const [carouselLayout, setCarouselLayout] = useState({ width, height: 0 });
-  const carouselStyle = useMemo(
-    () => ({ flex: 1, minHeight: Math.max(carouselLayout.height, 1) }),
-    [carouselLayout.height]
-  );
+  const fallbackCarouselHeight = useMemo(() => Math.max(windowHeight - 220, 360), [windowHeight]);
+  const [carouselLayout, setCarouselLayout] = useState({ width, height: fallbackCarouselHeight });
+  const carouselWidth = carouselLayout.width > 0 ? carouselLayout.width : width;
+  const carouselHeight = carouselLayout.height > 0 ? carouselLayout.height : fallbackCarouselHeight;
 
   // 1. Fetch Lesson Data
   const lessonData = useQuery(api.lessons.getLesson, { lessonId });
@@ -236,7 +235,7 @@ export function Reader({ lessonId }: ReaderProps) {
         </View>
         <View
           className="flex-1 relative"
-          style={{ flex: 1, minHeight: 1 }}
+          style={{ flex: 1 }}
           onLayout={(event) => {
             const { width: layoutWidth, height: layoutHeight } = event.nativeEvent.layout;
             if (layoutWidth !== carouselLayout.width || layoutHeight !== carouselLayout.height) {
@@ -244,41 +243,43 @@ export function Reader({ lessonId }: ReaderProps) {
             }
           }}
         >
-          {carouselLayout.width > 0 && carouselLayout.height > 0 && totalPages > 0 && (
-            <Carousel
-              ref={carouselRef}
-              width={carouselLayout.width}
-              height={carouselLayout.height}
-              style={carouselStyle}
-              data={pages}
-              loop={false}
-              snapEnabled
-              pagingEnabled
-              scrollAnimationDuration={320}
-              onSnapToItem={handlePageSnap}
-              renderItem={({ item }) => (
-                <ReaderPage
-                  tokens={item}
-                  vocabMap={vocabMap}
-                  onTokenPress={(token) => {
-                    setSelectedToken(token);
-                    setSelectedNormalized(token.normalized || null);
-                    setShouldScrollToSelected(true);
-                  }}
-                  selectedTokenId={selectedToken?._id}
-                  selectedNormalized={selectedNormalized}
-                  scrollToSelectedToken={
-                    shouldScrollToSelected
-                      ? () => setShouldScrollToSelected(false)
-                      : undefined
-                  }
-                />
-              )}
-              onConfigurePanGesture={(gesture) => {
-                gesture.activeOffsetX([-16, 16]).failOffsetY([-16, 16]);
-              }}
-            />
-          )}
+          <View className="flex-1" style={{ minHeight: fallbackCarouselHeight }}>
+            {totalPages > 0 && (
+              <Carousel
+                ref={carouselRef}
+                width={carouselWidth}
+                height={carouselHeight}
+                style={{ flex: 1, height: carouselHeight, width: '100%' }}
+                data={pages}
+                loop={false}
+                snapEnabled
+                pagingEnabled
+                scrollAnimationDuration={320}
+                onSnapToItem={handlePageSnap}
+                renderItem={({ item }) => (
+                  <ReaderPage
+                    tokens={item}
+                    vocabMap={vocabMap}
+                    onTokenPress={(token) => {
+                      setSelectedToken(token);
+                      setSelectedNormalized(token.normalized || null);
+                      setShouldScrollToSelected(true);
+                    }}
+                    selectedTokenId={selectedToken?._id}
+                    selectedNormalized={selectedNormalized}
+                    scrollToSelectedToken={
+                      shouldScrollToSelected
+                        ? () => setShouldScrollToSelected(false)
+                        : undefined
+                    }
+                  />
+                )}
+                onConfigurePanGesture={(gesture) => {
+                  gesture.activeOffsetX([-16, 16]).failOffsetY([-16, 16]);
+                }}
+              />
+            )}
+          </View>
 
           {/* Pagination Controls */}
           <View className="absolute bottom-0 left-0 right-0 flex-row justify-between items-center px-8 py-4 bg-canvas/95 backdrop-blur-sm border-t border-border/60 md:pb-6">
