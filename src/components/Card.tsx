@@ -18,7 +18,7 @@ export function Card({ children, className = '' }: CardProps) {
 
 // ------------------------------------------------------------------
 
-function LanguageThumbnail({ language, variant }: { language: string, variant: 'list' | 'grid' }) {
+function LanguagePill({ language }: { language: string }) {
   const colors: Record<string, string> = {
     DE: 'bg-[#f4e6cf] text-[#7a4f1f]',
     FR: 'bg-[#e3edf6] text-[#2c5b7a]',
@@ -28,19 +28,23 @@ function LanguageThumbnail({ language, variant }: { language: string, variant: '
   const style = colors[language] || 'bg-muted text-subink';
   const [bgClass, textClass] = style.split(' ');
 
-  if (variant === 'list') {
-    return (
-      <View className={`h-12 w-12 items-center justify-center rounded-lg ${bgClass}`}>
-        <Text className={`text-xs font-sans-semibold tracking-wide ${textClass}`}>{language}</Text>
-      </View>
-    );
-  }
-
   return (
-    <View className={`h-24 w-full items-center justify-center rounded-t-xl ${bgClass}`}>
-      <Text className={`text-2xl font-sans-bold tracking-wide ${textClass}`}>{language}</Text>
+    <View className={`px-2.5 py-1 rounded-full ${bgClass}`}>
+      <Text className={`text-[11px] font-sans-semibold uppercase tracking-wide ${textClass}`}>
+        {language}
+      </Text>
     </View>
   );
+}
+
+function LanguageAccent({ language }: { language: string }) {
+  const accents: Record<string, string> = {
+    DE: 'bg-[#d7b98a]',
+    FR: 'bg-[#9bbbd2]',
+    JA: 'bg-[#d2a39b]',
+  };
+
+  return <View className={`h-1.5 w-full ${accents[language] || 'bg-border2'}`} />;
 }
 
 interface LessonCardProps extends PressableProps {
@@ -50,7 +54,7 @@ interface LessonCardProps extends PressableProps {
   openedDate: string;
   vocabCounts?: VocabCounts;
   readingPercentage?: number;
-  variant?: 'list' | 'grid';
+  variant?: 'list' | 'grid' | 'feature';
   isCompleted?: boolean;
 }
 
@@ -67,97 +71,61 @@ export function LessonCard({
   ...props
 }: LessonCardProps) {
   const cardBackground = isCompleted ? 'bg-stone-50' : 'bg-panel';
-
-  if (variant === 'grid') {
-    return (
-      <Pressable
-        className={`flex-1 rounded-xl border border-border/80 ${cardBackground} shadow-card active:opacity-90 ${className}`}
-        style={{ overflow: 'hidden' }}
-        {...props}
-      >
-        <View className="relative">
-          <LanguageThumbnail language={language} variant="grid" />
-          {isCompleted && (
-            <View className="absolute top-3 right-3">
-              <CompletedBadge />
-            </View>
-          )}
-        </View>
-        
-        <View className="p-4 gap-3 flex-1">
-          <View>
-            <Text className="text-base font-sans-semibold text-ink leading-tight" numberOfLines={2}>
-              {title}
-            </Text>
-            <Text className="mt-1 text-xs text-faint font-sans-medium">
-              {duration} · {openedDate}
-            </Text>
-            {isCompleted && (
-              <Text className="mt-1 text-xs text-success font-sans-semibold">Completed</Text>
-            )}
-          </View>
-          
-          <View className="mt-auto gap-2">
-            {readingPercentage !== undefined && (
-              <ProgressBar
-                progress={readingPercentage}
-                color="neutral"
-                height={4}
-              />
-            )}
-            {vocabCounts && (
-              <StackedProgressBar
-                counts={vocabCounts}
-                showLegend={false}
-                height={4}
-              />
-            )}
-          </View>
-        </View>
-      </Pressable>
-    );
-  }
+  const titleStyle = variant === 'feature' ? 'text-xl md:text-2xl' : 'text-base';
+  const paddingStyle = variant === 'feature' ? 'p-5 md:p-6' : 'p-4';
+  const progressLabel = readingPercentage === undefined
+    ? 'New'
+    : `${Math.round(readingPercentage)}% read`;
 
   return (
     <Pressable
-      className={`rounded-xl border border-border/80 ${cardBackground} p-3 shadow-card active:bg-muted ${className}`}
+      className={`rounded-2xl border border-border/80 ${cardBackground} shadow-card active:opacity-90 ${className}`}
+      style={{ overflow: 'hidden' }}
       {...props}
     >
-      <View className="flex-row gap-3 items-center">
-        <LanguageThumbnail language={language} variant="list" />
-
-        <View className="flex-1 justify-between">
-          <View className="flex-row items-start justify-between">
-            <View className="flex-1 pr-2">
-              <Text className="text-base font-sans-semibold text-ink leading-tight" numberOfLines={1}>
-                {title}
-              </Text>
-              <Text className="mt-0.5 text-xs text-faint font-sans-medium">
-                {duration} · {openedDate}
-              </Text>
-              {isCompleted && (
-                <Text className="mt-1 text-xs text-success font-sans-semibold">Completed</Text>
-              )}
+      <LanguageAccent language={language} />
+      <View className={`${paddingStyle} gap-3`}>
+        <View className="flex-row items-center justify-between">
+          <LanguagePill language={language} />
+          {isCompleted ? (
+            <View className="flex-row items-center gap-2">
+              <Text className="text-xs text-success font-sans-semibold">Completed</Text>
+              <CompletedBadge />
             </View>
-            {isCompleted && <CompletedBadge />}
-          </View>
-          
-          <View className="mt-2 gap-2">
-            {readingPercentage !== undefined && (
-              <ProgressBar
-                progress={readingPercentage}
-                color="neutral"
-                height={4}
-              />
-            )}
-            {vocabCounts && (
-              <StackedProgressBar
-                counts={vocabCounts}
-                showLegend={false}
-                height={4}
-              />
-            )}
-          </View>
+          ) : (
+            <Text className="text-xs text-subink font-sans-semibold">{progressLabel}</Text>
+          )}
+        </View>
+
+        <View className="gap-1">
+          <Text
+            className={`${titleStyle} font-serif-semibold text-ink leading-tight`}
+            numberOfLines={variant === 'feature' ? 3 : 2}
+          >
+            {title}
+          </Text>
+          <Text className="text-xs text-faint font-sans-medium">
+            {duration} · {openedDate}
+          </Text>
+        </View>
+
+        <View className="gap-2">
+          {readingPercentage !== undefined && (
+            <ProgressBar
+              progress={readingPercentage}
+              color={isCompleted ? 'success' : 'brand'}
+              height={variant === 'feature' ? 8 : 6}
+              showLabel={variant === 'feature'}
+              label="Reading"
+            />
+          )}
+          {vocabCounts && (
+            <StackedProgressBar
+              counts={vocabCounts}
+              showLegend={variant === 'feature'}
+              height={variant === 'feature' ? 6 : 4}
+            />
+          )}
         </View>
       </View>
     </Pressable>
