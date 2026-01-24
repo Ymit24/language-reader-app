@@ -72,8 +72,17 @@ export function Sidebar() {
 
   return (
     <AnimatedView 
-      className="flex-col h-full bg-canvas border-r border-border/70"
-      style={[sidebarWidthStyle, { paddingTop: insets.top, paddingBottom: insets.bottom, overflow: 'hidden' }]}
+      className="flex-col h-full bg-canvas"
+      style={[
+        sidebarWidthStyle, 
+        { 
+          paddingTop: insets.top, 
+          paddingBottom: insets.bottom, 
+          overflow: 'hidden',
+          borderRightWidth: 1,
+          borderRightColor: 'rgba(225, 215, 201, 0.7)', // border color with 70% opacity
+        }
+      ]}
     >
       {/* Header */}
       <View className="h-16 flex-row items-center px-6 justify-between">
