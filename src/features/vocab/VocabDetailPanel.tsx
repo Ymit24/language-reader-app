@@ -154,7 +154,7 @@ export function VocabDetailPanel({
               placeholderTextColor="#80776e"
               multiline
               textAlignVertical="top"
-              className="min-h-[80px] p-4 bg-muted/70 rounded-xl text-ink text-base"
+              className="min-h-[80px] p-4 bg-muted/70 rounded-xl text-ink text-base font-sans-medium"
             />
           </View>
 
@@ -170,7 +170,7 @@ export function VocabDetailPanel({
               placeholderTextColor="#80776e"
               multiline
               textAlignVertical="top"
-              className="min-h-[60px] p-4 bg-muted/70 rounded-xl text-ink text-base"
+              className="min-h-[60px] p-4 bg-muted/70 rounded-xl text-ink text-base font-sans-medium"
             />
           </View>
 

@@ -14,7 +14,7 @@ export function Input({ label, error, className = '', ...props }: InputProps) {
         </Text>
       )}
       <TextInput
-        className={`rounded-lg border bg-panel px-3.5 py-2.5 text-base text-ink placeholder:text-faint/80 focus:border-brand focus:outline-none ${error ? 'border-danger' : 'border-border/80'}`}
+        className={`rounded-lg border bg-panel px-3.5 py-2.5 text-base text-ink placeholder:text-faint/80 font-sans-medium focus:border-brand focus:outline-none ${error ? 'border-danger' : 'border-border/80'}`}
         {...props}
       />
       {error && (

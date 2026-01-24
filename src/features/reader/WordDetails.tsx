@@ -149,7 +149,7 @@ export function WordDetails({
           </Text>
         )}
         {entry.tags?.map((tag) => (
-          <Text key={tag} className="text-xs text-faint bg-muted px-2 py-0.5 rounded">
+          <Text key={tag} className="text-xs text-faint bg-muted px-2 py-0.5 rounded font-sans-medium">
             {tag}
           </Text>
         ))}
@@ -192,7 +192,7 @@ export function WordDetails({
               Definition
             </Text>
           </View>
-          <Text className="text-sm text-subink leading-5 italic">
+          <Text className="text-sm text-subink leading-5 italic font-sans-medium">
             Unable to load definition. Tap to retry.
           </Text>
         </View>
@@ -208,7 +208,7 @@ export function WordDetails({
               Definition
             </Text>
           </View>
-          <Text className="text-sm text-subink leading-5 italic">
+          <Text className="text-sm text-subink leading-5 italic font-sans-medium">
             No definition found for this word.
           </Text>
         </View>
