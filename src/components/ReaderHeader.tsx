@@ -12,7 +12,7 @@ export function ReaderHeader({ title }: ReaderHeaderProps) {
   const { lessonId } = useLocalSearchParams();
 
   return (
-    <View className={`h-16 flex-row items-center justify-between bg-canvas/95 border-b border-border/70 ${isLargeScreen ? 'px-[28px]' : 'px-4'}`}>
+    <View className={`h-16 flex-row items-center justify-between bg-canvas/95 border-b border-border/70 ${isLargeScreen ? 'px-6' : 'px-4'}`}>
       <Pressable
         onPress={() => router.back()}
         className="h-10 w-10 items-center justify-center rounded-full active:bg-muted/80"
