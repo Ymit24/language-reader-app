@@ -32,8 +32,6 @@ export const lookupDefinition = action({
 
     try {
       const url = `http://christiansmith.live:3003/define/${args.language}?word=${encodeURIComponent(apiTerm)}`;
-      console.log("Fetching from dictionary API:", url);
-
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -44,7 +42,6 @@ export const lookupDefinition = action({
       }
 
       const data = await response.json();
-      console.log("API response:", JSON.stringify(data).substring(0, 1500));
 
       const entries: DictionaryEntry[] = (data.entries || []).map((entry: any) => ({
         partOfSpeech: entry.pos || "unknown",
@@ -67,9 +64,6 @@ export const lookupDefinition = action({
       }));
 
       const lemma = data.lemmas?.[0];
-
-      console.log("Parsed entries:", JSON.stringify(entries).substring(0, 500));
-      console.log("Lemma:", lemma, "Lemma entries:", lemmaEntries.length);
 
       return { success: true, entries, lemma, lemmaEntries };
     } catch (error) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Text, View } from 'react-native';
 import { cn } from '../../lib/utils';
 
@@ -15,7 +15,7 @@ interface TokenProps {
   isWordSelected?: boolean;
 }
 
-export function Token({ surface, isWord, status, learningLevel, onPress, isSelected, normalized, isWordSelected }: TokenProps) {
+function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSelected, normalized, isWordSelected }: TokenProps) {
   if (!isWord) {
     return (
       <Text
@@ -72,3 +72,5 @@ export function Token({ surface, isWord, status, learningLevel, onPress, isSelec
     </Text>
   );
 }
+
+export const Token = memo(TokenComponent);

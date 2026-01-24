@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAction } from 'convex/react';
@@ -13,6 +13,7 @@ interface WordDetailsProps {
   onUpdateStatus: (status: number) => void;
   onClose: () => void;
   mode?: 'popup' | 'sidebar';
+  isUpdating?: boolean;
 }
 
 interface DictionaryEntry {
@@ -43,8 +44,10 @@ export function WordDetails({
   onUpdateStatus,
   onClose,
   mode = 'popup',
+  isUpdating = false,
 }: WordDetailsProps) {
   const isSidebar = mode === 'sidebar';
+  const cacheRef = useRef(new Map<string, LookupResult>());
 
   const lookupAction = useAction(api.dictionaryActions.lookupDefinition);
 
@@ -53,6 +56,9 @@ export function WordDetails({
   const [lemmaEntries, setLemmaEntries] = useState<DictionaryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasLookupError, setHasLookupError] = useState(false);
+  const [lookupNonce, setLookupNonce] = useState(0);
+
+  const lookupKey = useMemo(() => `${language}:${normalized.toLowerCase()}`, [language, normalized]);
 
   useEffect(() => {
     setEntries(null);
@@ -60,18 +66,26 @@ export function WordDetails({
     setLemmaEntries([]);
     setIsLoading(false);
     setHasLookupError(false);
-  }, [normalized]);
+  }, [lookupKey]);
 
   useEffect(() => {
     if (entries !== null) return;
+
+    const cached = cacheRef.current.get(lookupKey);
+    if (cached) {
+      setEntries(cached.entries);
+      setLemma(cached.lemma);
+      setLemmaEntries(cached.lemmaEntries);
+      setHasLookupError(!cached.success);
+      return;
+    }
 
     const fetchDefinition = async () => {
       setIsLoading(true);
       setHasLookupError(false);
       try {
-        console.log('Looking up:', language, normalized);
-        const result = await lookupAction({ language, term: normalized }) as LookupResult;
-        console.log('Lookup result:', JSON.stringify(result));
+        const result = (await lookupAction({ language, term: normalized })) as LookupResult;
+        cacheRef.current.set(lookupKey, result);
         if (result.success) {
           setEntries(result.entries);
           setLemma(result.lemma);
@@ -80,7 +94,6 @@ export function WordDetails({
           setHasLookupError(true);
         }
       } catch (error) {
-        console.error('Dictionary lookup error:', error);
         setHasLookupError(true);
       } finally {
         setIsLoading(false);
@@ -88,7 +101,14 @@ export function WordDetails({
     };
 
     fetchDefinition();
-  }, [entries, language, normalized, lookupAction]);
+  }, [entries, language, normalized, lookupAction, lookupKey, lookupNonce]);
+
+  const handleRetry = () => {
+    cacheRef.current.delete(lookupKey);
+    setEntries(null);
+    setHasLookupError(false);
+    setLookupNonce((prev) => prev + 1);
+  };
 
   const statusOptions = [
     {
@@ -135,7 +155,7 @@ export function WordDetails({
 
   const containerStyle = isSidebar
     ? "flex-1 bg-panel border-l border-border/70"
-    : "absolute bottom-0 left-0 right-0 max-h-[80%] bg-panel shadow-pop border-t border-border/70 overflow-hidden rounded-t-3xl";
+    : "w-full max-h-[85%] bg-panel shadow-pop border-t border-border/70 overflow-hidden rounded-t-3xl";
 
   const renderEntry = (entry: DictionaryEntry, keyPrefix: string) => (
     <View key={`${keyPrefix}-${JSON.stringify(entry)}`} className="mb-4 last:mb-0">
@@ -185,8 +205,11 @@ export function WordDetails({
 
     if (hasLookupError) {
       return (
-      <View className="px-6 py-4 bg-canvas/60 border-y border-border/40">
-        <View className="flex-row items-center mb-2 opacity-50">
+        <Pressable
+          onPress={handleRetry}
+          className="px-6 py-4 bg-canvas/60 border-y border-border/40 active:bg-muted/70"
+        >
+          <View className="flex-row items-center mb-2 opacity-50">
             <Ionicons name="search-outline" size={14} color="#524a43" />
             <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink ml-1.5">
               Definition
@@ -195,7 +218,7 @@ export function WordDetails({
           <Text className="text-sm text-subink leading-5 italic font-sans-medium">
             Unable to load definition. Tap to retry.
           </Text>
-        </View>
+        </Pressable>
       );
     }
 
@@ -254,6 +277,12 @@ export function WordDetails({
                 {normalized}
               </Text>
             )}
+            {isUpdating && (
+              <View className="flex-row items-center gap-2 mt-3">
+                <ActivityIndicator size="small" color="#80776e" />
+                <Text className="text-xs text-faint font-sans-medium">Updating status…</Text>
+              </View>
+            )}
           </View>
           <Pressable
             onPress={onClose}
@@ -269,26 +298,30 @@ export function WordDetails({
         {renderDictionaryContent()}
       </ScrollView>
 
-      <View className="p-6">
+      <View className="p-6 pt-4 border-t border-border/60 bg-panel/95">
         <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-faint mb-4">
           Set Word Status
         </Text>
-        <View className={cn(
-          "flex-row flex-wrap gap-3",
-          isSidebar ? "flex-col" : "flex-row"
-        )}>
+        <View
+          className={cn(
+            'flex-row flex-wrap gap-3',
+            isSidebar ? 'flex-col' : 'flex-row'
+          )}
+        >
           {statusOptions.map((opt) => {
             const isActive = currentStatus === opt.value;
             return (
               <Pressable
                 key={opt.value}
                 onPress={() => onUpdateStatus(opt.value)}
+                disabled={isUpdating}
                 className={cn(
                   'p-3 rounded-xl border',
                   isSidebar ? 'w-full' : 'flex-1 min-w-[140px]',
                   isActive
                     ? `${opt.bg} ${opt.border}`
-                    : 'bg-panel border-border/70 active:bg-muted/70'
+                    : 'bg-panel border-border/70 active:bg-muted/70',
+                  isUpdating ? 'opacity-50' : ''
                 )}
               >
                 <View className="flex-row items-center">

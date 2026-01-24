@@ -3,7 +3,7 @@ import { View, Text, ActivityIndicator, Pressable, useWindowDimensions } from 'r
 import { useQuery, useMutation } from 'convex/react';
 import { useRouter } from 'expo-router';
 import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
+import { Doc, Id } from '../../../convex/_generated/dataModel';
 import { ReaderPage } from './ReaderPage';
 import { WordDetails } from './WordDetails';
 import { ProgressBar } from '@/src/components/ProgressBar';
@@ -12,7 +12,15 @@ import { cn } from '../../lib/utils';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 
 interface ReaderProps {
-  lessonId: Id<"lessons">;
+  lesson: Doc<"lessons"> & { tokens: Doc<"lessonTokens">[] };
+}
+
+interface ReaderToken {
+  _id?: string;
+  index?: number;
+  isWord: boolean;
+  surface: string;
+  normalized?: string;
 }
 
 const STATUS_NEW = 0;
@@ -20,35 +28,30 @@ const STATUS_LEARNING_MIN = 1;
 const STATUS_LEARNING_MAX = 3;
 const STATUS_KNOWN = 4;
 
-export function Reader({ lessonId }: ReaderProps) {
+const INSPECTOR_WIDTH = 360;
+
+export function Reader({ lesson }: ReaderProps) {
   const router = useRouter();
   const { width, height: windowHeight } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const carouselRef = useRef<ICarouselInstance>(null);
   const hasSetInitialPage = useRef(false);
+  const layoutUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const progressUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fallbackCarouselHeight = useMemo(() => Math.max(windowHeight - 220, 360), [windowHeight]);
   const [carouselLayout, setCarouselLayout] = useState({ width, height: fallbackCarouselHeight });
   const carouselWidth = carouselLayout.width > 0 ? carouselLayout.width : width;
   const carouselHeight = carouselLayout.height > 0 ? carouselLayout.height : fallbackCarouselHeight;
 
-  // 1. Fetch Lesson Data
-  const lessonData = useQuery(api.lessons.getLesson, { lessonId });
-  
-  // 2. Fetch Vocab Data (Dependent on lesson language)
-  // We need to know the language first.
-  const language = lessonData?.language;
+  const language = lesson.language;
   const vocabData = useQuery(api.vocab.getVocabProfile, language ? { language } : "skip");
 
-  // 3. Local State
-  const [selectedToken, setSelectedToken] = useState<any | null>(null);
+  const [selectedToken, setSelectedToken] = useState<ReaderToken | null>(null);
   const [selectedNormalized, setSelectedNormalized] = useState<string | null>(null);
-  const [shouldScrollToSelected, setShouldScrollToSelected] = useState(false);
-  const [currentPage, setCurrentPage] = useState(() => {
-    if (lessonData?.currentPage !== undefined) {
-      return Math.max(0, lessonData.currentPage);
-    }
-    return 0;
-  });
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(() => Math.max(0, lesson.currentPage ?? 0));
+  const [localStatusOverrides, setLocalStatusOverrides] = useState<Record<string, number>>({});
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const WORDS_PER_PAGE = 200;
 
@@ -60,17 +63,20 @@ export function Reader({ lessonId }: ReaderProps) {
         map[v.term] = v.status;
       }
     }
+    for (const [term, status] of Object.entries(localStatusOverrides)) {
+      map[term] = status;
+    }
     return map;
-  }, [vocabData]);
+  }, [vocabData, localStatusOverrides]);
 
   // 4b. Calculate vocab status counts for entire lesson
   const vocabCounts = useMemo(() => {
     const counts = { new: 0, learning: 0, known: 0 };
-    if (!lessonData?.tokens) return counts;
+    if (!lesson.tokens) return counts;
 
     const seenTerms = new Set<string>();
 
-    for (const token of lessonData.tokens) {
+    for (const token of lesson.tokens) {
       if (!token.isWord) continue;
       const term = token.normalized;
       if (!term || seenTerms.has(term)) continue;
@@ -83,13 +89,13 @@ export function Reader({ lessonId }: ReaderProps) {
     }
 
     return counts;
-  }, [lessonData?.tokens, vocabMap]);
+  }, [lesson.tokens, vocabMap]);
 
   // Pagination Logic
   const pages = useMemo(() => {
-    if (!lessonData?.tokens) return [];
-    
-    const allTokens = lessonData.tokens;
+    if (!lesson.tokens) return [];
+
+    const allTokens = lesson.tokens;
     const pagesArray: any[][] = [];
     let currentChunk: any[] = [];
     let wordCount = 0;
@@ -129,7 +135,7 @@ export function Reader({ lessonId }: ReaderProps) {
       pagesArray.push(currentChunk);
     }
     return pagesArray;
-  }, [lessonData]);
+  }, [lesson.tokens]);
 
 
   const totalPages = pages.length;
@@ -143,28 +149,42 @@ export function Reader({ lessonId }: ReaderProps) {
       setCurrentPage(newPage);
       setSelectedToken(null);
       setSelectedNormalized(null);
-      updateProgressMutation({
-        lessonId,
-        currentPage: newPage,
-        lastTokenIndex: newPage * WORDS_PER_PAGE,
-      });
+      setIsInspectorOpen(false);
+
+      if (progressUpdateTimer.current) {
+        clearTimeout(progressUpdateTimer.current);
+      }
+      progressUpdateTimer.current = setTimeout(() => {
+        updateProgressMutation({
+          lessonId: lesson._id as Id<"lessons">,
+          currentPage: newPage,
+          lastTokenIndex: newPage * WORDS_PER_PAGE,
+        });
+      }, 240);
     },
-    [lessonId, updateProgressMutation]
+    [lesson._id, updateProgressMutation]
   );
 
   const handleUpdateStatus = async (newStatus: number) => {
-    if (!selectedToken || !language) return;
+    if (!selectedToken || !language || !selectedToken.normalized) return;
 
     const term = selectedToken.normalized;
+    const previousStatus = vocabMap[term] ?? STATUS_NEW;
 
-    await updateStatusMutation({
-      language,
-      term,
-      status: newStatus,
-    });
+    setLocalStatusOverrides((prev) => ({ ...prev, [term]: newStatus }));
+    setIsUpdatingStatus(true);
 
-    setSelectedToken(null);
-    setSelectedNormalized(null);
+    try {
+      await updateStatusMutation({
+        language,
+        term,
+        status: newStatus,
+      });
+    } catch (error) {
+      setLocalStatusOverrides((prev) => ({ ...prev, [term]: previousStatus }));
+    } finally {
+      setIsUpdatingStatus(false);
+    }
   };
 
   const handleNextPage = () => {
@@ -182,164 +202,184 @@ export function Reader({ lessonId }: ReaderProps) {
   };
 
   const handleFinishLesson = () => {
-    router.push(`/(app)/library/${lessonId}/summary`);
+    router.push(`/(app)/library/${lesson._id}/summary`);
   };
 
   useEffect(() => {
-    if (!lessonData || pages.length === 0) return;
+    if (!lesson || pages.length === 0) return;
     if (hasSetInitialPage.current) return;
     if (carouselLayout.width === 0 || carouselLayout.height === 0) return;
 
     const initialPage = Math.min(
-      Math.max(lessonData.currentPage ?? 0, 0),
+      Math.max(lesson.currentPage ?? 0, 0),
       pages.length - 1
     );
 
     hasSetInitialPage.current = true;
     setCurrentPage(initialPage);
     carouselRef.current?.scrollTo({ index: initialPage, animated: false });
-  }, [carouselLayout.height, carouselLayout.width, lessonData, pages.length]);
+  }, [carouselLayout.height, carouselLayout.width, lesson, pages.length]);
 
-  if (lessonData === undefined) {
-    return (
-      <View className="flex-1 justify-center items-center bg-canvas">
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+  useEffect(() => {
+    return () => {
+      if (layoutUpdateTimer.current) {
+        clearTimeout(layoutUpdateTimer.current);
+      }
+      if (progressUpdateTimer.current) {
+        clearTimeout(progressUpdateTimer.current);
+      }
+    };
+  }, []);
 
-  if (lessonData === null) {
-    return (
-      <View className="flex-1 justify-center items-center bg-canvas">
-        <Text>Lesson not found.</Text>
-      </View>
-    );
-  }
+  const isVocabLoading = vocabData === undefined;
+  const hasPages = totalPages > 0;
+  const canGoPrev = currentPage > 0;
+  const canGoNext = currentPage < totalPages - 1;
+  const isLastPage = currentPage === totalPages - 1;
+  const showInspector = Boolean(selectedToken && language && (isLargeScreen || isInspectorOpen));
 
   return (
-    <View className={cn("flex-1 bg-canvas", isLargeScreen ? "flex-row" : "flex-col")}>
-      <View className="flex-1" style={{ flex: 1, minHeight: 1 }}>
+    <View className="flex-1 bg-canvas">
+      <View className="flex-1" style={{ minHeight: 1 }}>
         <View className="px-5 py-4 border-b border-border/60 bg-panel/80 gap-3">
           <ProgressBar
-            progress={totalPages > 0 ? ((currentPage + 1) / totalPages) * 100 : 0}
+            progress={hasPages ? ((currentPage + 1) / totalPages) * 100 : 0}
             color="brand"
             height={6}
             showLabel
             label={`Page ${currentPage + 1} of ${totalPages || 1}`}
           />
-          <StackedProgressBar
-            counts={vocabCounts}
-            total={vocabCounts.new + vocabCounts.learning + vocabCounts.known}
-            height={6}
-          />
-        </View>
-        <View
-          className="flex-1 relative"
-          style={{ flex: 1 }}
-          onLayout={(event) => {
-            const { width: layoutWidth, height: layoutHeight } = event.nativeEvent.layout;
-            if (layoutWidth !== carouselLayout.width || layoutHeight !== carouselLayout.height) {
-              setCarouselLayout({ width: layoutWidth, height: layoutHeight });
-            }
-          }}
-        >
-          <View className="flex-1" style={{ minHeight: fallbackCarouselHeight }}>
-            {totalPages > 0 && (
-              <Carousel
-                ref={carouselRef}
-                width={carouselWidth}
-                height={carouselHeight}
-                style={{ flex: 1, height: carouselHeight, width: '100%' }}
-                data={pages}
-                loop={false}
-                snapEnabled
-                pagingEnabled
-                scrollAnimationDuration={320}
-                onSnapToItem={handlePageSnap}
-                renderItem={({ item }) => (
-                  <ReaderPage
-                    tokens={item}
-                    vocabMap={vocabMap}
-                    onTokenPress={(token) => {
-                      setSelectedToken(token);
-                      setSelectedNormalized(token.normalized || null);
-                      setShouldScrollToSelected(true);
-                    }}
-                    selectedTokenId={selectedToken?._id}
-                    selectedNormalized={selectedNormalized}
-                    scrollToSelectedToken={
-                      shouldScrollToSelected
-                        ? () => setShouldScrollToSelected(false)
-                        : undefined
-                    }
-                  />
-                )}
-                onConfigurePanGesture={(gesture) => {
-                  gesture.activeOffsetX([-16, 16]).failOffsetY([-16, 16]);
-                }}
-              />
-            )}
-          </View>
-
-          {/* Pagination Controls */}
-          <View className="absolute bottom-0 left-0 right-0 flex-row justify-between items-center px-8 py-4 bg-canvas/95 backdrop-blur-sm border-t border-border/60 md:pb-6">
-            <Pressable
-              onPress={handlePrevPage}
-              disabled={currentPage === 0}
-              className={`p-3 rounded-full ${currentPage === 0 ? 'opacity-20' : 'active:bg-muted/70'}`}
-            >
-              <Text className="text-2xl text-ink font-light">←</Text>
-            </Pressable>
-
-            <Text className="text-xs font-sans-semibold text-subink tracking-[0.3em] uppercase">
-              Page {currentPage + 1} / {totalPages || 1}
-            </Text>
-
-            <Pressable
-              onPress={currentPage === totalPages - 1 ? handleFinishLesson : handleNextPage}
-              disabled={false}
-              className={`p-3 rounded-full ${currentPage === totalPages - 1 ? 'active:bg-successSoft' : 'active:bg-muted/70'}`}
-            >
-              <Text
-                className={`text-2xl font-light ${currentPage === totalPages - 1 ? 'text-success' : 'text-ink'}`}
-              >
-                {currentPage === totalPages - 1 ? "✓" : "→"}
-              </Text>
-            </Pressable>
-          </View>
-
-          {selectedToken && !isLargeScreen && language && (
-            <WordDetails
-              mode="popup"
-              surface={selectedToken.surface}
-              normalized={selectedToken.normalized}
-              language={language}
-              currentStatus={vocabMap[selectedToken.normalized] ?? 0}
-              onUpdateStatus={handleUpdateStatus}
-              onClose={() => {
-                setSelectedToken(null);
-                setSelectedNormalized(null);
-              }}
+          {isVocabLoading ? (
+            <View className="flex-row items-center gap-2">
+              <ActivityIndicator size="small" color="#80776e" />
+              <Text className="text-xs text-faint font-sans-medium">Loading vocab stats…</Text>
+            </View>
+          ) : (
+            <StackedProgressBar
+              counts={vocabCounts}
+              total={vocabCounts.new + vocabCounts.learning + vocabCounts.known}
+              height={6}
             />
           )}
         </View>
+
+        <View className="flex-1 px-4 pt-4 pb-6">
+          <View className="flex-1 bg-panel/90 border border-border/70 rounded-3xl shadow-card overflow-hidden">
+            <View
+              className="flex-1"
+              style={{ minHeight: fallbackCarouselHeight }}
+              onLayout={(event) => {
+                const { width: layoutWidth, height: layoutHeight } = event.nativeEvent.layout;
+                if (layoutWidth === 0 || layoutHeight === 0) return;
+
+                if (layoutWidth !== carouselLayout.width || layoutHeight !== carouselLayout.height) {
+                  if (layoutUpdateTimer.current) {
+                    clearTimeout(layoutUpdateTimer.current);
+                  }
+                  layoutUpdateTimer.current = setTimeout(() => {
+                    setCarouselLayout({ width: layoutWidth, height: layoutHeight });
+                  }, 80);
+                }
+              }}
+            >
+              {hasPages ? (
+                <Carousel
+                  ref={carouselRef}
+                  width={carouselWidth}
+                  height={carouselHeight}
+                  style={{ flex: 1, height: carouselHeight, width: '100%' }}
+                  data={pages}
+                  loop={false}
+                  snapEnabled
+                  pagingEnabled
+                  scrollAnimationDuration={320}
+                  onSnapToItem={handlePageSnap}
+                  renderItem={({ item }) => (
+                    <ReaderPage
+                      tokens={item}
+                      vocabMap={vocabMap}
+                      onTokenPress={(token) => {
+                        setSelectedToken(token);
+                        setSelectedNormalized(token.normalized || null);
+                        setIsInspectorOpen(true);
+                      }}
+                      selectedTokenId={selectedToken?._id ?? null}
+                      selectedNormalized={selectedNormalized}
+                    />
+                  )}
+                  onConfigurePanGesture={(gesture) => {
+                    gesture.activeOffsetX([-16, 16]).failOffsetY([-16, 16]);
+                  }}
+                />
+              ) : (
+                <View className="flex-1 items-center justify-center">
+                  <Text className="text-base text-subink font-sans-medium">No text available for this lesson.</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+
+        <View className="absolute bottom-0 left-0 right-0 flex-row justify-between items-center px-8 py-4 bg-canvas/95 backdrop-blur-sm border-t border-border/60 md:pb-6">
+          <Pressable
+            onPress={handlePrevPage}
+            disabled={!canGoPrev}
+            className={cn('p-3 rounded-full', !canGoPrev ? 'opacity-20' : 'active:bg-muted/70')}
+          >
+            <Text className="text-2xl text-ink font-light">←</Text>
+          </Pressable>
+
+          <Text className="text-xs font-sans-semibold text-subink tracking-[0.3em] uppercase">
+            Page {currentPage + 1} / {totalPages || 1}
+          </Text>
+
+          <Pressable
+            onPress={isLastPage ? handleFinishLesson : handleNextPage}
+            disabled={!hasPages}
+            className={cn(
+              'p-3 rounded-full',
+              !hasPages ? 'opacity-30' : isLastPage ? 'active:bg-successSoft' : 'active:bg-muted/70'
+            )}
+          >
+            <Text className={cn('text-2xl font-light', isLastPage ? 'text-success' : 'text-ink')}>
+              {isLastPage ? '✓' : '→'}
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
-      {/* Sidebar for tablets / web */}
-      {isLargeScreen && selectedToken && language && (
-        <View className="w-[380px] border-l border-border/70 bg-panel">
-          <WordDetails
-            mode="sidebar"
-            surface={selectedToken.surface}
-            normalized={selectedToken.normalized}
-            language={language}
-            currentStatus={vocabMap[selectedToken.normalized] ?? 0}
-            onUpdateStatus={handleUpdateStatus}
-            onClose={() => {
+      {showInspector && selectedToken && selectedToken.normalized && (
+        <View className={cn('absolute inset-0', isLargeScreen ? 'items-end' : 'justify-end')}>
+          <Pressable
+            className="absolute inset-0 bg-ink/10"
+            onPress={() => {
+              setIsInspectorOpen(false);
               setSelectedToken(null);
               setSelectedNormalized(null);
             }}
           />
+          <View
+            className={cn(
+              'bg-panel',
+              isLargeScreen ? 'h-full border-l border-border/70' : 'w-full'
+            )}
+            style={isLargeScreen ? { width: INSPECTOR_WIDTH } : undefined}
+          >
+            <WordDetails
+              mode={isLargeScreen ? 'sidebar' : 'popup'}
+              surface={selectedToken.surface}
+              normalized={selectedToken.normalized}
+              language={language}
+              currentStatus={vocabMap[selectedToken.normalized] ?? 0}
+              isUpdating={isUpdatingStatus}
+              onUpdateStatus={handleUpdateStatus}
+              onClose={() => {
+                setIsInspectorOpen(false);
+                setSelectedToken(null);
+                setSelectedNormalized(null);
+              }}
+            />
+          </View>
         </View>
       )}
     </View>

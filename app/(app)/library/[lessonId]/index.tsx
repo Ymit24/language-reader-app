@@ -64,7 +64,7 @@ export default function LessonReaderScreen() {
           onPress: () => router.push(`/library/${lessonId}/edit`),
         }}
       />
-      <Reader lessonId={safeLessonId as Id<"lessons">} />
+      <Reader lesson={lessonQuery} />
     </ScreenLayout>
   );
 }
