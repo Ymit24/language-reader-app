@@ -155,7 +155,7 @@ export function WordDetails({
 
   const containerStyle = isSidebar
     ? "flex-1 bg-panel border-l border-border/70"
-    : "w-full max-h-[85%] bg-panel shadow-pop border-t border-border/70 overflow-hidden rounded-t-3xl";
+    : "w-full min-h-[70%] max-h-[85%] bg-panel shadow-pop border-t border-border/70 overflow-auto rounded-t-3xl";
 
   const renderEntry = (entry: DictionaryEntry, keyPrefix: string) => (
     <View key={`${keyPrefix}-${JSON.stringify(entry)}`} className="mb-4 last:mb-0">

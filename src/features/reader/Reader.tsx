@@ -358,15 +358,29 @@ export function Reader({ lesson }: ReaderProps) {
               setSelectedNormalized(null);
             }}
           />
-          <View
-            className={cn(
-              'bg-panel',
-              isLargeScreen ? 'h-full border-l border-border/70' : 'w-full'
-            )}
-            style={isLargeScreen ? { width: INSPECTOR_WIDTH } : undefined}
-          >
+          {isLargeScreen ? (
+            <View
+              className="bg-panel h-full border-l border-border/70"
+              style={{ width: INSPECTOR_WIDTH }}
+            >
+              <WordDetails
+                mode="sidebar"
+                surface={selectedToken.surface}
+                normalized={selectedToken.normalized}
+                language={language}
+                currentStatus={vocabMap[selectedToken.normalized] ?? 0}
+                isUpdating={isUpdatingStatus}
+                onUpdateStatus={handleUpdateStatus}
+                onClose={() => {
+                  setIsInspectorOpen(false);
+                  setSelectedToken(null);
+                  setSelectedNormalized(null);
+                }}
+              />
+            </View>
+          ) : (
             <WordDetails
-              mode={isLargeScreen ? 'sidebar' : 'popup'}
+              mode="popup"
               surface={selectedToken.surface}
               normalized={selectedToken.normalized}
               language={language}
@@ -379,7 +393,7 @@ export function Reader({ lesson }: ReaderProps) {
                 setSelectedNormalized(null);
               }}
             />
-          </View>
+          )}
         </View>
       )}
     </View>
