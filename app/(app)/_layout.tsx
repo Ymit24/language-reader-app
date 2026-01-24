@@ -89,6 +89,15 @@ export default function AppLayout() {
             }}
           />
           <Tabs.Screen
+            name="vocab"
+            options={{
+              title: 'Vocab',
+              tabBarIcon: ({ color, size, focused }) => (
+                <Ionicons name={focused ? "reader" : "reader-outline"} size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
             name="review"
             options={{
               title: 'Review',

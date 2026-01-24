@@ -437,6 +437,59 @@ export const deleteVocab = mutation({
   },
 });
 
+export const bulkDelete = mutation({
+  args: {
+    termIds: v.array(v.id("vocab")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    for (const termId of args.termIds) {
+      const existing = await ctx.db.get(termId);
+      if (existing && existing.userId === userId) {
+        await ctx.db.delete(termId);
+      }
+    }
+  },
+});
+
+export const bulkUpdateStatusById = mutation({
+  args: {
+    termIds: v.array(v.id("vocab")),
+    status: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const now = Date.now();
+    const isLearningStatus = args.status >= STATUS_LEARNING_MIN && args.status <= STATUS_LEARNING_MAX;
+
+    for (const termId of args.termIds) {
+      const existing = await ctx.db.get(termId);
+      if (existing && existing.userId === userId) {
+        const updateFields: Record<string, any> = {
+          status: args.status,
+          updatedAt: now,
+        };
+
+        if (isLearningStatus) {
+          updateFields.nextReviewAt = now;
+          updateFields.intervalDays = 0;
+          updateFields.reviews = 0;
+        }
+
+        await ctx.db.patch(termId, updateFields);
+      }
+    }
+  },
+});
+
 /**
  * Migration: Converts all 'ignored' (status 99) words to 'new' (status 0).
  * This can be run once to clean up the database.

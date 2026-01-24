@@ -26,6 +26,7 @@ type NavItemProps = {
 
 const NAV_ITEMS: NavItemProps[] = [
   { name: 'library', href: '/library', iconName: 'book', label: 'Library' },
+  { name: 'vocab', href: '/vocab', iconName: 'reader', label: 'Vocab' },
   { name: 'review', href: '/review', iconName: 'flash', label: 'Review' },
   { name: 'settings', href: '/settings', iconName: 'settings', label: 'Settings' },
 ];
