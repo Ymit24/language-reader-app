@@ -54,7 +54,7 @@ export default function LessonReaderScreen() {
   }
 
   return (
-    <ScreenLayout edges={['top']} showBackground={false}>
+    <ScreenLayout edges={['top', 'bottom']} showBackground={false}>
       <Stack.Screen options={{ headerShown: false }} />
       <PageHeader
         title={lessonQuery.title}

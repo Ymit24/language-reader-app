@@ -1,13 +1,12 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { View, Text, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, useWindowDimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useMutation } from 'convex/react';
 import { useRouter } from 'expo-router';
 import { api } from '../../../convex/_generated/api';
 import { Doc, Id } from '../../../convex/_generated/dataModel';
 import { ReaderPage } from './ReaderPage';
 import { WordDetails } from './WordDetails';
-import { ProgressBar } from '@/src/components/ProgressBar';
-import { StackedProgressBar } from '@/src/components/StackedProgressBar';
 import { cn } from '../../lib/utils';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 
@@ -24,9 +23,6 @@ interface ReaderToken {
 }
 
 const STATUS_NEW = 0;
-const STATUS_LEARNING_MIN = 1;
-const STATUS_LEARNING_MAX = 3;
-const STATUS_KNOWN = 4;
 
 const INSPECTOR_WIDTH = 360;
 
@@ -38,7 +34,11 @@ export function Reader({ lesson }: ReaderProps) {
   const hasSetInitialPage = useRef(false);
   const layoutUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fallbackCarouselHeight = useMemo(() => Math.max(windowHeight - 220, 360), [windowHeight]);
+  const fallbackCarouselHeight = useMemo(() => {
+    // Leave room for the app header + reader card padding + the in-card footer.
+    // Keep a sane minimum so the carousel mounts on first layout.
+    return Math.max(windowHeight - 320, 260);
+  }, [windowHeight]);
   const [carouselLayout, setCarouselLayout] = useState({ width, height: fallbackCarouselHeight });
   const carouselWidth = carouselLayout.width > 0 ? carouselLayout.width : width;
   const carouselHeight = carouselLayout.height > 0 ? carouselLayout.height : fallbackCarouselHeight;
@@ -68,28 +68,6 @@ export function Reader({ lesson }: ReaderProps) {
     }
     return map;
   }, [vocabData, localStatusOverrides]);
-
-  // 4b. Calculate vocab status counts for entire lesson
-  const vocabCounts = useMemo(() => {
-    const counts = { new: 0, learning: 0, known: 0 };
-    if (!lesson.tokens) return counts;
-
-    const seenTerms = new Set<string>();
-
-    for (const token of lesson.tokens) {
-      if (!token.isWord) continue;
-      const term = token.normalized;
-      if (!term || seenTerms.has(term)) continue;
-      seenTerms.add(term);
-
-      const status = vocabMap[term] ?? STATUS_NEW;
-      if (status === STATUS_NEW) counts.new++;
-      else if (status >= STATUS_LEARNING_MIN && status <= STATUS_LEARNING_MAX) counts.learning++;
-      else if (status === STATUS_KNOWN) counts.known++;
-    }
-
-    return counts;
-  }, [lesson.tokens, vocabMap]);
 
   // Pagination Logic
   const pages = useMemo(() => {
@@ -231,43 +209,19 @@ export function Reader({ lesson }: ReaderProps) {
     };
   }, []);
 
-  const isVocabLoading = vocabData === undefined;
   const hasPages = totalPages > 0;
   const canGoPrev = currentPage > 0;
-  const canGoNext = currentPage < totalPages - 1;
   const isLastPage = currentPage === totalPages - 1;
   const showInspector = Boolean(selectedToken && language && (isLargeScreen || isInspectorOpen));
 
   return (
     <View className="flex-1 bg-canvas">
       <View className="flex-1" style={{ minHeight: 1 }}>
-        <View className="px-5 py-4 border-b border-border/60 bg-panel/80 gap-3">
-          <ProgressBar
-            progress={hasPages ? ((currentPage + 1) / totalPages) * 100 : 0}
-            color="brand"
-            height={6}
-            showLabel
-            label={`Page ${currentPage + 1} of ${totalPages || 1}`}
-          />
-          {isVocabLoading ? (
-            <View className="flex-row items-center gap-2">
-              <ActivityIndicator size="small" color="#80776e" />
-              <Text className="text-xs text-faint font-sans-medium">Loading vocab stats…</Text>
-            </View>
-          ) : (
-            <StackedProgressBar
-              counts={vocabCounts}
-              total={vocabCounts.new + vocabCounts.learning + vocabCounts.known}
-              height={6}
-            />
-          )}
-        </View>
-
         <View className="flex-1 px-4 pt-4 pb-6">
           <View className="flex-1 bg-panel/90 border border-border/70 rounded-3xl shadow-card overflow-hidden">
             <View
               className="flex-1"
-              style={{ minHeight: fallbackCarouselHeight }}
+              style={{ minHeight: 1 }}
               onLayout={(event) => {
                 const { width: layoutWidth, height: layoutHeight } = event.nativeEvent.layout;
                 if (layoutWidth === 0 || layoutHeight === 0) return;
@@ -283,13 +237,13 @@ export function Reader({ lesson }: ReaderProps) {
               }}
             >
               {hasPages ? (
-                <Carousel
-                  ref={carouselRef}
-                  width={carouselWidth}
-                  height={carouselHeight}
-                  style={{ flex: 1, height: carouselHeight, width: '100%' }}
-                  data={pages}
-                  loop={false}
+                 <Carousel
+                   ref={carouselRef}
+                   width={carouselWidth}
+                   height={carouselHeight}
+                   style={{ flex: 1, height: carouselHeight, width: '100%' }}
+                   data={pages}
+                   loop={false}
                   snapEnabled
                   pagingEnabled
                   scrollAnimationDuration={320}
@@ -317,34 +271,35 @@ export function Reader({ lesson }: ReaderProps) {
                 </View>
               )}
             </View>
+            <View className="flex-row items-center justify-between px-5 py-3 border-t border-border/60 bg-panel/95">
+              <Pressable
+                onPress={handlePrevPage}
+                disabled={!canGoPrev}
+                className={cn('h-10 w-10 items-center justify-center rounded-full', !canGoPrev ? 'opacity-20' : 'active:bg-muted/70')}
+              >
+                <Ionicons name="chevron-back" size={22} color="#1f1a17" />
+              </Pressable>
+
+              <Text className="text-xs font-sans-semibold text-subink tracking-[0.3em] uppercase">
+                {currentPage + 1} / {totalPages || 1}
+              </Text>
+
+              <Pressable
+                onPress={isLastPage ? handleFinishLesson : handleNextPage}
+                disabled={!hasPages}
+                className={cn(
+                  'h-10 w-10 items-center justify-center rounded-full',
+                  !hasPages ? 'opacity-30' : isLastPage ? 'active:bg-successSoft' : 'active:bg-muted/70'
+                )}
+              >
+                <Ionicons
+                  name={isLastPage ? 'checkmark' : 'chevron-forward'}
+                  size={22}
+                  color={isLastPage ? '#1d6b4f' : '#1f1a17'}
+                />
+              </Pressable>
+            </View>
           </View>
-        </View>
-
-        <View className="absolute bottom-0 left-0 right-0 flex-row justify-between items-center px-8 py-4 bg-canvas/95 backdrop-blur-sm border-t border-border/60 md:pb-6">
-          <Pressable
-            onPress={handlePrevPage}
-            disabled={!canGoPrev}
-            className={cn('p-3 rounded-full', !canGoPrev ? 'opacity-20' : 'active:bg-muted/70')}
-          >
-            <Text className="text-2xl text-ink font-light">←</Text>
-          </Pressable>
-
-          <Text className="text-xs font-sans-semibold text-subink tracking-[0.3em] uppercase">
-            Page {currentPage + 1} / {totalPages || 1}
-          </Text>
-
-          <Pressable
-            onPress={isLastPage ? handleFinishLesson : handleNextPage}
-            disabled={!hasPages}
-            className={cn(
-              'p-3 rounded-full',
-              !hasPages ? 'opacity-30' : isLastPage ? 'active:bg-successSoft' : 'active:bg-muted/70'
-            )}
-          >
-            <Text className={cn('text-2xl font-light', isLastPage ? 'text-success' : 'text-ink')}>
-              {isLastPage ? '✓' : '→'}
-            </Text>
-          </Pressable>
         </View>
       </View>
 
