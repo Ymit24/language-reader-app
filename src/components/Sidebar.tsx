@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { usePathname, Link } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { PanelLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,6 +34,7 @@ const COLLAPSED_WIDTH = 80;
 export function Sidebar() {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
+  const router = useRouter();
   const isCollapsed = useSharedValue(false);
 
   const toggleCollapse = () => {
@@ -97,34 +98,41 @@ export function Sidebar() {
           const isActive = pathname.startsWith(item.href);
           
           return (
-            <Link key={item.name} href={item.href} asChild>
-              <Pressable
-                className={cn(
-                  "flex-row items-center h-11 px-4 mx-2 mb-1 rounded-xl transition-colors",
-                  isActive ? "bg-brandSoft border border-brand/10" : "active:bg-muted/60 hover:bg-muted/40"
-                )}
-              >
-                <View style={{ width: 24, alignItems: 'center', justifyContent: 'center' }}>
-                  <Ionicons 
-                    name={item.iconName as any} 
-                    size={22} 
-                    color={isActive ? "#2f6b66" : "#524a43"} 
-                  />
-                </View>
-                
-                <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
-                  <Text 
-                    numberOfLines={1}
-                    className={cn(
-                      "text-base font-sans-semibold",
-                      isActive ? "text-ink" : "text-subink"
-                    )}
-                  >
-                    {item.label}
-                  </Text>
-                </AnimatedView>
-              </Pressable>
-            </Link>
+            <Pressable
+              key={item.name}
+              onPress={() => router.push(item.href)}
+              className="flex-row items-center h-11 px-4 mx-2 mb-1 rounded-xl"
+              style={({ pressed }) => [
+                isActive && {
+                  backgroundColor: '#e4f1ef',
+                  borderColor: 'rgba(47, 107, 102, 0.1)',
+                  borderWidth: 1,
+                },
+                pressed && !isActive && { backgroundColor: '#f0ebe1' },
+              ]}
+              focusable={false}
+              accessibilityRole="link"
+            >
+              <View style={{ width: 24, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons 
+                  name={item.iconName as any} 
+                  size={22} 
+                  color={isActive ? "#2f6b66" : "#524a43"} 
+                />
+              </View>
+              
+              <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}> 
+                <Text 
+                  numberOfLines={1}
+                  className={cn(
+                    "text-base font-sans-semibold",
+                    isActive ? "text-ink" : "text-subink"
+                  )}
+                >
+                  {item.label}
+                </Text>
+              </AnimatedView>
+            </Pressable>
           );
         })}
       </View>
