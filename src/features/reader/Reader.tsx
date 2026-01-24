@@ -167,15 +167,13 @@ export function Reader({ lesson }: ReaderProps) {
 
   const handleNextPage = () => {
     if (currentPage < totalPages - 1) {
-      const newPage = currentPage + 1;
-      carouselRef.current?.scrollTo({ index: newPage, animated: true });
+      carouselRef.current?.scrollTo({ count: 1, animated: true });
     }
   };
 
   const handlePrevPage = () => {
     if (currentPage > 0) {
-      const newPage = currentPage - 1;
-      carouselRef.current?.scrollTo({ index: newPage, animated: true });
+      carouselRef.current?.scrollTo({ count: -1, animated: true });
     }
   };
 
