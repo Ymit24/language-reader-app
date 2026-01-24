@@ -27,6 +27,10 @@ export function Reader({ lessonId }: ReaderProps) {
   const carouselRef = useRef<ICarouselInstance>(null);
   const hasSetInitialPage = useRef(false);
   const [carouselLayout, setCarouselLayout] = useState({ width, height: 0 });
+  const carouselStyle = useMemo(
+    () => ({ flex: 1, minHeight: Math.max(carouselLayout.height, 1) }),
+    [carouselLayout.height]
+  );
 
   // 1. Fetch Lesson Data
   const lessonData = useQuery(api.lessons.getLesson, { lessonId });
@@ -215,7 +219,7 @@ export function Reader({ lessonId }: ReaderProps) {
 
   return (
     <View className={cn("flex-1 bg-canvas", isLargeScreen ? "flex-row" : "flex-col")}>
-      <View className="flex-1">
+      <View className="flex-1" style={{ flex: 1, minHeight: 1 }}>
         <View className="px-5 py-4 border-b border-border/60 bg-panel/80 gap-3">
           <ProgressBar
             progress={totalPages > 0 ? ((currentPage + 1) / totalPages) * 100 : 0}
@@ -232,6 +236,7 @@ export function Reader({ lessonId }: ReaderProps) {
         </View>
         <View
           className="flex-1 relative"
+          style={{ flex: 1, minHeight: 1 }}
           onLayout={(event) => {
             const { width: layoutWidth, height: layoutHeight } = event.nativeEvent.layout;
             if (layoutWidth !== carouselLayout.width || layoutHeight !== carouselLayout.height) {
@@ -244,6 +249,7 @@ export function Reader({ lessonId }: ReaderProps) {
               ref={carouselRef}
               width={carouselLayout.width}
               height={carouselLayout.height}
+              style={carouselStyle}
               data={pages}
               loop={false}
               snapEnabled
