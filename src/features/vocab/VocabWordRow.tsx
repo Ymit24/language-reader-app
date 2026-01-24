@@ -14,10 +14,6 @@ interface VocabWordRowProps {
     term: string;
     display: string;
     status: number;
-    reviews?: number | undefined;
-    nextReviewAt?: number | undefined;
-    intervalDays?: number | undefined;
-    lastReviewedAt?: number | undefined;
   };
   isSelected: boolean;
   isCompact?: boolean;
@@ -42,30 +38,6 @@ const getStatusConfig = (status: number) => {
     return { label: 'Known', bgClass: 'bg-vKnownBg', textClass: 'text-vKnownLine', dotColor: '#2f7a57' };
   }
   return { label: 'Ignored', bgClass: 'bg-muted', textClass: 'text-faint', dotColor: '#80776e' };
-};
-
-const formatRelativeTime = (timestamp?: number) => {
-  if (!timestamp) return 'Never';
-  const now = Date.now();
-  const diff = now - timestamp;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  if (days === 0) return 'Today';
-  if (days === 1) return 'Yesterday';
-  if (days < 7) return `${days}d ago`;
-  if (days < 30) return `${Math.floor(days / 7)}w ago`;
-  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
-  return `${Math.floor(days / 365)}y ago`;
-};
-
-const formatNextReview = (timestamp?: number) => {
-  if (!timestamp) return '';
-  const now = Date.now();
-  const diff = timestamp - now;
-  if (diff <= 0) return 'Due now';
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  if (days === 0) return 'Due today';
-  if (days === 1) return 'Due tomorrow';
-  return `In ${days}d`;
 };
 
 export function VocabWordRow({ vocab, isSelected, isCompact = false, onPress, onLongPress }: VocabWordRowProps) {
@@ -102,19 +74,6 @@ export function VocabWordRow({ vocab, isSelected, isCompact = false, onPress, on
               </Text>
             </View>
 
-            {vocab.status >= STATUS_LEARNING_MIN && vocab.status <= STATUS_LEARNING_MAX && vocab.reviews !== undefined && vocab.reviews > 0 && (
-              <Text className="text-xs text-faint font-sans-medium">×{vocab.reviews}</Text>
-            )}
-
-            {vocab.status === STATUS_KNOWN && (
-              <Text className="text-xs text-faint font-sans-medium">{formatRelativeTime(vocab.lastReviewedAt)}</Text>
-            )}
-
-            {vocab.status >= STATUS_LEARNING_MIN && vocab.status <= STATUS_LEARNING_MAX && (
-              <Text className={cn("text-xs font-sans-medium", vocab.nextReviewAt && vocab.nextReviewAt <= Date.now() ? "text-accent" : "text-faint")}>
-                {formatNextReview(vocab.nextReviewAt)}
-              </Text>
-            )}
           </View>
         )}
       </View>

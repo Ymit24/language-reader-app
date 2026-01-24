@@ -11,10 +11,7 @@ interface VocabListProps {
     term: string;
     display: string;
     status: number;
-    reviews?: number | undefined;
-    nextReviewAt?: number | undefined;
     intervalDays?: number | undefined;
-    lastReviewedAt?: number | undefined;
   }[];
   selectedIds: Set<string>;
   isLoading: boolean;

@@ -32,11 +32,7 @@ type VocabItem = {
   status: number;
   meaning?: string | undefined;
   notes?: string | undefined;
-  reviews?: number | undefined;
-  nextReviewAt?: number | undefined;
   intervalDays?: number | undefined;
-  ease?: number | undefined;
-  lastReviewedAt?: number | undefined;
   createdAt: number;
 };
 

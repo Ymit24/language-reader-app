@@ -51,7 +51,6 @@ const SORT_OPTIONS = [
   { value: 'dateAdded', label: 'Date added' },
   { value: 'alphabetical', label: 'Alphabetical' },
   { value: 'status', label: 'Status' },
-  { value: 'nextReview', label: 'Next review' },
 ];
 
 export function VocabFilterBar({

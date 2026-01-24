@@ -16,7 +16,6 @@ The MVP must support:
 - Highlight: already-known words should display as “quiet/grey”; unknown/learning
   should be marked.
 - Vocab: global per user+language; carries across lessons.
-- Review: minimal SRS queue and a review session loop.
 - Works well on iPad and on web/desktop from one codebase.
 
 Non-goals for MVP:
@@ -42,12 +41,10 @@ Expo Router route groups:
 - `app/(app)/library`
 - `app/(app)/library/new`
 - `app/(app)/library/[lessonId]` (Reader)
-- `app/(app)/review`
-- `app/(app)/review/session`
 - `app/(app)/settings`
 
 Navigation chrome:
-- Small screens/iPad: bottom tabs (Library/Review/Settings)
+- Small screens/iPad: bottom tabs (Library/Vocab/Settings)
 - Desktop web: sidebar + main content
 Routes must remain identical across platforms.
 
@@ -133,7 +130,6 @@ Suggested structure:
 - `app/` Expo Router routes
 - `src/components/` reusable UI components (Button, Card, Token, etc.)
 - `src/features/reader/` reader-specific logic/components
-- `src/features/review/` review logic/components
 - `src/lib/` utilities
 - `convex/` schema + queries/mutations/actions
 - `convex/lib/` backend-only utilities (tokenization)
@@ -174,7 +170,6 @@ Keep tokenization helpers in `convex/lib/tokenize.ts` (shared backend logic) and
 - Open reader: tokens render with correct spacing/punct.
 - Tap word: word details opens, status changes persist.
 - Known words are quiet/grey across lessons.
-- Review session runs and updates due dates/status.
 - Works on:
   - iPad (touch + bottom tabs)
   - desktop web (sidebar layout + URLs)

@@ -17,11 +17,7 @@ interface VocabDetailPanelProps {
     status: number;
     meaning?: string | undefined;
     notes?: string | undefined;
-    reviews?: number | undefined;
     intervalDays?: number | undefined;
-    ease?: number | undefined;
-    nextReviewAt?: number | undefined;
-    lastReviewedAt?: number | undefined;
     createdAt: number;
   };
   onUpdateStatus: (status: number) => void;
@@ -45,19 +41,6 @@ const formatDate = (timestamp: number) => {
     day: 'numeric',
     year: 'numeric',
   });
-};
-
-const formatRelativeTime = (timestamp?: number) => {
-  if (!timestamp) return 'Never';
-  const now = Date.now();
-  const diff = now - timestamp;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  if (days === 0) return 'Today';
-  if (days === 1) return 'Yesterday';
-  if (days < 7) return `${days} days ago`;
-  if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-  if (days < 365) return `${Math.floor(days / 30)} months ago`;
-  return `${Math.floor(days / 365)} years ago`;
 };
 
 export function VocabDetailPanel({
@@ -179,31 +162,6 @@ export function VocabDetailPanel({
               Statistics
             </Text>
 
-            <View className="flex-row flex-wrap gap-4">
-              <View className="bg-muted/70 rounded-lg px-4 py-3 flex-1 min-w-[100px]">
-                <Text className="text-xs text-faint mb-1">Reviews</Text>
-                <Text className="text-xl font-sans-semibold text-ink">
-                  {vocab.reviews || 0}
-                </Text>
-              </View>
-
-              <View className="bg-muted/70 rounded-lg px-4 py-3 flex-1 min-w-[100px]">
-                <Text className="text-xs text-faint mb-1">Interval</Text>
-                <Text className="text-xl font-sans-semibold text-ink">
-                  {vocab.intervalDays || 0}d
-                </Text>
-              </View>
-
-              {isLearning && vocab.ease !== undefined && (
-                <View className="bg-muted/70 rounded-lg px-4 py-3 flex-1 min-w-[100px]">
-                  <Text className="text-xs text-faint mb-1">Ease</Text>
-                  <Text className="text-xl font-sans-semibold text-ink">
-                    {vocab.ease.toFixed(2)}
-                  </Text>
-                </View>
-              )}
-            </View>
-
             <View className="flex-row gap-4 mt-4">
               <View className="bg-muted/70 rounded-lg px-4 py-3 flex-1">
                 <Text className="text-xs text-faint mb-1">Added</Text>
@@ -211,24 +169,6 @@ export function VocabDetailPanel({
                   {formatDate(vocab.createdAt)}
                 </Text>
               </View>
-
-              {isLearning && vocab.nextReviewAt && (
-                <View className="bg-vUnknownBg rounded-lg px-4 py-3 flex-1">
-                  <Text className="text-xs text-accent mb-1">Next review</Text>
-                  <Text className="text-sm text-accent font-sans-semibold">
-                    {formatRelativeTime(vocab.nextReviewAt)}
-                  </Text>
-                </View>
-              )}
-
-              {vocab.lastReviewedAt && (
-                <View className="bg-muted/70 rounded-lg px-4 py-3 flex-1">
-                  <Text className="text-xs text-faint mb-1">Last reviewed</Text>
-                  <Text className="text-sm text-ink font-sans-medium">
-                    {formatRelativeTime(vocab.lastReviewedAt)}
-                  </Text>
-                </View>
-              )}
             </View>
           </View>
         </View>

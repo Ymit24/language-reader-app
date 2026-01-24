@@ -81,39 +81,7 @@ export const getVocabCounts = query({
   },
 });
 
-type SortBy = 'dateAdded' | 'alphabetical' | 'nextReview' | 'status';
-
-function sortVocab<T extends { createdAt: number; term: string; status: number; nextReviewAt?: number | undefined }>(
-  vocab: T[],
-  sortBy: SortBy,
-  sortOrder: 'asc' | 'desc'
-): T[] {
-  const sorted = [...vocab].sort((a, b) => {
-    let comparison = 0;
-
-    switch (sortBy) {
-      case 'dateAdded':
-        comparison = a.createdAt - b.createdAt;
-        break;
-      case 'alphabetical':
-        comparison = a.term.localeCompare(b.term);
-        break;
-      case 'status':
-        comparison = a.status - b.status;
-        break;
-      case 'nextReview':
-        if (a.nextReviewAt === undefined && b.nextReviewAt === undefined) comparison = 0;
-        else if (a.nextReviewAt === undefined) comparison = 1;
-        else if (b.nextReviewAt === undefined) comparison = -1;
-        else comparison = a.nextReviewAt - b.nextReviewAt;
-        break;
-    }
-
-    return sortOrder === 'desc' ? -comparison : comparison;
-  });
-
-  return sorted;
-}
+type SortBy = 'dateAdded' | 'alphabetical' | 'status';
 
 export const listVocab = query({
   args: {
@@ -142,10 +110,6 @@ export const listVocab = query({
       );
     } else if (sortBy === "status") {
       query = ctx.db.query("vocab").withIndex("by_user_language_status", (q) =>
-        q.eq("userId", userId).eq("language", args.language)
-      );
-    } else if (sortBy === "nextReview") {
-      query = ctx.db.query("vocab").withIndex("by_user_language_nextReviewAt", (q) =>
         q.eq("userId", userId).eq("language", args.language)
       );
     } else {

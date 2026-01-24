@@ -58,15 +58,6 @@ export default function AppLayout() {
             }}
           />
           <Tabs.Screen
-            name="review"
-            options={{
-              title: 'Review',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="repeat" size={size} color={color} />
-              ),
-            }}
-          />
-          <Tabs.Screen
             name="vocab"
             options={{
               title: 'Vocab',

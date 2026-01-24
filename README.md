@@ -8,7 +8,6 @@ A cross-platform LingQ-style reader built with React Native, Expo Router, Native
 - Library: create lessons by pasting text
 - Reader: tap words to view details and set status (unknown/learning/known)
 - Vocabulary: global per user + language, persists across lessons
-- Review: spaced repetition review queue
 
 ## Tech Stack
 
