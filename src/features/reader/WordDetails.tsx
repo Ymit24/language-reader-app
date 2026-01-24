@@ -97,9 +97,9 @@ export function WordDetails({
       desc: 'Never seen',
       icon: 'sparkles-outline',
       activeIcon: 'sparkles',
-      color: '#d97706',
-      bg: 'bg-amber-50',
-      border: 'border-amber-200',
+      color: '#b56a2c',
+      bg: 'bg-vUnknownBg',
+      border: 'border-vUnknownLine/40',
     },
     {
       value: 1,
@@ -107,9 +107,9 @@ export function WordDetails({
       desc: 'Recognize',
       icon: 'book-outline',
       activeIcon: 'book',
-      color: '#2563eb',
-      bg: 'bg-blue-50',
-      border: 'border-blue-200',
+      color: '#3c7da8',
+      bg: 'bg-vLearningBg',
+      border: 'border-vLearningLine/40',
     },
     {
       value: 3,
@@ -117,9 +117,9 @@ export function WordDetails({
       desc: 'Almost known',
       icon: 'star-outline',
       activeIcon: 'star',
-      color: '#4f46e5',
-      bg: 'bg-indigo-50',
-      border: 'border-indigo-200',
+      color: '#2f6b66',
+      bg: 'bg-brandSoft',
+      border: 'border-brand/20',
     },
     {
       value: 4,
@@ -127,20 +127,20 @@ export function WordDetails({
       desc: 'Mastered',
       icon: 'checkmark-circle-outline',
       activeIcon: 'checkmark-circle',
-      color: '#047857',
+      color: '#1d6b4f',
       bg: 'bg-successSoft',
-      border: 'border-success/20',
+      border: 'border-success/30',
     },
   ];
 
   const containerStyle = isSidebar
-    ? "flex-1 bg-white border-l border-border/50"
-    : "absolute bottom-0 left-0 right-0 max-h-[80%] bg-white shadow-pop border-t border-border/50 overflow-hidden rounded-t-3xl";
+    ? "flex-1 bg-panel border-l border-border/70"
+    : "absolute bottom-0 left-0 right-0 max-h-[80%] bg-panel shadow-pop border-t border-border/70 overflow-hidden rounded-t-3xl";
 
   const renderEntry = (entry: DictionaryEntry, keyPrefix: string) => (
     <View key={`${keyPrefix}-${JSON.stringify(entry)}`} className="mb-4 last:mb-0">
       <View className="flex-row items-center flex-wrap gap-2 mb-2">
-        <Text className="text-xs font-bold text-brand bg-brand/10 px-2 py-0.5 rounded">
+        <Text className="text-xs font-sans-semibold text-brand bg-brandSoft px-2 py-0.5 rounded">
           {entry.partOfSpeech}
         </Text>
         {entry.phonetic && (
@@ -149,20 +149,20 @@ export function WordDetails({
           </Text>
         )}
         {entry.tags?.map((tag) => (
-          <Text key={tag} className="text-xs text-faint bg-gray-100 px-2 py-0.5 rounded">
+          <Text key={tag} className="text-xs text-faint bg-muted px-2 py-0.5 rounded">
             {tag}
           </Text>
         ))}
       </View>
       {entry.definitions.map((def, defIndex) => (
         <View key={defIndex} className="mb-3 last:mb-0">
-          <Text className="text-sm text-ink leading-5">
+          <Text className="text-sm text-ink leading-5 font-sans-medium">
             {defIndex + 1}. {def.definition}
           </Text>
           {def.examples && def.examples.length > 0 && (
             <View className="mt-1 ml-4">
               {def.examples.map((example, exIndex) => (
-                <Text key={exIndex} className="text-xs text-faint italic leading-5">
+                <Text key={exIndex} className="text-xs text-faint italic leading-5 font-sans-medium">
                   &quot;{example}&quot;
                 </Text>
               ))}
@@ -177,7 +177,7 @@ export function WordDetails({
     if (isLoading) {
       return (
         <View className="px-6 py-8 items-center">
-          <ActivityIndicator size="small" color="#6b7280" />
+          <ActivityIndicator size="small" color="#80776e" />
           <Text className="text-sm text-faint mt-2">Looking up definition...</Text>
         </View>
       );
@@ -185,10 +185,10 @@ export function WordDetails({
 
     if (hasLookupError) {
       return (
-        <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
-          <View className="flex-row items-center mb-2 opacity-50">
-            <Ionicons name="search-outline" size={14} color="#4b5563" />
-            <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
+      <View className="px-6 py-4 bg-canvas/60 border-y border-border/40">
+        <View className="flex-row items-center mb-2 opacity-50">
+            <Ionicons name="search-outline" size={14} color="#524a43" />
+            <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink ml-1.5">
               Definition
             </Text>
           </View>
@@ -201,10 +201,10 @@ export function WordDetails({
 
     if ((!entries || entries.length === 0) && lemmaEntries.length === 0) {
       return (
-        <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
-          <View className="flex-row items-center mb-2 opacity-50">
-            <Ionicons name="search-outline" size={14} color="#4b5563" />
-            <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
+      <View className="px-6 py-4 bg-canvas/60 border-y border-border/40">
+        <View className="flex-row items-center mb-2 opacity-50">
+          <Ionicons name="search-outline" size={14} color="#524a43" />
+            <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink ml-1.5">
               Definition
             </Text>
           </View>
@@ -216,10 +216,10 @@ export function WordDetails({
     }
 
     return (
-      <View className="px-6 py-4 bg-canvas/50 border-y border-border/30">
+      <View className="px-6 py-4 bg-canvas/60 border-y border-border/40">
         <View className="flex-row items-center mb-3 opacity-50">
-          <Ionicons name="search-outline" size={14} color="#4b5563" />
-          <Text className="text-[10px] font-bold uppercase tracking-widest text-subink ml-1.5">
+          <Ionicons name="search-outline" size={14} color="#524a43" />
+          <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink ml-1.5">
             Definition
           </Text>
         </View>
@@ -230,7 +230,7 @@ export function WordDetails({
           <View className="mt-4 pt-4 border-t border-border/30">
             <View className="flex-row items-center gap-2 mb-3">
               <Ionicons name="git-branch-outline" size={14} color="#2563eb" />
-              <Text className="text-xs font-bold text-blue-600">
+              <Text className="text-xs font-sans-semibold text-brand">
                 Base form: {lemma}
               </Text>
             </View>
@@ -246,11 +246,11 @@ export function WordDetails({
       <View className="p-6 pb-4">
         <View className="flex-row justify-between items-start">
           <View className="flex-1 pr-4">
-            <Text className="text-3xl font-bold text-ink tracking-tight">
+            <Text className="text-3xl font-serif-bold text-ink tracking-tight">
               {surface}
             </Text>
             {surface.toLowerCase() !== normalized.toLowerCase() && (
-              <Text className="text-sm text-faint mt-0.5 font-medium italic">
+              <Text className="text-sm text-faint mt-0.5 font-sans-medium italic">
                 {normalized}
               </Text>
             )}
@@ -260,7 +260,7 @@ export function WordDetails({
             className="h-8 w-8 items-center justify-center rounded-full bg-muted active:bg-border"
             hitSlop={20}
           >
-            <Ionicons name="close" size={18} color="#4b5563" />
+            <Ionicons name="close" size={18} color="#524a43" />
           </Pressable>
         </View>
       </View>
@@ -270,7 +270,7 @@ export function WordDetails({
       </ScrollView>
 
       <View className="p-6">
-        <Text className="text-[10px] font-bold uppercase tracking-widest text-faint mb-4">
+        <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-faint mb-4">
           Set Word Status
         </Text>
         <View className={cn(
@@ -288,32 +288,32 @@ export function WordDetails({
                   isSidebar ? 'w-full' : 'flex-1 min-w-[140px]',
                   isActive
                     ? `${opt.bg} ${opt.border}`
-                    : 'bg-white border-border active:bg-muted'
+                    : 'bg-panel border-border/70 active:bg-muted/70'
                 )}
               >
                 <View className="flex-row items-center">
                   <View
                     className={cn(
                       'w-8 h-8 rounded-lg items-center justify-center mr-3',
-                      isActive ? 'bg-white/50' : 'bg-canvas'
+                      isActive ? 'bg-panel/70' : 'bg-canvas'
                     )}
                   >
                     <Ionicons
                       name={(isActive ? opt.activeIcon : opt.icon) as any}
                       size={18}
-                      color={isActive ? opt.color : '#6b7280'}
+                      color={isActive ? opt.color : '#80776e'}
                     />
                   </View>
                   <View>
                     <Text
                       className={cn(
-                        'text-sm font-bold',
+                        'text-sm font-sans-bold',
                         isActive ? 'text-ink' : 'text-subink'
                       )}
                     >
                       {opt.label}
                     </Text>
-                    <Text className="text-[10px] text-faint font-medium">
+                    <Text className="text-[10px] text-faint font-sans-medium">
                       {opt.desc}
                     </Text>
                   </View>

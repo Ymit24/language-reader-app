@@ -27,21 +27,21 @@ interface VocabWordRowProps {
 
 const getStatusConfig = (status: number) => {
   if (status === STATUS_NEW) {
-    return { label: 'New', bgClass: 'bg-blue-50', textClass: 'text-blue-700', dotColor: '#3b82f6' };
+    return { label: 'New', bgClass: 'bg-vUnknownBg', textClass: 'text-vUnknownLine', dotColor: '#d08b35' };
   }
   if (status >= STATUS_LEARNING_MIN && status <= STATUS_LEARNING_MAX) {
     const level = status - STATUS_LEARNING_MIN + 1;
     return {
       label: String(level),
-      bgClass: 'bg-amber-50',
-      textClass: 'text-amber-700',
-      dotColor: '#f59e0b'
+      bgClass: 'bg-vLearningBg',
+      textClass: 'text-vLearningLine',
+      dotColor: '#3c7da8'
     };
   }
   if (status === STATUS_KNOWN) {
-    return { label: 'Known', bgClass: 'bg-emerald-50', textClass: 'text-emerald-700', dotColor: '#10b981' };
+    return { label: 'Known', bgClass: 'bg-vKnownBg', textClass: 'text-vKnownLine', dotColor: '#2f7a57' };
   }
-  return { label: 'Ignored', bgClass: 'bg-gray-100', textClass: 'text-gray-500', dotColor: '#9ca3af' };
+  return { label: 'Ignored', bgClass: 'bg-muted', textClass: 'text-faint', dotColor: '#80776e' };
 };
 
 const formatRelativeTime = (timestamp?: number) => {
@@ -76,13 +76,13 @@ export function VocabWordRow({ vocab, isSelected, isCompact = false, onPress, on
       onPress={onPress}
       onLongPress={onLongPress}
       className={cn(
-        "flex-row items-center py-3 px-4 border-b border-gray-100 active:bg-gray-50",
-        isSelected ? "bg-blue-50" : "bg-white"
+        "flex-row items-center py-3 px-4 border-b border-border/60 active:bg-muted/60",
+        isSelected ? "bg-brandSoft/70" : "bg-panel"
       )}
     >
       <View className={cn(
         "w-5 h-5 rounded border items-center justify-center mr-3",
-        isSelected ? "bg-blue-500 border-blue-500" : "border-gray-300 bg-white"
+        isSelected ? "bg-brand border-brand" : "border-border2 bg-panel"
       )}>
         {isSelected && (
           <Ionicons name="checkmark" size={14} color="white" />
@@ -90,28 +90,28 @@ export function VocabWordRow({ vocab, isSelected, isCompact = false, onPress, on
       </View>
 
       <View className="flex-1">
-        <Text className="text-base font-medium text-ink" numberOfLines={1}>
+        <Text className="text-base font-sans-semibold text-ink" numberOfLines={1}>
           {vocab.display || vocab.term}
         </Text>
 
         {!isCompact && (
           <View className="flex-row items-center gap-2 mt-1">
             <View className={cn("px-2 py-0.5 rounded", statusConfig.bgClass)}>
-              <Text className={cn("text-xs font-medium", statusConfig.textClass)}>
+              <Text className={cn("text-xs font-sans-semibold", statusConfig.textClass)}>
                 {statusConfig.label}
               </Text>
             </View>
 
             {vocab.status >= STATUS_LEARNING_MIN && vocab.status <= STATUS_LEARNING_MAX && vocab.reviews !== undefined && vocab.reviews > 0 && (
-              <Text className="text-xs text-gray-500">×{vocab.reviews}</Text>
+              <Text className="text-xs text-faint font-sans-medium">×{vocab.reviews}</Text>
             )}
 
             {vocab.status === STATUS_KNOWN && (
-              <Text className="text-xs text-gray-500">{formatRelativeTime(vocab.lastReviewedAt)}</Text>
+              <Text className="text-xs text-faint font-sans-medium">{formatRelativeTime(vocab.lastReviewedAt)}</Text>
             )}
 
             {vocab.status >= STATUS_LEARNING_MIN && vocab.status <= STATUS_LEARNING_MAX && (
-              <Text className={cn("text-xs", vocab.nextReviewAt && vocab.nextReviewAt <= Date.now() ? "text-amber-600 font-medium" : "text-gray-500")}>
+              <Text className={cn("text-xs font-sans-medium", vocab.nextReviewAt && vocab.nextReviewAt <= Date.now() ? "text-accent" : "text-faint")}>
                 {formatNextReview(vocab.nextReviewAt)}
               </Text>
             )}

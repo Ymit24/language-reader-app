@@ -11,13 +11,14 @@ interface GradeOption {
   color: string;
   bgColor: string;
   icon: string;
+  iconColor: string;
 }
 
 const GRADE_OPTIONS: GradeOption[] = [
-  { quality: 1, label: 'Again', color: 'text-red-700', bgColor: 'bg-red-100', icon: 'refresh-circle' },
-  { quality: 3, label: 'Hard', color: 'text-amber-700', bgColor: 'bg-amber-100', icon: 'warning' },
-  { quality: 4, label: 'Good', color: 'text-green-700', bgColor: 'bg-green-100', icon: 'checkmark-circle' },
-  { quality: 5, label: 'Easy', color: 'text-blue-700', bgColor: 'bg-blue-100', icon: 'star' },
+  { quality: 1, label: 'Again', color: 'text-danger', bgColor: 'bg-dangerSoft', icon: 'refresh-circle', iconColor: '#b42318' },
+  { quality: 3, label: 'Hard', color: 'text-accent', bgColor: 'bg-vUnknownBg', icon: 'warning', iconColor: '#b56a2c' },
+  { quality: 4, label: 'Good', color: 'text-success', bgColor: 'bg-successSoft', icon: 'checkmark-circle', iconColor: '#1d6b4f' },
+  { quality: 5, label: 'Easy', color: 'text-brand', bgColor: 'bg-brandSoft', icon: 'star', iconColor: '#2f6b66' },
 ];
 
 export function GradingButtons({ onGrade }: GradingButtonsProps) {
@@ -27,10 +28,10 @@ export function GradingButtons({ onGrade }: GradingButtonsProps) {
         <Pressable
           key={option.quality}
           onPress={() => onGrade(option.quality)}
-          className={`flex-1 min-w-[70px] py-4 px-3 rounded-xl items-center ${option.bgColor}`}
+          className={`flex-1 min-w-[70px] py-4 px-3 rounded-2xl items-center ${option.bgColor}`}
         >
-          <Ionicons name={option.icon as any} size={24} color={option.color.replace('text-', '')} />
-          <Text className={`text-sm font-semibold mt-1 ${option.color}`}>
+          <Ionicons name={option.icon as any} size={24} color={option.iconColor} />
+          <Text className={`text-sm font-sans-semibold mt-1 ${option.color}`}>
             {option.label}
           </Text>
         </Pressable>

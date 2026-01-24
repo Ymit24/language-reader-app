@@ -1,7 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { PageHeader } from '@/src/components/PageHeader';
+import { ProgressBar } from '@/src/components/ProgressBar';
+import { Button } from '@/src/components/Button';
 import { useLocalSearchParams, Stack, router } from 'expo-router';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
@@ -25,33 +27,33 @@ function WordCard({ surface, normalized, keepUnknown, onToggle }: WordCardProps)
   return (
     <Pressable
       onPress={onToggle}
-      className={`w-full p-4 rounded-lg border mb-2 active:opacity-70 ${
+      className={`w-full p-4 rounded-xl border mb-3 active:opacity-80 ${
         keepUnknown
-          ? 'bg-white border-gray-200'
-          : 'bg-green-50 border-green-200'
+          ? 'bg-panel border-border/80'
+          : 'bg-successSoft border-success/30'
       }`}
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-3">
           <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
             keepUnknown
-              ? 'border-gray-300 bg-transparent'
-              : 'bg-green-500 border-green-500'
+              ? 'border-border2 bg-transparent'
+              : 'bg-success border-success'
           }`}>
             {!keepUnknown && (
-              <Text className="text-white text-xs font-bold">✓</Text>
+              <Text className="text-white text-xs font-sans-bold">✓</Text>
             )}
           </View>
           <View>
-            <Text className={`text-xl font-semibold ${keepUnknown ? 'text-ink' : 'text-green-800'}`}>
+            <Text className={`text-xl font-serif-semibold ${keepUnknown ? 'text-ink' : 'text-success'}`}>
               {surface}
             </Text>
-            <Text className={`text-sm ${keepUnknown ? 'text-gray-400' : 'text-green-600'}`}>
+            <Text className={`text-sm ${keepUnknown ? 'text-faint' : 'text-success'} font-sans-medium`}>
               {normalized}
             </Text>
           </View>
         </View>
-        <Text className={`text-xs font-medium ${keepUnknown ? 'text-gray-400' : 'text-green-600'}`}>
+        <Text className={`text-xs font-sans-semibold ${keepUnknown ? 'text-faint' : 'text-success'}`}>
           {keepUnknown ? 'Keeping unknown' : 'Will be marked known'}
         </Text>
       </View>
@@ -164,30 +166,30 @@ export default function LessonSummaryScreen() {
 
   if (!safeLessonId) {
     return (
-      <SafeAreaView className="flex-1 bg-canvas" edges={['bottom']}>
+      <ScreenLayout edges={['bottom']}>
         <NotFoundScreen />
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   if (lessonQuery === undefined || vocabData === undefined) {
     return (
-      <SafeAreaView className="flex-1 bg-canvas" edges={['bottom']}>
+      <ScreenLayout edges={['bottom']}>
         <LoadingScreen />
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   if (lessonQuery === null) {
     return (
-      <SafeAreaView className="flex-1 bg-canvas" edges={['bottom']}>
+      <ScreenLayout edges={['bottom']}>
         <NotFoundScreen />
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
+    <ScreenLayout edges={['top']}>
       <Stack.Screen
         options={{
           headerShown: false,
@@ -200,31 +202,30 @@ export default function LessonSummaryScreen() {
       />
 
       <View className="flex-1">
-        <View className="px-4 py-4 border-b border-gray-100 bg-white">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-sm text-gray-500">Review words</Text>
-            <Text className="text-sm font-medium text-ink">
+        <View className="px-5 py-4 border-b border-border/60 bg-panel/90">
+          <View className="flex-row justify-between items-center mb-3">
+            <Text className="text-xs text-faint uppercase tracking-widest font-sans-semibold">Review words</Text>
+            <Text className="text-sm font-sans-semibold text-ink">
               {willBeMarkedKnown} will be marked known
             </Text>
           </View>
-          <View className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <View
-              className="h-full bg-green-500 rounded-full"
-              style={{ width: `${percentKnown}%` }}
-            />
-          </View>
+          <ProgressBar
+            progress={percentKnown}
+            color="success"
+            height={6}
+          />
           {keepUnknownCount > 0 && (
-            <Text className="text-xs text-gray-400 mt-1">
+            <Text className="text-xs text-faint mt-2 font-sans-medium">
               {keepUnknownCount} word{keepUnknownCount !== 1 ? 's' : ''} you will keep learning
             </Text>
           )}
         </View>
 
-        <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
+        <ScrollView className="flex-1 px-5 py-4" showsVerticalScrollIndicator={false}>
           {unknownWords.length === 0 ? (
             <View className="py-12 items-center">
-              <Text className="text-lg text-ink font-medium">All words known!</Text>
-              <Text className="text-sm text-gray-400 mt-1">Tap Complete Lesson to finish</Text>
+              <Text className="text-lg text-ink font-sans-semibold">All words known!</Text>
+              <Text className="text-sm text-faint mt-1 font-sans-medium">Tap Complete Lesson to finish</Text>
             </View>
           ) : (
             <>
@@ -244,9 +245,9 @@ export default function LessonSummaryScreen() {
               {keepUnknownCount === 0 && (
                 <Pressable
                   onPress={handleKeepAllUnknown}
-                  className="mt-4 py-3 rounded-lg bg-gray-100 active:bg-gray-200 items-center"
+                  className="mt-4 py-3 rounded-lg bg-muted active:bg-muted/80 items-center"
                 >
-                  <Text className="text-sm font-medium text-ink">
+                  <Text className="text-sm font-sans-semibold text-ink">
                     Keep all {totalUnknown} words as unknown
                   </Text>
                 </Pressable>
@@ -257,22 +258,21 @@ export default function LessonSummaryScreen() {
           <View className="h-6" />
         </ScrollView>
 
-        <View className="p-4 border-t border-gray-100 bg-white gap-3">
-          <Pressable
+        <View className="p-5 border-t border-border/60 bg-panel/90 gap-3">
+          <Button
+            variant="primary"
             onPress={handleCompleteLesson}
             disabled={isCompleting}
-            className={`py-4 rounded-lg items-center ${
-              isCompleting ? 'bg-gray-200' : 'bg-green-600 active:bg-green-700'
-            }`}
+            className="py-3"
           >
             {isCompleting ? (
-              <ActivityIndicator size="small" color="#666" />
+              <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Text className="text-white font-semibold text-base">Complete Lesson</Text>
+              'Complete Lesson'
             )}
-          </Pressable>
+          </Button>
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }

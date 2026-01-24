@@ -12,32 +12,32 @@ export function ReaderHeader({ title }: ReaderHeaderProps) {
   const { lessonId } = useLocalSearchParams();
 
   return (
-    <View className={`h-20 flex-row items-center justify-between bg-canvas border-b border-border ${isLargeScreen ? 'px-[28px]' : 'px-4'}`}>
+    <View className={`h-16 flex-row items-center justify-between bg-canvas/95 border-b border-border/70 ${isLargeScreen ? 'px-[28px]' : 'px-4'}`}>
       <Pressable
         onPress={() => router.back()}
-        className="p-2 -mr-2 rounded-lg active:bg-muted/50"
+        className="h-10 w-10 items-center justify-center rounded-full active:bg-muted/80"
         hitSlop={8}
       >
         <Ionicons
           name="chevron-back"
           size={20}
-          color="#4b5563"
+          color="#524a43"
         />
       </Pressable>
 
-      <Text className="flex-1 text-center text-lg font-semibold text-ink mx-4" numberOfLines={1}>
+      <Text className="flex-1 text-center text-lg font-sans-semibold text-ink mx-4" numberOfLines={1}>
         {title}
       </Text>
 
       <Pressable
         onPress={() => router.push(`/library/${lessonId}/edit`)}
-        className="p-2 rounded-lg active:bg-muted/50"
+        className="h-10 w-10 items-center justify-center rounded-full active:bg-muted/80"
         hitSlop={8}
       >
         <Ionicons
           name="settings-outline"
           size={20}
-          color="#4b5563"
+          color="#524a43"
         />
       </Pressable>
     </View>

@@ -1,6 +1,6 @@
 import { ScrollView, View, Text, ActivityIndicator, Alert, ActionSheetIOS, Platform, useWindowDimensions } from 'react-native';
 import { useMemo } from 'react';
-import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -116,10 +116,15 @@ export default function LibraryScreen() {
   const isLoading = lessons === undefined || vocabDe === undefined || vocabFr === undefined || vocabJa === undefined;
 
   return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
-      <View className="flex-1 px-4 py-6 md:px-6">
+    <ScreenLayout edges={['top']}>
+      <View className="flex-1 px-5 pt-6 md:px-8">
         <View className="mb-6 flex-row items-center justify-between">
-          <Text className="text-2xl font-semibold tracking-tight text-ink">Library</Text>
+          <View>
+            <Text className="text-2xl font-sans-semibold tracking-tight text-ink">Library</Text>
+            <Text className="mt-1 text-sm text-subink font-sans-medium">
+              Pick up where you left off or add new lessons.
+            </Text>
+          </View>
           <Button variant="primary" onPress={handleCreateLesson}>
             New Lesson
           </Button>
@@ -136,12 +141,12 @@ export default function LibraryScreen() {
             action={<Button variant="primary" onPress={handleCreateLesson}>Create Lesson</Button>}
           />
         ) : (
-          <ScrollView
-            className="flex-1"
-            showsVerticalScrollIndicator={false}
-          >
-            <View className={`flex-row flex-wrap ${isDesktop ? 'gap-4' : 'gap-3'}`}>
-              {lessons.map((lesson) => {
+            <ScrollView
+              className="flex-1"
+              showsVerticalScrollIndicator={false}
+            >
+              <View className={`flex-row flex-wrap ${isDesktop ? 'gap-5' : 'gap-3'}`}>
+                {lessons.map((lesson) => {
                 const totalPages = Math.ceil(lesson.tokenCount / WORDS_PER_PAGE);
                 const readingPercentage = lesson.currentPage !== undefined && totalPages > 0
                   ? Math.round(((lesson.currentPage + 1) / totalPages) * 100)
@@ -155,7 +160,7 @@ export default function LibraryScreen() {
                 if (numColumns === 3) widthClass = 'w-[32%]';
 
                 return (
-                  <View 
+                  <View
                     key={lesson._id}
                     className={widthClass}
                   >
@@ -175,10 +180,10 @@ export default function LibraryScreen() {
                 );
               })}
             </View>
-            <View className="h-8" />
-          </ScrollView>
-        )}
+              <View className="h-10" />
+            </ScrollView>
+          )}
       </View>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }

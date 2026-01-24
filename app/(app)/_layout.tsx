@@ -32,14 +32,19 @@ export default function AppLayout() {
         <Tabs
           screenOptions={{
             headerShown: false,
-            tabBarActiveTintColor: '#2563eb',
-            tabBarInactiveTintColor: '#4b5563',
+            tabBarActiveTintColor: '#2f6b66',
+            tabBarInactiveTintColor: '#524a43',
+            tabBarLabelStyle: {
+              fontFamily: 'PlusJakartaSans_500Medium',
+            },
             tabBarStyle: isLargeScreen
               ? { display: 'none' }
               : {
-                  backgroundColor: '#fbfbfa',
+                  backgroundColor: '#f6f2ea',
                   borderTopWidth: 1,
-                  borderTopColor: '#e5e7eb',
+                  borderTopColor: '#e1d7c9',
+                  paddingTop: 6,
+                  height: 64,
                 },
           }}
         >

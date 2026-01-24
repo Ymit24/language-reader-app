@@ -1,5 +1,5 @@
 import { View, Text, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { PageHeader } from '@/src/components/PageHeader';
 import { useLocalSearchParams, Stack, router } from 'expo-router';
 import { useQuery } from 'convex/react';
@@ -39,22 +39,22 @@ export default function LessonReaderScreen() {
 
   if (lessonQuery === undefined) {
     return (
-      <SafeAreaView className="flex-1 bg-canvas" edges={['bottom']}>
+      <ScreenLayout edges={['bottom']} showBackground={false}>
         <LoadingScreen />
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   if (lessonQuery === null) {
     return (
-      <SafeAreaView className="flex-1 bg-canvas" edges={['bottom']}>
+      <ScreenLayout edges={['bottom']} showBackground={false}>
         <NotFoundScreen />
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
+    <ScreenLayout edges={['top']} showBackground={false}>
       <Stack.Screen options={{ headerShown: false }} />
       <PageHeader
         title={lessonQuery.title}
@@ -65,6 +65,6 @@ export default function LessonReaderScreen() {
         }}
       />
       <Reader lessonId={safeLessonId as Id<"lessons">} />
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }

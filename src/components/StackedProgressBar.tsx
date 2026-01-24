@@ -26,9 +26,9 @@ export function StackedProgressBar({
   }
 
   const segments = [
-    { key: 'known', label: 'Known', count: counts.known, color: 'bg-success' },
-    { key: 'learning', label: 'Learning', count: counts.learning, color: 'bg-amber-500' },
-    { key: 'new', label: 'New', count: counts.new, color: 'bg-blue-500' },
+    { key: 'known', label: 'Known', count: counts.known, color: 'bg-vKnownLine' },
+    { key: 'learning', label: 'Learning', count: counts.learning, color: 'bg-vLearningLine' },
+    { key: 'new', label: 'New', count: counts.new, color: 'bg-vUnknownLine' },
   ].filter(seg => seg.count > 0);
 
   const formatPercent = (count: number) => Math.round((count / actualTotal) * 100);
@@ -37,7 +37,7 @@ export function StackedProgressBar({
 
   return (
     <View className="w-full">
-      <View className={`w-full rounded-full flex-row overflow-hidden bg-border ${heightClass}`}>
+      <View className={`w-full rounded-full flex-row overflow-hidden bg-border/70 ${heightClass}`}>
         {segments.map((segment) => {
           const width = (segment.count / actualTotal) * 100;
           return (
@@ -54,7 +54,7 @@ export function StackedProgressBar({
           {segments.map((segment) => (
             <View key={segment.key} className="flex-row items-center gap-1.5">
               <View className={`w-2.5 h-2.5 rounded-full ${segment.color}`} />
-              <Text className="text-xs text-subink">
+              <Text className="text-xs text-subink font-sans-medium">
                 {segment.label}: {formatPercent(segment.count)}%
               </Text>
             </View>

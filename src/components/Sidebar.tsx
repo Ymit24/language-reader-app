@@ -71,30 +71,28 @@ export function Sidebar() {
 
   return (
     <AnimatedView 
-      className="flex-col h-full bg-canvas border-r border-border"
+      className="flex-col h-full bg-canvas border-r border-border/70"
       style={[sidebarWidthStyle, { paddingTop: insets.top, paddingBottom: insets.bottom, overflow: 'hidden' }]}
     >
       {/* Header */}
-      <View className="h-20 flex-row items-center px-[28px] justify-between">
+      <View className="h-16 flex-row items-center px-6 justify-between">
         <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
-          <Text className="text-xl font-bold text-ink" numberOfLines={1}>Reader</Text>
+          <Text className="text-xl font-sans-bold text-ink" numberOfLines={1}>Reader</Text>
         </AnimatedView>
         
         <Pressable
           onPress={toggleCollapse}
-          className="rounded-lg active:bg-muted/50"
+          className="h-9 w-9 items-center justify-center rounded-full active:bg-muted/80"
           hitSlop={8}
         >
-          <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
-            <Animated.View style={chevronRotationStyle}>
-              <PanelLeft size={20} color="#4b5563" />
-            </Animated.View>
-          </View>
+          <Animated.View style={chevronRotationStyle}>
+            <PanelLeft size={20} color="#524a43" />
+          </Animated.View>
         </Pressable>
       </View>
 
       {/* Nav Items */}
-      <View className="flex-1 mt-4">
+      <View className="flex-1 mt-3">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname.startsWith(item.href);
           
@@ -102,15 +100,15 @@ export function Sidebar() {
             <Link key={item.name} href={item.href} asChild>
               <Pressable
                 className={cn(
-                  "flex-row items-center h-12 px-[28px] mb-1 transition-colors",
-                  isActive ? "bg-brandSoft" : "active:bg-muted/50 hover:bg-muted/30"
+                  "flex-row items-center h-11 px-4 mx-2 mb-1 rounded-xl transition-colors",
+                  isActive ? "bg-brandSoft border border-brand/10" : "active:bg-muted/60 hover:bg-muted/40"
                 )}
               >
                 <View style={{ width: 24, alignItems: 'center', justifyContent: 'center' }}>
                   <Ionicons 
                     name={item.iconName as any} 
                     size={22} 
-                    color={isActive ? "#2563eb" : "#4b5563"} 
+                    color={isActive ? "#2f6b66" : "#524a43"} 
                   />
                 </View>
                 
@@ -118,8 +116,8 @@ export function Sidebar() {
                   <Text 
                     numberOfLines={1}
                     className={cn(
-                      "text-base font-medium",
-                      isActive ? "text-brand" : "text-subink"
+                      "text-base font-sans-semibold",
+                      isActive ? "text-ink" : "text-subink"
                     )}
                   >
                     {item.label}
@@ -132,9 +130,9 @@ export function Sidebar() {
       </View>
 
       {/* Footer */}
-      <View className="h-16 px-[28px] flex-row items-center">
+      <View className="h-14 px-6 flex-row items-center">
         <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
-          <Text className="text-xs text-faint" numberOfLines={1}>v1.0.0</Text>
+          <Text className="text-xs text-faint font-sans-medium" numberOfLines={1}>v1.0.0</Text>
         </AnimatedView>
       </View>
     </AnimatedView>

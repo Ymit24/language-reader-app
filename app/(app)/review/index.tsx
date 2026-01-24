@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { Button } from '@/src/components/Button';
 import { LanguageFlag } from '@/src/components/LanguageFlag';
 import { api } from '@/convex/_generated/api';
@@ -47,22 +47,22 @@ function LanguageCard({ language }: { language: LanguageInfo }) {
   };
 
   return (
-    <View className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-      <View className="flex-row items-center justify-between mb-3">
+    <View className="bg-panel/90 rounded-2xl border border-border/80 p-5 mb-4 shadow-card">
+      <View className="flex-row items-center justify-between mb-4">
         <View className="flex-row items-center gap-3">
           <LanguageFlag code={language.code} size={32} />
-          <Text className="text-xl font-semibold text-ink">{language.name}</Text>
+          <Text className="text-xl font-sans-semibold text-ink">{language.name}</Text>
         </View>
-        <View className="flex-row gap-4">
+        <View className="flex-row gap-5">
           <View className="items-end">
-            <Text className="text-xs text-subink uppercase tracking-wide">Due</Text>
-            <Text className={`text-2xl font-bold ${due > 0 ? 'text-amber-600' : 'text-gray-400'}`}>
+            <Text className="text-[11px] text-faint uppercase tracking-widest font-sans-semibold">Due</Text>
+            <Text className={`text-2xl font-sans-bold ${due > 0 ? 'text-accent' : 'text-faint/70'}`}>
               {due}
             </Text>
           </View>
           <View className="items-end">
-            <Text className="text-xs text-subink uppercase tracking-wide">Known</Text>
-            <Text className="text-2xl font-bold text-green-600">{known}</Text>
+            <Text className="text-[11px] text-faint uppercase tracking-widest font-sans-semibold">Known</Text>
+            <Text className="text-2xl font-sans-bold text-success">{known}</Text>
           </View>
         </View>
       </View>
@@ -76,7 +76,7 @@ function LanguageCard({ language }: { language: LanguageInfo }) {
         {isStarting ? (
           <View className="flex-row items-center gap-2">
             <ActivityIndicator size="small" color="white" />
-            <Text className="text-white">Starting...</Text>
+            <Text className="text-white font-sans-semibold">Starting...</Text>
           </View>
         ) : due > 0 ? (
           'Start Review Session'
@@ -96,36 +96,40 @@ export default function ReviewScreen() {
   const learning = learningCount ?? 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
-      <ScrollView className="flex-1 px-4 py-6">
-        <Text className="text-2xl font-semibold tracking-tight text-ink mb-6">Review</Text>
+    <ScreenLayout edges={['top']}>
+      <ScrollView className="flex-1 px-5 pt-6">
+        <Text className="text-2xl font-sans-semibold tracking-tight text-ink mb-1">Review</Text>
+        <Text className="text-sm text-subink font-sans-medium mb-6">
+          Keep your streak steady with short, focused sessions.
+        </Text>
 
         <View className="flex-row flex-wrap gap-4 mb-6">
-          <View className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
-            <Text className="text-xs text-amber-700 uppercase tracking-wide font-semibold">Today&apos;s Reviews</Text>
-            <Text className="text-2xl font-bold text-amber-800 mt-1">{today}</Text>
+          <View className="bg-panel/90 border border-border/80 rounded-2xl px-4 py-4 flex-1 min-w-[140px] shadow-card">
+            <Text className="text-[11px] text-faint uppercase tracking-widest font-sans-semibold">Today&apos;s Reviews</Text>
+            <Text className="text-3xl font-sans-bold text-accent mt-2">{today}</Text>
           </View>
-          <View className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex-1 min-w-[140px]">
-            <Text className="text-xs text-green-700 uppercase tracking-wide font-semibold">Learning</Text>
-            <Text className="text-2xl font-bold text-green-800 mt-1">{learning}</Text>
+          <View className="bg-panel/90 border border-border/80 rounded-2xl px-4 py-4 flex-1 min-w-[140px] shadow-card">
+            <Text className="text-[11px] text-faint uppercase tracking-widest font-sans-semibold">Learning</Text>
+            <Text className="text-3xl font-sans-bold text-success mt-2">{learning}</Text>
           </View>
         </View>
 
-        <Text className="text-sm font-medium text-subink uppercase tracking-wide mb-3">Languages</Text>
+        <Text className="text-xs font-sans-semibold text-faint uppercase tracking-widest mb-3">Languages</Text>
         {LANGUAGES.map((lang) => (
           <LanguageCard key={lang.code} language={lang} />
         ))}
 
-        <View className="mt-8 p-4 bg-muted rounded-lg border border-border">
+        <View className="mt-8 p-5 bg-panel/80 rounded-2xl border border-border/80 shadow-card">
           <View className="flex-row items-center gap-2 mb-2">
-            <Ionicons name="information-circle-outline" size={18} color="#666" />
-            <Text className="font-medium text-subink">About Spaced Repetition</Text>
+            <Ionicons name="information-circle-outline" size={18} color="#80776e" />
+            <Text className="font-sans-semibold text-subink">About spaced repetition</Text>
           </View>
-          <Text className="text-sm text-subink leading-5">
+          <Text className="text-sm text-subink leading-6 font-sans-medium">
             Review words at optimal intervals to maximize retention. Words you find difficult will appear more frequently.
           </Text>
         </View>
+        <View className="h-10" />
       </ScrollView>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { View, Text, Alert, ActivityIndicator, Platform } from 'react-native';
 import { useState } from 'react';
-import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { useConvexAuth } from 'convex/react';
 import { Button } from '@/src/components/Button';
@@ -50,23 +50,26 @@ export default function SettingsScreen() {
   const userEmail = isAuthenticated ? 'Signed in' : 'Not signed in';
 
   return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
-      <View className="flex-1 px-4 py-6">
-        <Text className="mb-6 text-2xl font-semibold tracking-tight text-ink">Settings</Text>
+    <ScreenLayout edges={['top']}>
+      <View className="flex-1 px-5 pt-6">
+        <Text className="mb-2 text-2xl font-sans-semibold tracking-tight text-ink">Settings</Text>
+        <Text className="mb-6 text-sm text-subink font-sans-medium">
+          Account details and app preferences.
+        </Text>
 
-        <View className="gap-1 rounded-md border border-border bg-panel p-4">
-          <Text className="text-xs font-medium text-faint uppercase tracking-wide">Account</Text>
+        <View className="gap-2 rounded-2xl border border-border/80 bg-panel/90 p-5 shadow-card">
+          <Text className="text-xs font-sans-semibold text-faint uppercase tracking-widest">Account</Text>
           <View className="flex-row items-center justify-between py-2">
-            <Text className="text-sm text-subink">Email</Text>
-            <Text className="text-sm font-medium text-ink">{userEmail}</Text>
+            <Text className="text-sm text-subink font-sans-medium">Email</Text>
+            <Text className="text-sm font-sans-semibold text-ink">{userEmail}</Text>
           </View>
         </View>
 
-        <View className="mt-6 gap-1 rounded-md border border-border bg-panel p-4">
-          <Text className="text-xs font-medium text-faint uppercase tracking-wide">About</Text>
+        <View className="mt-6 gap-2 rounded-2xl border border-border/80 bg-panel/90 p-5 shadow-card">
+          <Text className="text-xs font-sans-semibold text-faint uppercase tracking-widest">About</Text>
           <View className="flex-row items-center justify-between py-2">
-            <Text className="text-sm text-subink">Version</Text>
-            <Text className="text-sm font-medium text-ink">1.0.0</Text>
+            <Text className="text-sm text-subink font-sans-medium">Version</Text>
+            <Text className="text-sm font-sans-semibold text-ink">1.0.0</Text>
           </View>
         </View>
 
@@ -77,13 +80,13 @@ export default function SettingsScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#b91c1c" />
+              <ActivityIndicator color="#b42318" />
             ) : (
               'Sign Out'
             )}
           </Button>
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }

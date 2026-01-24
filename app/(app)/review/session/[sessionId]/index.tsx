@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, ActivityIndicator, Pressable } from 'react-native';
-import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { api } from '@/convex/_generated/api';
 import { useQuery, useMutation } from 'convex/react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -85,55 +85,55 @@ export default function ReviewSessionScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
+      <ScreenLayout edges={['top']}>
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" />
-          <Text className="text-subink mt-4">Loading session...</Text>
+          <Text className="text-subink mt-4 font-sans-medium">Loading session...</Text>
         </View>
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   if (hasError || !session) {
     return (
-      <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
+      <ScreenLayout edges={['top']}>
         <View className="flex-1 justify-center items-center px-8">
-          <Ionicons name="alert-circle-outline" size={64} color="#dc2626" />
-          <Text className="text-2xl font-bold text-ink mt-4 mb-2">Session Not Found</Text>
-          <Text className="text-subink text-center mb-6">
+          <Ionicons name="alert-circle-outline" size={64} color="#b42318" />
+          <Text className="text-2xl font-sans-bold text-ink mt-4 mb-2">Session Not Found</Text>
+          <Text className="text-subink text-center mb-6 font-sans-medium">
             This session may have expired or been abandoned.
           </Text>
           <Pressable
             onPress={() => router.replace('/review')}
             className="bg-ink px-6 py-3 rounded-lg"
           >
-            <Text className="text-white font-semibold">Back to Review</Text>
+            <Text className="text-white font-sans-semibold">Back to Review</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   if (sessionComplete) {
     return (
-      <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
+      <ScreenLayout edges={['top']}>
         <SessionSummary
           reviewedCount={session.reviewedCount}
           averageEase={session.reviewedCount > 0 ? session.easeSum / session.reviewedCount : 2.5}
           onContinue={handleContinue}
         />
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
-      <View className="flex-1 px-4 py-4">
+    <ScreenLayout edges={['top']}>
+      <View className="flex-1 px-5 py-4">
         <View className="flex-row items-center justify-between mb-4">
           <Pressable onPress={handleClose} className="p-2">
-            <Ionicons name="close" size={24} color="#666" />
+            <Ionicons name="close" size={24} color="#524a43" />
           </Pressable>
-          <Text className="text-sm font-medium text-subink">
+          <Text className="text-sm font-sans-semibold text-subink">
             {reviewedCount + 1} / {items.length}
           </Text>
           <View className="w-9" />
@@ -159,6 +159,6 @@ export default function ReviewSessionScreen() {
           )}
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }

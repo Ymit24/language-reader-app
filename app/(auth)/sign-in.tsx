@@ -1,5 +1,5 @@
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { Input } from '@/src/components/Input';
 import { Button } from '@/src/components/Button';
 import { useAuthActions } from '@convex-dev/auth/react';
@@ -49,12 +49,14 @@ export default function SignInScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
+    <ScreenLayout edges={['top']}>
       <View className="flex-1 items-center justify-center px-6">
-        <View className="w-full max-w-sm">
+        <View className="w-full max-w-sm bg-panel/90 border border-border/80 rounded-2xl p-6 shadow-card">
           <View className="mb-8 items-center">
-            <Text className="text-3xl font-bold text-ink">Reader</Text>
-            <Text className="mt-1 text-sm text-faint">Learn languages effectively</Text>
+            <Text className="text-3xl font-sans-bold text-ink">Reader</Text>
+            <Text className="mt-2 text-sm text-subink font-sans-medium text-center">
+              Learn with a calm, focused reading flow.
+            </Text>
           </View>
 
           <View className="gap-4">
@@ -99,7 +101,7 @@ export default function SignInScreen() {
               className="items-center py-2"
               disabled={loading}
             >
-              <Text className="text-sm text-subink">
+              <Text className="text-sm text-subink font-sans-medium">
                 {step === 'signIn' 
                   ? "Don't have an account? Sign up" 
                   : 'Already have an account? Sign in'}
@@ -108,6 +110,6 @@ export default function SignInScreen() {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }

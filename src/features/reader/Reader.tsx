@@ -216,7 +216,7 @@ export function Reader({ lessonId }: ReaderProps) {
   return (
     <View className={cn("flex-1 bg-canvas", isLargeScreen ? "flex-row" : "flex-col")}>
       <View className="flex-1">
-        <View className="px-4 py-3 border-b border-gray-100 gap-3">
+        <View className="px-5 py-4 border-b border-border/60 bg-panel/80 gap-3">
           <ProgressBar
             progress={totalPages > 0 ? ((currentPage + 1) / totalPages) * 100 : 0}
             color="brand"
@@ -275,26 +275,26 @@ export function Reader({ lessonId }: ReaderProps) {
           )}
 
           {/* Pagination Controls */}
-          <View className="absolute bottom-0 left-0 right-0 flex-row justify-between items-center px-8 py-4 bg-canvas/95 backdrop-blur-sm border-t border-gray-100/50 md:pb-6">
+          <View className="absolute bottom-0 left-0 right-0 flex-row justify-between items-center px-8 py-4 bg-canvas/95 backdrop-blur-sm border-t border-border/60 md:pb-6">
             <Pressable
               onPress={handlePrevPage}
               disabled={currentPage === 0}
-              className={`p-3 rounded-full ${currentPage === 0 ? 'opacity-20' : 'active:bg-gray-100'}`}
+              className={`p-3 rounded-full ${currentPage === 0 ? 'opacity-20' : 'active:bg-muted/70'}`}
             >
               <Text className="text-2xl text-ink font-light">←</Text>
             </Pressable>
 
-            <Text className="text-sm font-medium text-subink tracking-widest uppercase">
+            <Text className="text-xs font-sans-semibold text-subink tracking-[0.3em] uppercase">
               Page {currentPage + 1} / {totalPages || 1}
             </Text>
 
             <Pressable
               onPress={currentPage === totalPages - 1 ? handleFinishLesson : handleNextPage}
               disabled={false}
-              className={`p-3 rounded-full ${currentPage === totalPages - 1 ? 'active:bg-green-50' : 'active:bg-gray-100'}`}
+              className={`p-3 rounded-full ${currentPage === totalPages - 1 ? 'active:bg-successSoft' : 'active:bg-muted/70'}`}
             >
               <Text
-                className={`text-2xl font-light ${currentPage === totalPages - 1 ? 'text-green-600' : 'text-ink'}`}
+                className={`text-2xl font-light ${currentPage === totalPages - 1 ? 'text-success' : 'text-ink'}`}
               >
                 {currentPage === totalPages - 1 ? "✓" : "→"}
               </Text>
@@ -320,7 +320,7 @@ export function Reader({ lessonId }: ReaderProps) {
 
       {/* Sidebar for tablets / web */}
       {isLargeScreen && selectedToken && language && (
-        <View className="w-[380px] border-l border-border/50 bg-white">
+        <View className="w-[380px] border-l border-border/70 bg-panel">
           <WordDetails
             mode="sidebar"
             surface={selectedToken.surface}

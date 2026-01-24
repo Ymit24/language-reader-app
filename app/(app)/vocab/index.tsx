@@ -5,7 +5,7 @@ import {
   Pressable,
   useWindowDimensions,
 } from 'react-native';
-import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { usePaginatedQuery, useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
@@ -144,7 +144,7 @@ export default function VocabPage() {
   const counts = vocabCounts || { new: 0, recognized: 0, learning: 0, familiar: 0, known: 0, total: 0 };
 
   return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
+    <ScreenLayout edges={['top']}>
       <View className="flex-1 flex-row">
         <View className="flex-1 flex-col">
           <VocabFilterBar
@@ -175,26 +175,26 @@ export default function VocabPage() {
           </View>
 
           {selectedIds.size > 0 && (
-            <View className="bg-white border-t border-gray-200 px-4 py-3">
+            <View className="bg-panel/95 border-t border-border/70 px-4 py-3">
               <View className="flex-row items-center justify-between mb-3">
                 <View className="flex-row items-center gap-2">
-                  <Text className="text-sm text-gray-600">
+                  <Text className="text-sm text-subink font-sans-medium">
                     {selectedIds.size} word{selectedIds.size !== 1 ? 's' : ''} selected
                   </Text>
                   <Pressable
                     onPress={handleSelectAll}
-                    className="px-2 py-1 rounded active:bg-gray-100"
+                    className="px-2 py-1 rounded active:bg-muted/70"
                   >
-                    <Text className="text-xs text-gray-500 underline">
+                    <Text className="text-xs text-subink underline font-sans-medium">
                       {selectedIds.size === results.length ? 'Deselect all' : 'Select all'}
                     </Text>
                   </Pressable>
                 </View>
                 <Pressable
                   onPress={handleCloseBulkActions}
-                  className="p-1 rounded active:bg-gray-100"
+                  className="p-1 rounded active:bg-muted/70"
                 >
-                  <Ionicons name="close" size={18} color="#6b7280" />
+                  <Ionicons name="close" size={18} color="#80776e" />
                 </Pressable>
               </View>
               <View className="flex-row gap-2">
@@ -212,29 +212,29 @@ export default function VocabPage() {
                       key={status}
                       onPress={() => handleBulkUpdateStatus(status)}
                       className={cn(
-                        "flex-1 py-2 px-2 rounded-lg items-center justify-center border",
+                        "flex-1 py-2 px-2 rounded-xl items-center justify-center border",
                         color === 'blue'
-                          ? "bg-blue-50 border-blue-200"
+                          ? "bg-vLearningBg border-vLearningLine/30"
                           : color === 'amber-light'
-                          ? "bg-amber-50 border-amber-200"
+                          ? "bg-vUnknownBg border-vUnknownLine/30"
                           : color === 'amber-medium'
-                          ? "bg-amber-100 border-amber-200"
+                          ? "bg-vUnknownBg border-vUnknownLine/40"
                           : color === 'amber-dark'
-                          ? "bg-amber-200 border-amber-300"
-                          : "bg-emerald-50 border-emerald-200"
+                          ? "bg-vUnknownBg border-vUnknownLine/50"
+                          : "bg-vKnownBg border-vKnownLine/30"
                       )}
                     >
                       <Text className={cn(
-                        "text-xs font-medium",
+                        "text-xs font-sans-semibold",
                         color === 'blue'
-                          ? "text-blue-700"
+                          ? "text-vLearningLine"
                           : color === 'amber-light'
-                          ? "text-amber-700"
+                          ? "text-vUnknownLine"
                           : color === 'amber-medium'
-                          ? "text-amber-800"
+                          ? "text-vUnknownLine"
                           : color === 'amber-dark'
-                          ? "text-amber-900"
-                          : "text-emerald-700"
+                          ? "text-vUnknownLine"
+                          : "text-vKnownLine"
                       )}>
                         {label}
                       </Text>
@@ -246,6 +246,6 @@ export default function VocabPage() {
           )}
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }

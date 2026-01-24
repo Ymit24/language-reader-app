@@ -71,7 +71,7 @@ export function VocabList({
     if (!hasMore && vocab.length > 0) {
       return (
         <View className="py-6 items-center">
-          <Text className="text-sm text-gray-400">No more words</Text>
+          <Text className="text-sm text-faint font-sans-medium">No more words</Text>
         </View>
       );
     }
@@ -90,11 +90,11 @@ export function VocabList({
 
     return (
       <View className="flex-1 items-center justify-center py-20 px-8">
-        <View className="w-16 h-16 bg-gray-100 rounded-full items-center justify-center mb-4">
-          <Ionicons name="book-outline" size={32} color="#9ca3af" />
+        <View className="w-16 h-16 bg-muted rounded-full items-center justify-center mb-4">
+          <Ionicons name="book-outline" size={32} color="#80776e" />
         </View>
-        <Text className="text-lg font-medium text-ink mb-2">No words found</Text>
-        <Text className="text-sm text-gray-400 text-center">
+        <Text className="text-lg font-sans-semibold text-ink mb-2">No words found</Text>
+        <Text className="text-sm text-faint text-center font-sans-medium">
           Start reading lessons to build your vocabulary
         </Text>
       </View>
@@ -106,19 +106,19 @@ export function VocabList({
       {vocab.length > 0 && (
         <Pressable
           onPress={onSelectAll}
-          className="flex-row items-center px-4 py-2 bg-gray-50 border-b border-gray-100"
+          className="flex-row items-center px-4 py-2 bg-muted/70 border-b border-border/70"
         >
           <View className={cn(
             "w-5 h-5 rounded border items-center justify-center mr-2",
             selectedIds.size === vocab.length
-              ? "bg-blue-500 border-blue-500"
-              : "border-gray-300 bg-white"
+              ? "bg-brand border-brand"
+              : "border-border2 bg-panel"
           )}>
             {selectedIds.size === vocab.length && (
               <Ionicons name="checkmark" size={14} color="white" />
             )}
           </View>
-          <Text className="text-sm text-gray-600">
+          <Text className="text-sm text-subink font-sans-medium">
             {selectedIds.size > 0
               ? `Selected ${selectedIds.size} of ${vocab.length}`
               : `Select all (${vocab.length} words)`}

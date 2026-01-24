@@ -4,6 +4,20 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import '../global.css';
 import { Platform } from 'react-native';
+import { useFonts } from 'expo-font';
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+} from '@expo-google-fonts/plus-jakarta-sans';
+import {
+  Newsreader_400Regular,
+  Newsreader_400Regular_Italic,
+  Newsreader_500Medium,
+  Newsreader_600SemiBold,
+  Newsreader_700Bold,
+} from '@expo-google-fonts/newsreader';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
@@ -23,6 +37,21 @@ const secureStorage = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [fontsLoaded] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    Newsreader_400Regular,
+    Newsreader_400Regular_Italic,
+    Newsreader_500Medium,
+    Newsreader_600SemiBold,
+    Newsreader_700Bold,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

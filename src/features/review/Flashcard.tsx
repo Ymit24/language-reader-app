@@ -49,32 +49,32 @@ export function Flashcard({ vocab, isFlipped, onFlip }: FlashcardProps) {
     <View className="perspective-1000">
       <Pressable onPress={handlePress} className="w-full h-full">
         <Animated.View
-          className="w-full h-full bg-white rounded-2xl border-2 border-gray-200 shadow-lg justify-center items-center p-8"
+          className="w-full h-full bg-panel rounded-3xl border border-border/80 shadow-pop justify-center items-center p-8"
           style={{
             transform: [{ rotateY: frontInterpolate }],
           }}
         >
-          <Text className="text-4xl font-serif font-medium text-ink text-center">
+          <Text className="text-4xl font-serif-semibold text-ink text-center">
             {vocab.display}
           </Text>
-          <Text className="text-sm text-subink mt-4">Tap to reveal</Text>
+          <Text className="text-sm text-subink mt-4 font-sans-medium">Tap to reveal</Text>
         </Animated.View>
 
         <Animated.View
-          className="absolute inset-0 w-full h-full bg-white rounded-2xl border-2 border-green-200 shadow-lg p-8 justify-center items-center"
+          className="absolute inset-0 w-full h-full bg-panel rounded-3xl border border-success/30 shadow-pop p-8 justify-center items-center"
           style={{
             transform: [{ rotateY: backInterpolate }],
             backfaceVisibility: 'hidden',
           }}
         >
-          <Text className="text-4xl font-serif font-medium text-ink text-center mb-2">
+          <Text className="text-4xl font-serif-semibold text-ink text-center mb-2">
             {vocab.display}
           </Text>
           {vocab.reading && (
-            <Text className="text-xl text-subink mb-4">{vocab.reading}</Text>
+            <Text className="text-xl text-subink mb-4 font-sans-medium">{vocab.reading}</Text>
           )}
           {vocab.pos && (
-            <Text className="text-sm text-amber-600 uppercase tracking-wide font-semibold mb-3">
+            <Text className="text-sm text-accent uppercase tracking-widest font-sans-semibold mb-3">
               {vocab.pos}
             </Text>
           )}
@@ -83,11 +83,11 @@ export function Flashcard({ vocab, isFlipped, onFlip }: FlashcardProps) {
               {vocab.meaning}
             </Text>
           ) : (
-            <Text className="text-lg text-gray-400 text-center italic">
+            <Text className="text-lg text-faint text-center italic">
               No definition available
             </Text>
           )}
-          <Text className="text-xs text-subink mt-6">Select a rating below</Text>
+          <Text className="text-xs text-subink mt-6 font-sans-medium">Select a rating below</Text>
         </Animated.View>
       </Pressable>
     </View>

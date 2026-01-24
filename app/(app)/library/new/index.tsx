@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Pressable } from 'react-native';
-import { SafeAreaView } from '@/src/components/SafeAreaView';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { useRouter } from 'expo-router';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -47,14 +47,14 @@ export default function NewLessonScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={['top']}>
+    <ScreenLayout edges={['top']}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        <View className="flex-row items-center justify-between px-4 py-4 border-b border-border bg-canvas z-10">
+        <View className="flex-row items-center justify-between px-5 py-3 border-b border-border/70 bg-canvas/95 z-10">
           <Button variant="ghost" onPress={handleCancel}>Cancel</Button>
-          <Text className="text-lg font-semibold text-ink">New Lesson</Text>
+          <Text className="text-lg font-sans-semibold text-ink">New Lesson</Text>
           <Button 
             variant="primary" 
             onPress={handleCreate}
@@ -64,7 +64,7 @@ export default function NewLessonScreen() {
           </Button>
         </View>
 
-        <ScrollView className="flex-1 p-4">
+        <ScrollView className="flex-1 px-5 py-6">
           <View className="gap-6">
             <Input
               label="Title"
@@ -73,54 +73,53 @@ export default function NewLessonScreen() {
               onChangeText={setTitle}
             />
 
-            <View className="gap-1.5">
-              <Text className="text-sm font-medium text-ink">Language</Text>
-              <View className="flex-row gap-3">
+            <View className="gap-2">
+              <Text className="text-xs font-sans-semibold uppercase tracking-widest text-faint">Language</Text>
+              <View className="flex-row gap-3 rounded-full bg-panel border border-border/80 p-1">
                 <Pressable
                   onPress={() => setLanguage('fr')}
-                  className={`flex-1 items-center justify-center rounded-md border py-2.5 ${
+                  className={`flex-1 items-center justify-center rounded-full py-2 ${
                     language === 'fr' 
-                      ? 'bg-brand/10 border-brand' 
-                      : 'bg-panel border-border'
+                      ? 'bg-brandSoft border border-brand/20' 
+                      : 'bg-transparent'
                   }`}
                 >
-                  <Text className={`font-medium ${language === 'fr' ? 'text-brand' : 'text-ink'}`}>
+                  <Text className={`font-sans-semibold ${language === 'fr' ? 'text-ink' : 'text-subink'}`}>
                     French
                   </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setLanguage('de')}
-                  className={`flex-1 items-center justify-center rounded-md border py-2.5 ${
+                  className={`flex-1 items-center justify-center rounded-full py-2 ${
                     language === 'de' 
-                      ? 'bg-brand/10 border-brand' 
-                      : 'bg-panel border-border'
+                      ? 'bg-brandSoft border border-brand/20' 
+                      : 'bg-transparent'
                   }`}
                 >
-                  <Text className={`font-medium ${language === 'de' ? 'text-brand' : 'text-ink'}`}>
+                  <Text className={`font-sans-semibold ${language === 'de' ? 'text-ink' : 'text-subink'}`}>
                     German
                   </Text>
                 </Pressable>
               </View>
             </View>
 
-            <View className="gap-1.5 flex-1 min-h-[200px]">
-              <Text className="text-sm font-medium text-ink">Content</Text>
+            <View className="gap-2 flex-1 min-h-[200px]">
+              <Text className="text-xs font-sans-semibold uppercase tracking-widest text-faint">Content</Text>
               <TextInput
-                className="flex-1 rounded-md border border-border bg-panel p-3 text-base text-ink leading-relaxed"
+                className="flex-1 rounded-xl border border-border/80 bg-panel p-4 text-base text-ink leading-relaxed font-serif"
                 placeholder="Paste your text here..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#80776e"
                 multiline
                 textAlignVertical="top"
                 value={text}
                 onChangeText={setText}
-                style={{ minHeight: 200 }}
+                style={{ minHeight: 220 }}
               />
             </View>
           </View>
-          {/* Bottom spacer */}
-          <View className="h-8" />
+          <View className="h-10" />
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }

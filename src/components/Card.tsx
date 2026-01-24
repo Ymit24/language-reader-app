@@ -10,7 +10,7 @@ interface CardProps {
 
 export function Card({ children, className = '' }: CardProps) {
   return (
-    <View className={`rounded-md border border-border bg-panel ${className}`}>
+    <View className={`rounded-xl border border-border/80 bg-panel shadow-card ${className}`}>
       {children}
     </View>
   );
@@ -20,25 +20,25 @@ export function Card({ children, className = '' }: CardProps) {
 
 function LanguageThumbnail({ language, variant }: { language: string, variant: 'list' | 'grid' }) {
   const colors: Record<string, string> = {
-    DE: 'bg-yellow-100 text-yellow-800',
-    FR: 'bg-blue-100 text-blue-800',
-    JA: 'bg-red-100 text-red-800',
+    DE: 'bg-[#f4e6cf] text-[#7a4f1f]',
+    FR: 'bg-[#e3edf6] text-[#2c5b7a]',
+    JA: 'bg-[#f4e3df] text-[#7a3f34]',
   };
-  
-  const style = colors[language] || 'bg-gray-100 text-gray-800';
+
+  const style = colors[language] || 'bg-muted text-subink';
   const [bgClass, textClass] = style.split(' ');
 
   if (variant === 'list') {
     return (
-      <View className={`h-12 w-12 items-center justify-center rounded-md ${bgClass}`}>
-        <Text className={`text-xs font-bold ${textClass}`}>{language}</Text>
+      <View className={`h-12 w-12 items-center justify-center rounded-lg ${bgClass}`}>
+        <Text className={`text-xs font-sans-semibold tracking-wide ${textClass}`}>{language}</Text>
       </View>
     );
   }
 
   return (
-    <View className={`h-24 w-full items-center justify-center rounded-t-md ${bgClass}`}>
-      <Text className={`text-2xl font-bold ${textClass}`}>{language}</Text>
+    <View className={`h-24 w-full items-center justify-center rounded-t-xl ${bgClass}`}>
+      <Text className={`text-2xl font-sans-bold tracking-wide ${textClass}`}>{language}</Text>
     </View>
   );
 }
@@ -71,7 +71,7 @@ export function LessonCard({
   if (variant === 'grid') {
     return (
       <Pressable
-        className={`flex-1 rounded-lg border border-border ${cardBackground} active:opacity-90 ${className}`}
+        className={`flex-1 rounded-xl border border-border/80 ${cardBackground} shadow-card active:opacity-90 ${className}`}
         style={{ overflow: 'hidden' }}
         {...props}
       >
@@ -86,14 +86,14 @@ export function LessonCard({
         
         <View className="p-4 gap-3 flex-1">
           <View>
-            <Text className="text-base font-semibold text-ink leading-tight" numberOfLines={2}>
+            <Text className="text-base font-sans-semibold text-ink leading-tight" numberOfLines={2}>
               {title}
             </Text>
-            <Text className="mt-1 text-xs text-faint">
+            <Text className="mt-1 text-xs text-faint font-sans-medium">
               {duration} · {openedDate}
             </Text>
             {isCompleted && (
-              <Text className="mt-1 text-xs text-green-600 font-medium">Completed</Text>
+              <Text className="mt-1 text-xs text-success font-sans-semibold">Completed</Text>
             )}
           </View>
           
@@ -120,7 +120,7 @@ export function LessonCard({
 
   return (
     <Pressable
-      className={`rounded-lg border border-border ${cardBackground} p-3 active:bg-muted ${className}`}
+      className={`rounded-xl border border-border/80 ${cardBackground} p-3 shadow-card active:bg-muted ${className}`}
       {...props}
     >
       <View className="flex-row gap-3 items-center">
@@ -129,14 +129,14 @@ export function LessonCard({
         <View className="flex-1 justify-between">
           <View className="flex-row items-start justify-between">
             <View className="flex-1 pr-2">
-              <Text className="text-base font-semibold text-ink leading-tight" numberOfLines={1}>
+              <Text className="text-base font-sans-semibold text-ink leading-tight" numberOfLines={1}>
                 {title}
               </Text>
-              <Text className="mt-0.5 text-xs text-faint">
+              <Text className="mt-0.5 text-xs text-faint font-sans-medium">
                 {duration} · {openedDate}
               </Text>
               {isCompleted && (
-                <Text className="mt-1 text-xs text-green-600 font-medium">Completed</Text>
+                <Text className="mt-1 text-xs text-success font-sans-semibold">Completed</Text>
               )}
             </View>
             {isCompleted && <CompletedBadge />}
@@ -173,8 +173,8 @@ interface EmptyStateProps {
 export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
     <View className="flex-1 items-center justify-center px-4 py-12">
-      <Text className="text-center text-lg font-semibold text-ink">{title}</Text>
-      <Text className="mt-2 text-center text-sm text-subink">{description}</Text>
+      <Text className="text-center text-lg font-sans-semibold text-ink">{title}</Text>
+      <Text className="mt-2 text-center text-sm text-subink font-sans-medium">{description}</Text>
       {action && <View className="mt-4">{action}</View>}
     </View>
   );

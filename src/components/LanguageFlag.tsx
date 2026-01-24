@@ -10,7 +10,7 @@ export function LanguageFlag({ code, size = 32 }: LanguageFlagProps) {
 
   const flagStyle = {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#e1d7c9',
   };
 
   switch (code) {

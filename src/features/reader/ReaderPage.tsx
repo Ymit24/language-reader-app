@@ -71,15 +71,15 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, se
   return (
     <ScrollView
       ref={scrollViewRef}
-      className="flex-1 px-6 md:px-12 lg:px-24 py-8"
-      contentContainerStyle={{ paddingBottom: 120 }}
+      className="flex-1 px-6 md:px-12 lg:px-20 pt-8"
+      contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
     >
-      <View className="flex-col items-start justify-start">
+      <View className="flex-col items-start justify-start w-full max-w-3xl self-center">
         {paragraphs.map((paraTokens, paraIndex) => (
           <Text
             key={`para-${paraIndex}`}
-            className="mb-6"
+            className="mb-7"
             onLayout={(e) => {
               const event = e.nativeEvent;
               if (event != null && event.layout != null && event.layout.y !== undefined) {

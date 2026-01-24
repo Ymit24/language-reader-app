@@ -76,21 +76,21 @@ export function VocabFilterBar({
   };
 
   return (
-    <View className="bg-white border-b border-gray-200" style={{ zIndex: 10, overflow: 'visible' }}>
-      <View className="px-4 py-3">
-        <View className="flex-row items-center gap-2 mb-3">
-          <View className="flex-row bg-gray-100 rounded-lg p-1">
+    <View className="bg-panel/90 border-b border-border/70" style={{ zIndex: 10, overflow: 'visible' }}>
+      <View className="px-5 py-4">
+        <View className="flex-row items-center gap-2 mb-4">
+          <View className="flex-row bg-muted rounded-full p-1">
             {LANGUAGE_OPTIONS.map((lang) => (
               <Pressable
                 key={lang.value}
                 onPress={() => onLanguageChange(lang.value)}
                 className={cn(
-                  "px-3 py-1.5 rounded-md",
-                  selectedLanguage === lang.value ? "bg-white shadow-sm" : "active:bg-gray-200"
+                  "px-3 py-1.5 rounded-full",
+                  selectedLanguage === lang.value ? "bg-panel shadow-card" : "active:bg-muted"
                 )}
               >
                 <Text className={cn(
-                  "text-sm font-medium",
+                  "text-sm font-sans-semibold",
                   selectedLanguage === lang.value ? "text-ink" : "text-subink"
                 )}>
                   {lang.flag} {lang.label}
@@ -101,18 +101,18 @@ export function VocabFilterBar({
         </View>
 
         <View className="flex-row items-center gap-2" style={{ zIndex: 20, overflow: 'visible' }}>
-          <View className="flex-1 flex-row items-center bg-gray-100 rounded-lg px-3 py-2">
-            <Ionicons name="search" size={18} color="#9ca3af" />
+          <View className="flex-1 flex-row items-center bg-muted rounded-xl px-3 py-2.5">
+            <Ionicons name="search" size={18} color="#80776e" />
             <TextInput
               value={searchQuery}
               onChangeText={onSearchChange}
               placeholder="Search words..."
-              placeholderTextColor="#9ca3af"
-              className="flex-1 ml-2 text-sm text-ink"
+              placeholderTextColor="#80776e"
+              className="flex-1 ml-2 text-sm text-ink font-sans-medium"
             />
             {searchQuery.length > 0 && (
               <Pressable onPress={() => onSearchChange('')} hitSlop={8}>
-                <Ionicons name="close-circle" size={18} color="#9ca3af" />
+                <Ionicons name="close-circle" size={18} color="#80776e" />
               </Pressable>
             )}
           </View>
@@ -120,16 +120,16 @@ export function VocabFilterBar({
           <View className="relative" style={{ zIndex: 30 }}>
             <Pressable
               onPress={() => setShowSortMenu(!showSortMenu)}
-              className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg active:bg-gray-200"
+              className="flex-row items-center bg-muted px-3 py-2.5 rounded-xl active:bg-muted/70"
             >
-              <Ionicons name="options" size={18} color="#6b7280" />
-              <Text className="ml-2 text-sm font-medium text-gray-700">Sort</Text>
-              <Ionicons name="chevron-down" size={14} color="#6b7280" className="ml-1" />
+              <Ionicons name="options" size={18} color="#524a43" />
+              <Text className="ml-2 text-sm font-sans-semibold text-subink">Sort</Text>
+              <Ionicons name="chevron-down" size={14} color="#524a43" className="ml-1" />
             </Pressable>
 
             {showSortMenu && (
               <View 
-                className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[160px]"
+                className="absolute top-full right-0 mt-2 bg-panel rounded-xl shadow-pop border border-border/80 py-1 min-w-[180px]"
                 style={{ zIndex: 1000, elevation: 5 }}
               >
                 {SORT_OPTIONS.map((option) => (
@@ -140,13 +140,13 @@ export function VocabFilterBar({
                       setShowSortMenu(false);
                     }}
                     className={cn(
-                      "px-4 py-2 active:bg-gray-100",
-                      sortBy === option.value && "bg-gray-50"
+                      "px-4 py-2.5 active:bg-muted",
+                      sortBy === option.value && "bg-muted/60"
                     )}
                   >
                     <Text className={cn(
                       "text-sm",
-                      sortBy === option.value ? "font-medium text-ink" : "text-subink"
+                      sortBy === option.value ? "font-sans-semibold text-ink" : "text-subink"
                     )}>
                       {option.label}
                     </Text>
@@ -161,7 +161,7 @@ export function VocabFilterBar({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="border-t border-gray-100 px-4 py-2"
+        className="border-t border-border/60 px-5 py-2"
         contentContainerStyle={{ gap: 8 }}
       >
         <Pressable
@@ -170,18 +170,18 @@ export function VocabFilterBar({
             "px-3 py-1.5 rounded-full flex-row items-center gap-1.5 border",
             statusFilter.length === 0
               ? "bg-ink border-ink"
-              : "bg-white border-gray-200 active:bg-gray-50"
+              : "bg-panel border-border/70 active:bg-muted/70"
           )}
         >
           <Text className={cn(
-            "text-sm font-medium",
-            statusFilter.length === 0 ? "text-white" : "text-gray-700"
+            "text-sm font-sans-semibold",
+            statusFilter.length === 0 ? "text-white" : "text-subink"
           )}>
             All
           </Text>
           <Text className={cn(
             "text-xs",
-            statusFilter.length === 0 ? "text-blue-100" : "text-gray-400"
+            statusFilter.length === 0 ? "text-white/70" : "text-faint"
           )}>
             {counts.total}
           </Text>
@@ -200,36 +200,36 @@ export function VocabFilterBar({
                 "px-3 py-1.5 rounded-full flex-row items-center gap-1.5 border",
                 isActive
                   ? color === 'blue'
-                    ? "bg-blue-50 border-blue-200"
+                    ? "bg-vLearningBg border-vLearningLine/30"
                     : color === 'amber-light'
-                    ? "bg-amber-50 border-amber-200"
+                    ? "bg-vUnknownBg border-vUnknownLine/30"
                     : color === 'amber-medium'
-                    ? "bg-amber-100 border-amber-200"
+                    ? "bg-vUnknownBg border-vUnknownLine/40"
                     : color === 'amber-dark'
-                    ? "bg-amber-200 border-amber-300"
-                    : "bg-emerald-50 border-emerald-200"
-                  : "bg-white border-gray-200 active:bg-gray-50"
+                    ? "bg-vUnknownBg border-vUnknownLine/50"
+                    : "bg-vKnownBg border-vKnownLine/30"
+                  : "bg-panel border-border/70 active:bg-muted/70"
               )}
             >
               <Text className={cn(
-                "text-sm font-medium",
+                "text-sm font-sans-semibold",
                 isActive
                   ? color === 'blue'
-                    ? "text-blue-700"
+                    ? "text-vLearningLine"
                     : color === 'amber-light'
-                    ? "text-amber-700"
+                    ? "text-vUnknownLine"
                     : color === 'amber-medium'
-                    ? "text-amber-800"
+                    ? "text-vUnknownLine"
                     : color === 'amber-dark'
-                    ? "text-amber-900"
-                    : "text-emerald-700"
-                  : "text-gray-700"
+                    ? "text-vUnknownLine"
+                    : "text-vKnownLine"
+                  : "text-subink"
               )}>
                 {option.label}
               </Text>
               <Text className={cn(
                 "text-xs",
-                isActive ? "text-gray-500" : "text-gray-400"
+                isActive ? "text-faint" : "text-faint/80"
               )}>
                 {count}
               </Text>
