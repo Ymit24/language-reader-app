@@ -15,6 +15,7 @@ import Animated, {
   withTiming,
   useSharedValue,
 } from 'react-native-reanimated';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface SessionItem {
   _id: Id<'reviewSessionItems'>;
@@ -31,6 +32,7 @@ export default function ReviewSession() {
   const router = useRouter();
   const params = useLocalSearchParams<{ language: string }>();
   const language = (params.language || 'fr') as 'fr' | 'de' | 'ja';
+  const { colors } = useAppTheme();
 
   const [sessionId, setSessionId] = useState<Id<'reviewSessions'> | null>(null);
   const [items, setItems] = useState<SessionItem[]>([]);
@@ -156,7 +158,7 @@ export default function ReviewSession() {
       <SafeAreaView className="flex-1 bg-canvas items-center justify-center">
         <View className="items-center gap-4">
           <View className="w-16 h-16 rounded-full bg-muted items-center justify-center">
-            <Ionicons name="flash" size={32} color="#9a8c7e" />
+            <Ionicons name="flash" size={32} color={colors['--faint']} />
           </View>
           <Text className="text-lg font-sans-semibold text-ink">
             Loading review...
@@ -200,7 +202,7 @@ export default function ReviewSession() {
           onPress={handleClose}
           className="w-10 h-10 rounded-full items-center justify-center bg-muted/50 active:bg-muted"
         >
-          <Ionicons name="close" size={24} color="#524a43" />
+          <Ionicons name="close" size={24} color={colors['--subink']} />
         </Pressable>
 
         {/* Progress */}
@@ -232,7 +234,7 @@ export default function ReviewSession() {
             definition={currentItem.vocab.definition}
             context={currentItem.vocab.context}
             example={currentItem.vocab.example}
-            language={currentItem.vocab.language}
+            language={currentItem.vocab.language as 'fr' | 'de' | 'ja'}
             onSwipeLeft={handleSwipeLeft}
             onSwipeRight={handleSwipeRight}
           />

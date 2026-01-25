@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 type LanguageFlagProps = {
   code: 'fr' | 'de' | 'ja';
@@ -6,11 +7,12 @@ type LanguageFlagProps = {
 };
 
 export function LanguageFlag({ code, size = 32 }: LanguageFlagProps) {
+  const { colors } = useAppTheme();
   const flagSize = size;
 
   const flagStyle = {
     borderWidth: 1,
-    borderColor: '#e1d7c9',
+    borderColor: colors['--border'],
   };
 
   switch (code) {

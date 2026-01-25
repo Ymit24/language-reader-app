@@ -1,15 +1,15 @@
-import { ScrollView, View, Text, ActivityIndicator, Alert, ActionSheetIOS, Platform, useWindowDimensions, Pressable } from 'react-native';
-import { useMemo, useState } from 'react';
-import { Plus } from 'lucide-react-native';
-import { ScreenLayout } from '@/src/components/ScreenLayout';
-import { useRouter } from 'expo-router';
-import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { Button } from '@/src/components/Button';
-import { LessonCard, EmptyState } from '@/src/components/Card';
 import { Id } from '@/convex/_generated/dataModel';
-import type { VocabCounts } from '@/src/components/StackedProgressBar';
+import { Button } from '@/src/components/Button';
+import { EmptyState, LessonCard } from '@/src/components/Card';
 import { Input } from '@/src/components/Input';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
+import type { VocabCounts } from '@/src/components/StackedProgressBar';
+import { useMutation, useQuery } from 'convex/react';
+import { useRouter } from 'expo-router';
+import { Plus } from 'lucide-react-native';
+import { useMemo, useState } from 'react';
+import { ActionSheetIOS, ActivityIndicator, Alert, Platform, Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 // Estimated reading speed (words per minute)
 const WORDS_PER_MINUTE = 200;
@@ -33,7 +33,7 @@ function FilterPill({ label, isActive, onPress }: FilterPillProps) {
   return (
     <Pressable
       onPress={onPress}
-      className={`px-3 py-1.5 rounded-full border ${isActive ? 'bg-ink border-ink' : 'bg-panel border-border/80'} active:opacity-80`}
+      className={`px-3 py-1.5 rounded-full border ${isActive ? 'bg-brand border-brand' : 'bg-panel border-border/80'} active:opacity-80`}
     >
       <Text className={`text-xs font-sans-semibold ${isActive ? 'text-white' : 'text-subink'}`}>
         {label}

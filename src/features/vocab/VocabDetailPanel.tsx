@@ -12,8 +12,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
-import { VocabStatus, getStatusLabel, getStatusColor } from './StatusBadge';
+import { VocabStatus, getStatusColor } from './StatusBadge';
 import { cn } from '../../lib/utils';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface DictionaryEntry {
   partOfSpeech: string;
@@ -65,6 +66,7 @@ export function VocabDetailPanel({
   onClose,
   onDeleted,
 }: VocabDetailPanelProps) {
+  const { colors } = useAppTheme();
   const [meaning, setMeaning] = useState(initialMeaning || '');
   const [notes, setNotes] = useState(initialNotes || '');
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -155,7 +157,7 @@ export function VocabDetailPanel({
     return (
       <View className="flex-1 items-center justify-center bg-panel border-l border-border/70 px-6">
         <View className="w-16 h-16 rounded-full bg-muted items-center justify-center mb-4">
-          <Ionicons name="book-outline" size={28} color="#80776e" />
+          <Ionicons name="book-outline" size={28} color={colors['--faint']} />
         </View>
         <Text className="text-base font-sans-semibold text-subink text-center">
           Select a word to view details
@@ -184,7 +186,7 @@ export function VocabDetailPanel({
             className="h-8 w-8 items-center justify-center rounded-full bg-muted active:bg-border"
             hitSlop={20}
           >
-            <Ionicons name="close" size={18} color="#524a43" />
+            <Ionicons name="close" size={18} color={colors['--subink']} />
           </Pressable>
         </View>
       </View>
@@ -193,7 +195,7 @@ export function VocabDetailPanel({
         {/* Dictionary section */}
         <View className="px-6 py-4 bg-canvas/60 border-b border-border/40">
           <View className="flex-row items-center mb-3 opacity-50">
-            <Ionicons name="search-outline" size={14} color="#524a43" />
+            <Ionicons name="search-outline" size={14} color={colors['--subink']} />
             <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink ml-1.5">
               Definition
             </Text>
@@ -201,7 +203,7 @@ export function VocabDetailPanel({
 
           {isLookingUp ? (
             <View className="py-4 items-center">
-              <ActivityIndicator size="small" color="#80776e" />
+              <ActivityIndicator size="small" color={colors['--faint']} />
               <Text className="text-sm text-faint mt-2">Looking up definition...</Text>
             </View>
           ) : lookupResult?.success &&
@@ -235,7 +237,7 @@ export function VocabDetailPanel({
               {lookupResult.lemma && lookupResult.lemmaEntries.length > 0 && (
                 <View className="mt-4 pt-4 border-t border-border/30">
                   <View className="flex-row items-center gap-2 mb-2">
-                    <Ionicons name="git-branch-outline" size={14} color="#2563eb" />
+                    <Ionicons name="git-branch-outline" size={14} color={colors['--brand']} />
                     <Text className="text-xs font-sans-semibold text-brand">
                       Base form: {lookupResult.lemma}
                     </Text>
@@ -282,7 +284,7 @@ export function VocabDetailPanel({
             onChangeText={setMeaning}
             onBlur={handleMeaningSave}
             placeholder="Add your own meaning..."
-            placeholderTextColor="#80776e"
+            placeholderTextColor={colors['--faint']}
             multiline
             className="text-sm text-ink font-sans-medium bg-canvas/80 border border-border/50 rounded-lg p-3 min-h-[60px]"
           />
@@ -298,7 +300,7 @@ export function VocabDetailPanel({
             onChangeText={setNotes}
             onBlur={handleNotesSave}
             placeholder="Add notes, examples, mnemonics..."
-            placeholderTextColor="#80776e"
+            placeholderTextColor={colors['--faint']}
             multiline
             className="text-sm text-ink font-sans-medium bg-canvas/80 border border-border/50 rounded-lg p-3 min-h-[80px]"
           />
@@ -312,7 +314,14 @@ export function VocabDetailPanel({
           <View className="flex-row flex-wrap gap-2">
             {STATUS_OPTIONS.map((opt) => {
               const isActive = status === opt.value;
-              const color = getStatusColor(opt.value);
+              const color = getStatusColor(opt.value, colors);
+              const activeBgClass: Record<VocabStatus, string> = {
+                0: 'bg-vUnknownBg',
+                1: 'bg-vLearningBg',
+                2: 'bg-vLearningBg',
+                3: 'bg-brandSoft',
+                4: 'bg-successSoft',
+              };
               return (
                 <Pressable
                   key={opt.value}
@@ -320,15 +329,14 @@ export function VocabDetailPanel({
                   className={cn(
                     'flex-row items-center px-3 py-2 rounded-lg border',
                     isActive
-                      ? 'border-transparent'
+                      ? cn('border-transparent', activeBgClass[opt.value])
                       : 'border-border/70 bg-panel'
                   )}
-                  style={isActive ? { backgroundColor: `${color}20` } : undefined}
                 >
                   <Ionicons
                     name={opt.icon as any}
                     size={16}
-                    color={isActive ? color : '#80776e'}
+                      color={isActive ? color : colors['--faint']}
                   />
                   <Text
                     className={cn(
@@ -352,7 +360,7 @@ export function VocabDetailPanel({
           onPress={handleDelete}
           className="flex-row items-center justify-center py-3 rounded-lg border border-error/30 bg-error/5 active:bg-error/10"
         >
-          <Ionicons name="trash-outline" size={18} color="#dc2626" />
+          <Ionicons name="trash-outline" size={18} color={colors['--danger']} />
           <Text className="ml-2 text-sm font-sans-semibold text-error">
             Delete Word
           </Text>

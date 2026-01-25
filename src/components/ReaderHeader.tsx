@@ -1,6 +1,7 @@
 import { View, Text, Pressable, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface ReaderHeaderProps {
   title: string;
@@ -10,6 +11,7 @@ export function ReaderHeader({ title }: ReaderHeaderProps) {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const { lessonId } = useLocalSearchParams();
+  const { colors } = useAppTheme();
 
   return (
     <View className={`h-16 flex-row items-center justify-between bg-canvas/95 border-b border-border/70 ${isLargeScreen ? 'px-6' : 'px-4'}`}>
@@ -21,7 +23,7 @@ export function ReaderHeader({ title }: ReaderHeaderProps) {
         <Ionicons
           name="chevron-back"
           size={20}
-          color="#524a43"
+          color={colors['--subink']}
         />
       </Pressable>
 
@@ -37,7 +39,7 @@ export function ReaderHeader({ title }: ReaderHeaderProps) {
         <Ionicons
           name="settings-outline"
           size={20}
-          color="#524a43"
+          color={colors['--subink']}
         />
       </Pressable>
     </View>

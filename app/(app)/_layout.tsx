@@ -4,6 +4,7 @@ import { useConvexAuth, useQuery } from 'convex/react';
 import { Ionicons } from '@expo/vector-icons';
 import { Sidebar } from '../../src/components/Sidebar';
 import { api } from '@/convex/_generated/api';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 function LoadingScreen() {
   return (
@@ -14,6 +15,7 @@ function LoadingScreen() {
 }
 
 function ReviewTabIcon({ color, size, focused }: { color: string; size: number; focused: boolean }) {
+  const { colors } = useAppTheme();
   const dueCount = useQuery(api.review.getTodayReviewCount);
   
   return (
@@ -25,7 +27,7 @@ function ReviewTabIcon({ color, size, focused }: { color: string; size: number; 
             position: 'absolute',
             right: -8,
             top: -4,
-            backgroundColor: '#b56a2c',
+            backgroundColor: colors['--accent'],
             borderRadius: 10,
             minWidth: 18,
             height: 18,
@@ -47,6 +49,7 @@ export default function AppLayout() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
+  const { colors, alpha } = useAppTheme();
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -63,17 +66,17 @@ export default function AppLayout() {
         <Tabs
           screenOptions={{
             headerShown: false,
-            tabBarActiveTintColor: '#2f6b66',
-            tabBarInactiveTintColor: '#524a43',
+            tabBarActiveTintColor: colors['--brand'],
+            tabBarInactiveTintColor: colors['--subink'],
             tabBarLabelStyle: {
               fontFamily: 'PlusJakartaSans_500Medium',
             },
             tabBarStyle: isLargeScreen
               ? { display: 'none' }
               : {
-                  backgroundColor: '#f6f2ea',
+                  backgroundColor: colors['--canvas'],
                   borderTopWidth: 1,
-                  borderTopColor: '#e1d7c9',
+                  borderTopColor: alpha('--border', 0.9),
                   paddingTop: 6,
                   height: 64,
                 },

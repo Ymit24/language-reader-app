@@ -3,6 +3,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { LevelBadge } from './LevelBadge';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface ProgressHeaderProps {
   level: number;
@@ -25,6 +26,7 @@ export function ProgressHeader({
   currentStreak,
   isLoading = false,
 }: ProgressHeaderProps) {
+  const { colors } = useAppTheme();
   if (isLoading) {
     return (
       <View className="rounded-2xl border border-border/80 bg-panel p-5 shadow-card">
@@ -78,7 +80,7 @@ export function ProgressHeader({
               className="flex-row items-center"
               style={{ flexShrink: 0, marginLeft: 12 }}
             >
-              <Ionicons name="flame" size={18} color="#b56a2c" />
+              <Ionicons name="flame" size={18} color={colors['--accent']} />
               <Text
                 className="text-sm font-sans-bold text-accent"
                 style={{ marginLeft: 4 }}

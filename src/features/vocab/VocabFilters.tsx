@@ -3,6 +3,7 @@ import { View, Text, Pressable, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { cn } from '../../lib/utils';
 import { VocabStatus } from './StatusBadge';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 type Language = 'de' | 'fr' | 'ja';
 type SortBy = 'dateAdded' | 'alphabetical' | 'status';
@@ -69,6 +70,7 @@ export function VocabFilterBar({
   onSortOrderChange,
   counts,
 }: VocabFilterBarProps) {
+  const { colors } = useAppTheme();
   return (
     <View className="gap-3 pb-3">
       {/* Language tabs */}
@@ -104,19 +106,19 @@ export function VocabFilterBar({
       )}
 
       {/* Search bar */}
-      <View className="flex-row items-center gap-2">
-        <View className="flex-1 flex-row items-center bg-panel border border-border/70 rounded-lg px-3 py-2">
-          <Ionicons name="search" size={18} color="#80776e" />
+        <View className="flex-row items-center gap-2">
+          <View className="flex-1 flex-row items-center bg-panel border border-border/70 rounded-lg px-3 py-2">
+          <Ionicons name="search" size={18} color={colors['--faint']} />
           <TextInput
             value={searchQuery}
             onChangeText={onSearchChange}
             placeholder="Search words..."
-            placeholderTextColor="#80776e"
+            placeholderTextColor={colors['--faint']}
             className="flex-1 ml-2 text-sm text-ink font-sans-medium"
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => onSearchChange('')} hitSlop={8}>
-              <Ionicons name="close-circle" size={18} color="#80776e" />
+              <Ionicons name="close-circle" size={18} color={colors['--faint']} />
             </Pressable>
           )}
         </View>
@@ -130,7 +132,7 @@ export function VocabFilterBar({
           }}
           className="flex-row items-center bg-panel border border-border/70 rounded-lg px-3 py-2"
         >
-          <Ionicons name="swap-vertical" size={18} color="#524a43" />
+          <Ionicons name="swap-vertical" size={18} color={colors['--subink']} />
           <Text className="ml-1 text-sm text-subink font-sans-medium">
             {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
           </Text>
@@ -144,7 +146,7 @@ export function VocabFilterBar({
           <Ionicons
             name={sortOrder === 'asc' ? 'arrow-up' : 'arrow-down'}
             size={18}
-            color="#524a43"
+            color={colors['--subink']}
           />
         </Pressable>
       </View>

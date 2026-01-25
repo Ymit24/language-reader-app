@@ -16,6 +16,7 @@ import {
   GestureDetector,
 } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface FlashCardProps {
   word: string;
@@ -61,6 +62,7 @@ export function FlashCard({
   onSwipeRight,
   isInteractive = true,
 }: FlashCardProps) {
+  const { colors } = useAppTheme();
   const [isFlipped, setIsFlipped] = useState(false);
   const [lookupResult, setLookupResult] = useState<LookupResult | null>(null);
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -253,7 +255,7 @@ export function FlashCard({
               top: 20,
               right: 20,
               zIndex: 10,
-              backgroundColor: '#ef4444',
+              backgroundColor: colors['--danger'],
               paddingHorizontal: 16,
               paddingVertical: 8,
               borderRadius: 8,
@@ -271,7 +273,7 @@ export function FlashCard({
               top: 20,
               left: 20,
               zIndex: 10,
-              backgroundColor: '#22c55e',
+              backgroundColor: colors['--success'],
               paddingHorizontal: 16,
               paddingVertical: 8,
               borderRadius: 8,
@@ -297,9 +299,9 @@ export function FlashCard({
                 width: '100%',
                 height: '100%',
                 borderRadius: 24,
-                backgroundColor: '#fff',
+                backgroundColor: colors['--panel'],
                 borderWidth: 1,
-                borderColor: '#e1d7c9',
+                borderColor: colors['--border'],
                 borderTopWidth: 4,
                 borderTopColor: accentColor,
                 shadowColor: '#000',
@@ -320,7 +322,7 @@ export function FlashCard({
                   </Text>
                 )}
               <View className="absolute bottom-8 flex-row items-center gap-2">
-                <Ionicons name="hand-left-outline" size={16} color="#9a8c7e" />
+                <Ionicons name="hand-left-outline" size={16} color={colors['--faint']} />
                 <Text className="text-sm text-faint font-sans-medium">
                   Tap to reveal
                 </Text>
@@ -337,9 +339,9 @@ export function FlashCard({
                 width: '100%',
                 height: '100%',
                 borderRadius: 24,
-                backgroundColor: '#faf8f5',
+                backgroundColor: colors['--canvas'],
                 borderWidth: 1,
-                borderColor: '#e1d7c9',
+                borderColor: colors['--border'],
                 borderTopWidth: 4,
                 borderTopColor: accentColor,
                 shadowColor: '#000',
@@ -363,7 +365,7 @@ export function FlashCard({
                 {/* Definition */}
                 {isLookingUp ? (
                   <View className="items-center gap-2">
-                    <ActivityIndicator size="small" color="#80776e" />
+                    <ActivityIndicator size="small" color={colors['--faint']} />
                     <Text className="text-sm text-faint font-sans-medium">
                       Looking up definition...
                     </Text>
@@ -401,7 +403,7 @@ export function FlashCard({
 
               {/* Hint */}
               <View className="flex-row items-center justify-center gap-2">
-                <Ionicons name="swap-horizontal" size={16} color="#9a8c7e" />
+                <Ionicons name="swap-horizontal" size={16} color={colors['--faint']} />
                 <Text className="text-sm text-faint font-sans-medium">
                   Swipe to grade
                 </Text>

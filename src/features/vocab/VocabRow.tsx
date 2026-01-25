@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Id } from '../../../convex/_generated/dataModel';
 import { StatusBadge, VocabStatus } from './StatusBadge';
 import { cn } from '../../lib/utils';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 export interface VocabItem {
   _id: Id<'vocab'>;
@@ -30,6 +31,7 @@ export const VocabRow = memo(function VocabRow({
   onPress,
   selectionMode,
 }: VocabRowProps) {
+  const { colors } = useAppTheme();
   return (
     <Pressable
       onPress={onPress}
@@ -80,7 +82,7 @@ export const VocabRow = memo(function VocabRow({
       {/* Active indicator */}
       {isActive && (
         <View className="ml-3">
-          <Ionicons name="chevron-forward" size={16} color="#2f6b66" />
+          <Ionicons name="chevron-forward" size={16} color={colors['--brand']} />
         </View>
       )}
     </Pressable>

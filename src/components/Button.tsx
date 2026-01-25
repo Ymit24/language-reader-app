@@ -8,7 +8,7 @@ interface ButtonProps extends TouchableOpacityProps {
 }
 
 const variantStyles = {
-  primary: 'bg-ink active:bg-ink/90',
+  primary: 'bg-brand active:bg-brand/90',
   secondary: 'border border-border/80 bg-panel active:bg-muted',
   ghost: 'active:bg-muted/80',
   destructive: 'bg-dangerSoft border border-danger/30 active:bg-dangerSoft/70',

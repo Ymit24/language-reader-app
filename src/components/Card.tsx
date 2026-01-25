@@ -70,7 +70,7 @@ export function LessonCard({
   className = '',
   ...props
 }: LessonCardProps) {
-  const cardBackground = isCompleted ? 'bg-stone-50' : 'bg-panel';
+  const cardBackground = isCompleted ? 'bg-muted/60' : 'bg-panel';
   const titleStyle = variant === 'feature' ? 'text-xl md:text-2xl' : 'text-base';
   const paddingStyle = variant === 'feature' ? 'p-5 md:p-6' : 'p-4';
   const progressLabel = readingPercentage === undefined

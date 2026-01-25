@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const withOpacity = (variable) => `rgb(var(${variable}) / <alpha-value>)`;
+
 module.exports = {
   content: [
     "./app/**/*.{js,jsx,ts,tsx}",
@@ -8,27 +10,27 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        canvas: "#f6f2ea",
-        panel: "#fffdf8",
-        muted: "#f0ebe1",
-        ink: "#1f1a17",
-        subink: "#524a43",
-        faint: "#80776e",
-        border: "#e1d7c9",
-        border2: "#cdbfaf",
-        brand: "#2f6b66",
-        brandSoft: "#e4f1ef",
-        accent: "#b56a2c",
-        danger: "#b42318",
-        dangerSoft: "#fdeeee",
-        success: "#1d6b4f",
-        successSoft: "#e8f5ef",
-        vUnknownBg: "#fdf1e1",
-        vUnknownLine: "#d08b35",
-        vLearningBg: "#e6eef5",
-        vLearningLine: "#3c7da8",
-        vKnownBg: "#e6f3ec",
-        vKnownLine: "#2f7a57",
+        canvas: withOpacity("--canvas"),
+        panel: withOpacity("--panel"),
+        muted: withOpacity("--muted"),
+        ink: withOpacity("--ink"),
+        subink: withOpacity("--subink"),
+        faint: withOpacity("--faint"),
+        border: withOpacity("--border"),
+        border2: withOpacity("--border2"),
+        brand: withOpacity("--brand"),
+        brandSoft: withOpacity("--brandSoft"),
+        accent: withOpacity("--accent"),
+        danger: withOpacity("--danger"),
+        dangerSoft: withOpacity("--dangerSoft"),
+        success: withOpacity("--success"),
+        successSoft: withOpacity("--successSoft"),
+        vUnknownBg: withOpacity("--vUnknownBg"),
+        vUnknownLine: withOpacity("--vUnknownLine"),
+        vLearningBg: withOpacity("--vLearningBg"),
+        vLearningLine: withOpacity("--vLearningLine"),
+        vKnownBg: withOpacity("--vKnownBg"),
+        vKnownLine: withOpacity("--vKnownLine"),
       },
       boxShadow: {
         card: "0 1px 2px rgba(31,26,23,0.06)",

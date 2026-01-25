@@ -10,6 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { LevelBadge } from './LevelBadge';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface SessionSummaryProps {
   totalCards: number;
@@ -32,6 +33,7 @@ export function SessionSummary({
   newTitle,
   onDone,
 }: SessionSummaryProps) {
+  const { colors } = useAppTheme();
   const accuracy = Math.round((correctCount / totalCards) * 100);
   
   const cardScale = useSharedValue(0);
@@ -125,7 +127,7 @@ export function SessionSummary({
             className="items-center mb-6 py-4 px-6 rounded-2xl bg-gradient-to-r from-brandSoft to-successSoft"
           >
             <View className="flex-row items-center gap-2 mb-2">
-              <Ionicons name="trophy" size={24} color="#b56a2c" />
+              <Ionicons name="trophy" size={24} color={colors['--accent']} />
               <Text className="text-lg font-sans-bold text-accent">
                 Level Up!
               </Text>
@@ -160,7 +162,7 @@ export function SessionSummary({
 
           {/* Streak */}
           <View className="flex-row items-center justify-center gap-2 py-3">
-            <Ionicons name="flame" size={20} color="#b56a2c" />
+            <Ionicons name="flame" size={20} color={colors['--accent']} />
             <Text className="text-lg font-sans-bold text-accent">
               {currentStreak} day streak
             </Text>
@@ -171,7 +173,7 @@ export function SessionSummary({
         <Animated.View style={buttonAnimStyle}>
           <Pressable
             onPress={onDone}
-            className="w-full py-4 rounded-xl bg-ink items-center active:bg-ink/90"
+            className="w-full py-4 rounded-xl bg-brand items-center active:bg-brand/90"
           >
             <Text className="text-base font-sans-bold text-white">
               Done

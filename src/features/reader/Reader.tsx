@@ -9,6 +9,7 @@ import { ReaderPage } from './ReaderPage';
 import { WordDetails } from './WordDetails';
 import { cn } from '../../lib/utils';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface ReaderProps {
   lesson: Doc<"lessons"> & { tokens: Doc<"lessonTokens">[] };
@@ -28,6 +29,7 @@ const INSPECTOR_WIDTH = 360;
 
 export function Reader({ lesson }: ReaderProps) {
   const router = useRouter();
+  const { colors } = useAppTheme();
   const { width, height: windowHeight } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const carouselRef = useRef<ICarouselInstance>(null);
@@ -275,7 +277,7 @@ export function Reader({ lesson }: ReaderProps) {
                 disabled={!canGoPrev}
                 className={cn('h-10 w-10 items-center justify-center rounded-full', !canGoPrev ? 'opacity-20' : 'active:bg-muted/70')}
               >
-                <Ionicons name="chevron-back" size={22} color="#1f1a17" />
+                <Ionicons name="chevron-back" size={22} color={colors['--ink']} />
               </Pressable>
 
               <Text className="text-xs font-sans-semibold text-subink tracking-[0.3em] uppercase">
@@ -293,7 +295,7 @@ export function Reader({ lesson }: ReaderProps) {
                 <Ionicons
                   name={isLastPage ? 'checkmark' : 'chevron-forward'}
                   size={22}
-                  color={isLastPage ? '#1d6b4f' : '#1f1a17'}
+                  color={isLastPage ? colors['--success'] : colors['--ink']}
                 />
               </Pressable>
             </View>
@@ -304,7 +306,8 @@ export function Reader({ lesson }: ReaderProps) {
       {showInspector && selectedToken && selectedToken.normalized && (
         <View className={cn('absolute inset-0', isLargeScreen ? 'items-end' : 'justify-end')}>
           <Pressable
-            className="absolute inset-0 bg-ink/10"
+            className="absolute inset-0"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.35)' }}
             onPress={() => {
               setIsInspectorOpen(false);
               setSelectedToken(null);

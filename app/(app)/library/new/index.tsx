@@ -6,9 +6,11 @@ import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Button } from '@/src/components/Button';
 import { Input } from '@/src/components/Input';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 export default function NewLessonScreen() {
   const router = useRouter();
+  const { colors } = useAppTheme();
   const createLesson = useMutation(api.lessons.createLesson);
 
   const [title, setTitle] = useState('');
@@ -108,7 +110,7 @@ export default function NewLessonScreen() {
               <TextInput
                 className="flex-1 rounded-xl border border-border/80 bg-panel p-4 text-base text-ink leading-relaxed font-serif"
                 placeholder="Paste your text here..."
-                placeholderTextColor="#80776e"
+                placeholderTextColor={colors['--faint']}
                 multiline
                 textAlignVertical="top"
                 value={text}

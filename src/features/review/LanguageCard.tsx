@@ -169,7 +169,7 @@ export function LanguageCard({
           {hasDue && (
             <Pressable
               onPress={onStartReview}
-              className="flex-row items-center justify-center gap-2 py-3 rounded-xl bg-ink active:bg-ink/90"
+              className="flex-row items-center justify-center gap-2 py-3 rounded-xl bg-brand active:bg-brand/90"
             >
               <Ionicons name="flash" size={18} color="#fff" />
               <Text className="text-sm font-sans-bold text-white">

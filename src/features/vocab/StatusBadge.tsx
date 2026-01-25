@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { cn } from '../../lib/utils';
+import type { ThemeColors } from '@/src/theme/AppThemeProvider';
 
 export type VocabStatus = 0 | 1 | 2 | 3 | 4;
 
@@ -45,13 +46,13 @@ export function getStatusLabel(status: VocabStatus): string {
   return STATUS_CONFIG[status]?.label || 'Unknown';
 }
 
-export function getStatusColor(status: VocabStatus): string {
-  const colors: Record<VocabStatus, string> = {
-    0: '#b56a2c',
-    1: '#3c7da8',
-    2: '#3c7da8',
-    3: '#2f6b66',
-    4: '#1d6b4f',
+export function getStatusColor(status: VocabStatus, colors: ThemeColors): string {
+  const colorMap: Record<VocabStatus, string> = {
+    0: colors['--vUnknownLine'],
+    1: colors['--vLearningLine'],
+    2: colors['--vLearningLine'],
+    3: colors['--brand'],
+    4: colors['--success'],
   };
-  return colors[status] || '#80776e';
+  return colorMap[status] || colors['--faint'];
 }

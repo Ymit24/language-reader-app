@@ -7,9 +7,11 @@ import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
 import { Button } from '@/src/components/Button';
 import { Input } from '@/src/components/Input';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 export default function EditLessonScreen() {
   const router = useRouter();
+  const { colors } = useAppTheme();
   const { lessonId } = useLocalSearchParams();
   const lessonIdValidated = lessonId as string;
   const updateLesson = useMutation(api.lessons.updateLesson);
@@ -168,7 +170,7 @@ export default function EditLessonScreen() {
               <TextInput
                 className="flex-1 rounded-xl border border-border/80 bg-panel p-4 text-base text-ink leading-relaxed font-serif"
                 placeholder="Paste your text here..."
-                placeholderTextColor="#80776e"
+                placeholderTextColor={colors['--faint']}
                 multiline
                 textAlignVertical="top"
                 value={text}

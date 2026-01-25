@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { VocabStatus, getStatusLabel, getStatusColor } from './StatusBadge';
+import { VocabStatus, getStatusColor } from './StatusBadge';
 import { cn } from '../../lib/utils';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface BulkActionBarProps {
   selectedCount: number;
@@ -25,6 +26,7 @@ export function BulkActionBar({
   visible,
 }: BulkActionBarProps) {
   const [showStatusPicker, setShowStatusPicker] = useState(false);
+  const { colors } = useAppTheme();
 
   if (!visible) return null;
 
@@ -56,7 +58,7 @@ export function BulkActionBar({
             <Ionicons
               name="flag"
               size={16}
-              color={showStatusPicker ? '#2f6b66' : '#524a43'}
+              color={showStatusPicker ? colors['--brand'] : colors['--subink']}
             />
             <Text
               className={cn(
@@ -69,7 +71,7 @@ export function BulkActionBar({
             <Ionicons
               name={showStatusPicker ? 'chevron-up' : 'chevron-down'}
               size={14}
-              color={showStatusPicker ? '#2f6b66' : '#80776e'}
+              color={showStatusPicker ? colors['--brand'] : colors['--faint']}
               style={{ marginLeft: 4 }}
             />
           </Pressable>
@@ -79,7 +81,7 @@ export function BulkActionBar({
             onPress={onDeselectAll}
             className="flex-row items-center px-3 py-2 rounded-lg bg-muted border border-border/70"
           >
-            <Ionicons name="close" size={16} color="#524a43" />
+            <Ionicons name="close" size={16} color={colors['--subink']} />
             <Text className="ml-1 text-sm font-sans-semibold text-subink">
               Deselect
             </Text>
@@ -92,7 +94,7 @@ export function BulkActionBar({
         <View className="px-4 pb-4">
           <View className="flex-row flex-wrap gap-2">
             {STATUS_OPTIONS.map((opt) => {
-              const color = getStatusColor(opt.value);
+              const color = getStatusColor(opt.value, colors);
               return (
                 <Pressable
                   key={opt.value}

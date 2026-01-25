@@ -2,6 +2,7 @@ import React, { useCallback, useRef } from 'react';
 import { View, Text, FlatList, ActivityIndicator, Pressable } from 'react-native';
 import { Id } from '../../../convex/_generated/dataModel';
 import { VocabRow, VocabItem } from './VocabRow';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface VocabListProps {
   data: VocabItem[];
@@ -30,6 +31,7 @@ export function VocabList({
   onLoadMore,
   emptyMessage = 'No vocabulary yet',
 }: VocabListProps) {
+  const { colors } = useAppTheme();
   const listRef = useRef<FlatList>(null);
 
   const renderItem = useCallback(
@@ -65,7 +67,7 @@ export function VocabList({
   if (isLoading && data.length === 0) {
     return (
       <View className="flex-1 items-center justify-center py-12">
-        <ActivityIndicator size="large" color="#2f6b66" />
+        <ActivityIndicator size="large" color={colors['--brand']} />
         <Text className="text-sm text-subink font-sans-medium mt-3">
           Loading vocabulary...
         </Text>

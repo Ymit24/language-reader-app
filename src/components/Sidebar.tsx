@@ -13,6 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../lib/utils';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 const AnimatedView = Animated.View;
 
@@ -38,6 +39,7 @@ export function Sidebar() {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const router = useRouter();
+  const { colors, alpha } = useAppTheme();
   const isCollapsed = useSharedValue(false);
   const [collapsed, setCollapsed] = React.useState(false);
   const dueCount = useQuery(api.review.getTodayReviewCount);
@@ -76,7 +78,7 @@ export function Sidebar() {
           paddingBottom: insets.bottom,
           overflow: 'hidden',
           borderRightWidth: 1,
-          borderRightColor: 'rgba(225, 215, 201, 0.7)', // border color with 70% opacity
+          borderRightColor: alpha('--border', 0.7),
         }
       ]}
     >
@@ -96,8 +98,8 @@ export function Sidebar() {
         >
           {
             collapsed
-              ? <PanelLeft size={20} color="#524a43" />
-              : <PanelRight size={20} color="#524a43" />
+              ? <PanelLeft size={20} color={colors['--subink']} />
+              : <PanelRight size={20} color={colors['--subink']} />
           }
         </Pressable>
       </View>
@@ -115,11 +117,11 @@ export function Sidebar() {
               className="flex-row items-center h-11 px-4 mx-2 mb-1 rounded-xl"
               style={({ pressed }) => [
                 isActive && {
-                  backgroundColor: '#e4f1ef',
-                  borderColor: 'rgba(47, 107, 102, 0.1)',
+                  backgroundColor: colors['--brandSoft'],
+                  borderColor: alpha('--brand', 0.1),
                   borderWidth: 1,
                 },
-                pressed && !isActive && { backgroundColor: '#f0ebe1' },
+                pressed && !isActive && { backgroundColor: colors['--muted'] },
               ]}
               focusable={false}
               accessibilityRole="link"
@@ -128,7 +130,7 @@ export function Sidebar() {
                 <Ionicons
                   name={item.iconName as any}
                   size={22}
-                  color={isActive ? "#2f6b66" : "#524a43"}
+                  color={isActive ? colors['--brand'] : colors['--subink']}
                 />
                 {showBadge && (
                   <View
@@ -136,7 +138,7 @@ export function Sidebar() {
                       position: 'absolute',
                       right: -8,
                       top: -6,
-                      backgroundColor: '#b56a2c',
+                      backgroundColor: colors['--accent'],
                       borderRadius: 8,
                       minWidth: 16,
                       height: 16,
@@ -170,7 +172,7 @@ export function Sidebar() {
 
       {/* Footer */}
       <View className="h-14 px-6 flex-row items-center">
-        <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
+        <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}> 
           <Text className="text-xs text-faint font-sans-medium" numberOfLines={1}>v1.0.0</Text>
         </AnimatedView>
       </View>

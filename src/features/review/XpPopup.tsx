@@ -8,6 +8,7 @@ import Animated, {
   withDelay,
   runOnJS,
 } from 'react-native-reanimated';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface XpPopupProps {
   xp: number;
@@ -16,6 +17,7 @@ interface XpPopupProps {
 }
 
 export function XpPopup({ xp, bonusXp = 0, onComplete }: XpPopupProps) {
+  const { colors } = useAppTheme();
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.5);
@@ -62,11 +64,11 @@ export function XpPopup({ xp, bonusXp = 0, onComplete }: XpPopupProps) {
           alignSelf: 'center',
           top: '40%',
           zIndex: 100,
-          backgroundColor: '#22c55e',
+          backgroundColor: colors['--success'],
           paddingHorizontal: 16,
           paddingVertical: 8,
           borderRadius: 12,
-          shadowColor: '#22c55e',
+          shadowColor: colors['--success'],
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.3,
           shadowRadius: 8,

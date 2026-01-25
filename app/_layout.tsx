@@ -1,4 +1,3 @@
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import {
   Newsreader_400Regular,
@@ -24,6 +23,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
+import { AppThemeProvider, useAppTheme } from '@/src/theme/AppThemeProvider';
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
   unsavedChangesWarning: false,
@@ -36,7 +36,6 @@ const secureStorage = {
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [fontsLoaded] = useFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
@@ -64,12 +63,22 @@ export default function RootLayout() {
         }
       >
         <SafeAreaProvider>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <Slot />
-            <StatusBar style="auto" />
-          </ThemeProvider>
+          <AppThemeProvider>
+            <RootThemeBridge />
+          </AppThemeProvider>
         </SafeAreaProvider>
       </ConvexAuthProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function RootThemeBridge() {
+  const { isDark } = useAppTheme();
+
+  return (
+    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+      <Slot />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+    </ThemeProvider>
   );
 }

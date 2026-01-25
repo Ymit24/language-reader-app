@@ -1,5 +1,6 @@
 import { View, Text, Pressable, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface PageHeaderProps {
   title: string;
@@ -16,6 +17,7 @@ interface PageHeaderProps {
 export function PageHeader({ title, leftAction, rightAction }: PageHeaderProps) {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
+  const { colors } = useAppTheme();
 
   return (
     <View className={`h-16 flex-row items-center justify-between bg-canvas/95 border-b border-border/70 ${isLargeScreen ? 'px-[28px]' : 'px-4'}`}>
@@ -27,7 +29,7 @@ export function PageHeader({ title, leftAction, rightAction }: PageHeaderProps) 
         <Ionicons
           name={leftAction?.icon ?? 'chevron-back'}
           size={20}
-          color="#524a43"
+          color={colors['--subink']}
         />
       </Pressable>
 
@@ -43,7 +45,7 @@ export function PageHeader({ title, leftAction, rightAction }: PageHeaderProps) 
         <Ionicons
           name={rightAction?.icon ?? 'settings-outline'}
           size={20}
-          color="#524a43"
+          color={colors['--subink']}
         />
       </Pressable>
     </View>
