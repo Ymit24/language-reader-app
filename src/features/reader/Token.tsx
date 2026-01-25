@@ -1,15 +1,15 @@
-import React, { memo, useEffect, useCallback, useRef } from 'react';
-import { Text, LayoutChangeEvent, View } from 'react-native';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
+import React, { memo, useCallback, useEffect, useRef } from 'react';
+import { LayoutChangeEvent, Text } from 'react-native';
 import Animated, {
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
-  withTiming,
   withSequence,
   withSpring,
-  interpolateColor,
+  withTiming,
 } from 'react-native-reanimated';
 import { cn } from '../../lib/utils';
-import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 export type TokenStatus = 'new' | 'learning' | 'familiar' | 'known';
 
@@ -100,17 +100,17 @@ function TokenComponent({
           baseBgColor = colors['--vUnknownBg'];
           break;
         case 'learning':
-          bgClass = 'bg-vLearningBg';
+          bgClass = 'bg-none';
           textClass = 'text-vLearningLine';
           baseBgColor = colors['--vLearningBg'];
           break;
         case 'familiar':
-          bgClass = 'bg-vFamiliarBg';
+          bgClass = 'bg-none';
           textClass = 'text-vFamiliarLine';
           baseBgColor = colors['--vFamiliarBg'];
           break;
         case 'known':
-          bgClass = 'bg-transparent';
+          bgClass = 'bg-none';
           textClass = 'text-subink';
           baseBgColor = 'transparent';
           break;

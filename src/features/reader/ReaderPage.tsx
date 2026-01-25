@@ -1,14 +1,14 @@
-import React, { useMemo, useCallback, useRef, useEffect } from 'react';
-import { View, ScrollView, Text, LayoutChangeEvent, LayoutRectangle } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { LayoutChangeEvent, LayoutRectangle, ScrollView, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS, useSharedValue } from 'react-native-reanimated';
-import { Token, TokenStatus } from './Token';
 import {
-  useTextSelection,
+  TextSelectionProvider,
   TokenBounds,
   TokenType,
-  TextSelectionProvider,
+  useTextSelection,
 } from './TextSelectionProvider';
+import { Token, TokenStatus } from './Token';
 
 interface ReaderPageProps {
   tokens: TokenType[];
