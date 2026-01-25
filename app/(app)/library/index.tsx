@@ -1,5 +1,6 @@
 import { ScrollView, View, Text, ActivityIndicator, Alert, ActionSheetIOS, Platform, useWindowDimensions, Pressable } from 'react-native';
 import { useMemo, useState } from 'react';
+import { Plus } from 'lucide-react-native';
 import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation } from 'convex/react';
@@ -184,15 +185,11 @@ export default function LibraryScreen() {
   return (
     <ScreenLayout edges={['top']}>
       <View className="flex-1 px-5 pt-6 md:px-8">
-        <View className="mb-5 flex-row items-center justify-between">
-          <View>
-            <Text className="text-2xl font-sans-semibold tracking-tight text-ink">Library</Text>
-            <Text className="mt-1 text-sm text-subink font-sans-medium">
-              Keep your texts close and your progress steady.
-            </Text>
-          </View>
-          <Button variant="primary" onPress={handleCreateLesson}>
-            New Lesson
+        <View className="mb-6 flex-row items-center justify-between">
+          <Text className="text-3xl font-sans-bold tracking-tight text-ink">Library</Text>
+          <Button variant="primary" onPress={handleCreateLesson} className="shadow-sm">
+            <Plus color="#FFF" size={20} strokeWidth={2.5} />
+            <Text className="text-white font-sans-semibold">New Lesson</Text>
           </Button>
         </View>
 
