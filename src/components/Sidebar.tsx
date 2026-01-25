@@ -1,4 +1,5 @@
 import { api } from '@/convex/_generated/api';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from 'convex/react';
 import { usePathname, useRouter } from 'expo-router';
@@ -13,7 +14,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../lib/utils';
-import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 const AnimatedView = Animated.View;
 
@@ -173,7 +173,7 @@ export function Sidebar() {
       {/* Footer */}
       <View className="h-14 px-6 flex-row items-center">
         <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}> 
-          <Text className="text-xs text-faint font-sans-medium" numberOfLines={1}>v1.0.0</Text>
+          <Text className="text-xs text-faint font-sans-medium" numberOfLines={1}>v1.0.0-dev</Text>
         </AnimatedView>
       </View>
     </AnimatedView>

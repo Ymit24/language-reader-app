@@ -100,6 +100,7 @@ function ReaderPageContent({
 
   const computeAndRegisterBounds = useCallback(
     (tokenIndex: number) => {
+      console.log(`computeAndRegisterBounds for tokenIndex: ${tokenIndex}`);
       const layout = tokenLayoutsRef.current.get(tokenIndex);
       if (!layout) return;
 
@@ -169,6 +170,7 @@ function ReaderPageContent({
   const handleTokenLayout = useCallback(
     (tokenIndex: number, paraIndex: number, event: LayoutChangeEvent) => {
       const { x, y, width, height } = event.nativeEvent.layout;
+      console.log(`handleTokenLayout: tokenIndex: ${tokenIndex}, paraIndex: ${paraIndex}, x: ${x}, y: ${y}, width: ${width}, height: ${height}`);
       tokenLayoutsRef.current.set(tokenIndex, { x, y, width, height, paraIndex });
       computeAndRegisterBounds(tokenIndex);
     },
@@ -179,18 +181,28 @@ function ReaderPageContent({
   // x, y are relative to the GestureDetector view (which wraps ScrollView)
   const findTokenAtPosition = useCallback(
     (x: number, y: number): number | null => {
+      console.log(`findTokenAtPosition(x: ${x}, y: ${y}) - looking for token`);
+      console.log(`findTokenAtPosition - total tokens: ${tokens.length}. Tokens: `, tokens[0]);
       const scrollOffset = scrollOffsetRef.current;
       const { x: insetX, y: insetY } = contentInsetRef.current;
 
       // Convert gesture position to content position (accounting for scroll)
       const contentY = y - insetY + scrollOffset;
       const contentX = x - insetX;
+      console.log(`findTokenAtPosition - contentX: ${contentX}, contentY: ${contentY}, token positions ref entries: ${tokenPositionsRef.current.size}`);
 
       // Find matching token using page-local indices
       for (const [pageLocalIndex, bounds] of tokenPositionsRef.current.entries()) {
         // Verify this is a valid index and is a word token
-        if (pageLocalIndex < 0 || pageLocalIndex >= tokens.length) continue;
-        if (!tokens[pageLocalIndex]?.isWord) continue;
+        console.log(`findTokenAtPosition - checking token index: ${pageLocalIndex}`);
+        if (pageLocalIndex < 0 || pageLocalIndex >= tokens.length) {
+          console.log(`findTokenAtPosition - skipping invalid index: ${pageLocalIndex}`);
+          continue;
+        }
+        if (!tokens[pageLocalIndex]?.isWord) {
+          console.log(`findTokenAtPosition - skipping non-word token at index: ${pageLocalIndex}`);
+          continue;
+        }
 
         // Expand hit area slightly for easier selection
         const hitPadding = 8;
@@ -200,7 +212,10 @@ function ReaderPageContent({
           contentY >= bounds.y - hitPadding &&
           contentY <= bounds.y + bounds.height + hitPadding
         ) {
+          console.log(`findTokenAtPosition - found exact match at index: ${pageLocalIndex}`);
           return pageLocalIndex;
+        } else {
+          console.log(`findTokenAtPosition - no match at index: ${pageLocalIndex}`);
         }
       }
 
@@ -255,6 +270,7 @@ function ReaderPageContent({
   const handleDragUpdate = useCallback(
     (x: number, y: number) => {
       const tokenIndex = findTokenAtPosition(x, y);
+      console.log('handleDragUpdate', x, y, 'found tokenIndex:', tokenIndex);
       if (tokenIndex !== null) {
         updateSelection(tokenIndex);
       }
@@ -266,92 +282,22 @@ function ReaderPageContent({
   const handleDragEnd = useCallback(() => {
     completeSelection();
   }, [completeSelection]);
-
-  // Manual gesture for full control over long press + drag behavior
-  const selectionGesture = Gesture.Manual()
-    .onTouchesDown((event, stateManager) => {
-      // Record touch start time and position
-      touchStartTime.value = Date.now();
-      isLongPressTriggered.value = false;
-      if (event.changedTouches.length > 0) {
-        const touch = event.changedTouches[0];
-        startPosition.value = { x: touch.x, y: touch.y };
-      }
-      stateManager.begin();
-    })
-    .onTouchesMove((event, stateManager) => {
-      if (event.numberOfTouches !== 1) {
-        // Multi-touch - fail the gesture to allow other gestures
-        if (!isLongPressTriggered.value) {
-          stateManager.fail();
-        }
-        return;
-      }
-
-      const touch = event.changedTouches[0] || event.allTouches[0];
-      if (!touch) return;
-
-      const elapsed = Date.now() - touchStartTime.value;
-      const dx = touch.x - startPosition.value.x;
-      const dy = touch.y - startPosition.value.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      // Check if long press duration has been met
-      if (!isLongPressTriggered.value && elapsed >= LONG_PRESS_DURATION) {
-        // Long press activated - check we haven't moved too far
-        if (distance <= 15) {
-          isLongPressTriggered.value = true;
-          stateManager.activate();
-          runOnJS(handleLongPressStart)(startPosition.value.x, startPosition.value.y);
-        } else {
-          // Moved too much before long press completed - fail
-          stateManager.fail();
-        }
-      } else if (isLongPressTriggered.value) {
-        // Already in selection mode - update selection
-        runOnJS(handleDragUpdate)(touch.x, touch.y);
-      } else if (distance > 55) {
-        // Moved too much before long press - fail to allow scrolling/swiping
-        stateManager.fail();
-      }
-    })
-    .onTouchesUp((event, stateManager) => {
-      const elapsed = Date.now() - touchStartTime.value;
-      
-      if (isLongPressTriggered.value) {
-        // Was in selection mode - complete it
-        runOnJS(handleDragEnd)();
-        stateManager.end();
-      } else if (elapsed >= LONG_PRESS_DURATION && event.numberOfTouches === 0) {
-        // Long press duration met on release without movement - trigger selection at start position
-        // This handles the case where user holds still without any movement events
-        const touch = event.changedTouches[0];
-        if (touch) {
-          const dx = touch.x - startPosition.value.x;
-          const dy = touch.y - startPosition.value.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance <= 15) {
-            runOnJS(handleLongPressStart)(startPosition.value.x, startPosition.value.y);
-            runOnJS(handleDragEnd)();
-            stateManager.end();
-            isLongPressTriggered.value = false;
-            return;
-          }
-        }
-        stateManager.fail();
-      } else {
-        // Long press never triggered
-        stateManager.fail();
-      }
-      isLongPressTriggered.value = false;
-    })
-    .onTouchesCancelled((_, stateManager) => {
-      if (isLongPressTriggered.value) {
-        runOnJS(handleDragEnd)();
-      }
-      isLongPressTriggered.value = false;
-      stateManager.end();
-    });
+  
+  const selectionGesture = Gesture.Pan()
+  .activateAfterLongPress(400)
+  .minDistance(0)
+  .onStart((e) => {
+    console.log('Pan onStart', e.x, e.y);
+    runOnJS(handleLongPressStart)(e.x, e.y);
+  })
+  .onUpdate((e) => {
+    console.log('Pan onUpdate', e.x, e.y);
+    runOnJS(handleDragUpdate)(e.x, e.y);
+  })
+  .onEnd(() => {
+    console.log('Pan onEnd');
+    runOnJS(handleDragEnd)();
+  });
 
   const composedGesture = selectionGesture;
 
@@ -531,6 +477,7 @@ function ReaderPageContent({
                         isInPhraseSelection={isSelectingOrComplete ? isInPhraseSelection : undefined}
                         tokenIndex={pageLocalIndex}
                         onLayout={(tokenIndex, event) => {
+                          console.log(`\n\n\n\n\nToken onLayout - tokenIndex: ${tokenIndex}\n\n\n\n`);
                           handleTokenLayout(tokenIndex, paraIndex, event);
                         }}
                         onPress={
