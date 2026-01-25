@@ -1,9 +1,14 @@
-import React, { useMemo, useCallback, useRef } from 'react';
-import { View, ScrollView, Text, LayoutChangeEvent } from 'react-native';
+import React, { useMemo, useCallback, useRef, useEffect } from 'react';
+import { View, ScrollView, Text, LayoutChangeEvent, LayoutRectangle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { Token, TokenStatus } from './Token';
-import { useTextSelection, TokenBounds, TokenType } from './TextSelectionProvider';
+import {
+  useTextSelection,
+  TokenBounds,
+  TokenType,
+  TextSelectionProvider,
+} from './TextSelectionProvider';
 
 interface ReaderPageProps {
   tokens: TokenType[];
@@ -11,7 +16,9 @@ interface ReaderPageProps {
   onTokenPress: (token: TokenType) => void;
   selectedTokenId: string | null;
   selectedNormalized: string | null;
-  isSelectionModeActive?: boolean;
+  isActivePage?: boolean;
+  onPhraseSelectionComplete?: (tokens: TokenType[], bounds: LayoutRectangle | null) => void;
+  onClearSelectionReady?: (clearSelection: () => void) => void;
 }
 
 // Minimum duration for long press in ms
@@ -23,7 +30,44 @@ export function ReaderPage({
   onTokenPress,
   selectedTokenId,
   selectedNormalized,
+  isActivePage,
+  onPhraseSelectionComplete,
+  onClearSelectionReady,
 }: ReaderPageProps) {
+  return (
+    <TextSelectionProvider tokens={tokens} onSelectionComplete={onPhraseSelectionComplete}>
+      <ReaderPageContent
+        tokens={tokens}
+        vocabMap={vocabMap}
+        onTokenPress={onTokenPress}
+        selectedTokenId={selectedTokenId}
+        selectedNormalized={selectedNormalized}
+        isActivePage={isActivePage}
+        onClearSelectionReady={onClearSelectionReady}
+      />
+    </TextSelectionProvider>
+  );
+}
+
+interface ReaderPageContentProps {
+  tokens: TokenType[];
+  vocabMap: Record<string, number>;
+  onTokenPress: (token: TokenType) => void;
+  selectedTokenId: string | null;
+  selectedNormalized: string | null;
+  isActivePage?: boolean;
+  onClearSelectionReady?: (clearSelection: () => void) => void;
+}
+
+function ReaderPageContent({
+  tokens,
+  vocabMap,
+  onTokenPress,
+  selectedTokenId,
+  selectedNormalized,
+  isActivePage,
+  onClearSelectionReady,
+}: ReaderPageContentProps) {
   const {
     selectionState,
     selectedTokenIndices,
@@ -31,6 +75,7 @@ export function ReaderPage({
     startSelection,
     updateSelection,
     completeSelection,
+    clearSelection,
   } = useTextSelection();
 
   // Track token positions using refs (no state to avoid re-renders)
@@ -41,6 +86,14 @@ export function ReaderPage({
   const rootViewRef = useRef<View>(null);
   const contentViewRef = useRef<View>(null);
   const contentInsetRef = useRef({ x: 0, y: 0 });
+  const rootWindowRef = useRef({ x: 0, y: 0 });
+  const paragraphOffsetsRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+
+  useEffect(() => {
+    if (isActivePage) {
+      onClearSelectionReady?.(clearSelection);
+    }
+  }, [clearSelection, isActivePage, onClearSelectionReady]);
 
   const updateContentInset = useCallback(() => {
     const root = rootViewRef.current;
@@ -49,6 +102,7 @@ export function ReaderPage({
     if (!root || !content) return;
 
     root.measureInWindow((rootX, rootY) => {
+      rootWindowRef.current = { x: rootX, y: rootY };
       content.measureInWindow((contentX, contentY) => {
         contentInsetRef.current = {
           x: contentX - rootX,
@@ -58,30 +112,50 @@ export function ReaderPage({
     });
   }, []);
 
+  const refreshRegisteredBounds = useCallback(() => {
+    const { x: insetX, y: insetY } = contentInsetRef.current;
+    const { x: rootX, y: rootY } = rootWindowRef.current;
+    const scrollOffset = scrollOffsetRef.current;
+
+    for (const [tokenIndex, bounds] of tokenPositionsRef.current.entries()) {
+      registerTokenBounds(tokenIndex, {
+        ...bounds,
+        x: rootX + insetX + bounds.x,
+        y: rootY + insetY + bounds.y - scrollOffset,
+        pageY: rootY + insetY + bounds.y - scrollOffset,
+      });
+    }
+  }, [registerTokenBounds]);
+
   // Handle token layout updates
   // tokenIndex here is the PAGE-LOCAL index (0 to tokens.length-1)
   const handleTokenLayout = useCallback(
-    (tokenIndex: number, event: LayoutChangeEvent) => {
+    (tokenIndex: number, paraIndex: number, event: LayoutChangeEvent) => {
       const { x, y, width, height } = event.nativeEvent.layout;
       const { x: insetX, y: insetY } = contentInsetRef.current;
+      const { x: rootX, y: rootY } = rootWindowRef.current;
       const scrollOffset = scrollOffsetRef.current;
+      const paraOffset = paragraphOffsetsRef.current.get(paraIndex) || { x: 0, y: 0 };
+
+      const contentX = paraOffset.x + x;
+      const contentY = paraOffset.y + y;
 
       // Store position relative to the scroll content
       const bounds: TokenBounds = {
         tokenIndex,
-        x,
-        y,
+        x: contentX,
+        y: contentY,
         width,
         height,
-        pageY: y,
+        pageY: contentY,
       };
 
       tokenPositionsRef.current.set(tokenIndex, bounds);
       registerTokenBounds(tokenIndex, {
         ...bounds,
-        x: x + insetX,
-        y: y + insetY - scrollOffset,
-        pageY: y + insetY - scrollOffset,
+        x: rootX + insetX + contentX,
+        y: rootY + insetY + contentY - scrollOffset,
+        pageY: rootY + insetY + contentY - scrollOffset,
       });
     },
     [registerTokenBounds]
@@ -184,6 +258,9 @@ export function ReaderPage({
     .onStart((event) => {
       // Use event.x/y which are relative to the gesture view
       runOnJS(handleLongPressStart)(event.x, event.y);
+    })
+    .onEnd(() => {
+      runOnJS(handleDragEnd)();
     });
 
   const panGesture = Gesture.Pan()
@@ -200,9 +277,6 @@ export function ReaderPage({
       // Use event.x/y which are relative to the gesture view
       runOnJS(handleDragUpdate)(event.x, event.y);
     })
-    .onEnd(() => {
-      runOnJS(handleDragEnd)();
-    })
     .onFinalize(() => {
       runOnJS(handleDragEnd)();
     });
@@ -213,7 +287,8 @@ export function ReaderPage({
   // Handle scroll offset tracking
   const handleScroll = useCallback((event: any) => {
     scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
-  }, []);
+    refreshRegisteredBounds();
+  }, [refreshRegisteredBounds]);
 
   // Split tokens into paragraphs, tracking page-local indices
   // IMPORTANT: Each token must appear exactly once with a unique pageLocalIndex
@@ -263,7 +338,14 @@ export function ReaderPage({
             }}
           >
             {paragraphs.map((paraTokens, paraIndex) => (
-              <Text key={`para-${paraIndex}`} className="mb-8">
+              <Text
+                key={`para-${paraIndex}`}
+                className="mb-8"
+                onLayout={(event) => {
+                  const { x, y } = event.nativeEvent.layout;
+                  paragraphOffsetsRef.current.set(paraIndex, { x, y });
+                }}
+              >
                 {paraTokens.map(({ token, pageLocalIndex }) => {
                   const isWord: boolean = token.isWord;
                   let status: TokenStatus = 'new';
@@ -294,23 +376,25 @@ export function ReaderPage({
                   // Use page-local index for selection check
                   const isInPhraseSelection = isWord && selectedTokenIndices.has(pageLocalIndex);
 
-                  return (
-                    <Token
-                      key={key}
+                    return (
+                      <Token
+                        key={key}
                       surface={token.surface}
                       isWord={isWord}
                       status={status}
                       learningLevel={learningLevel}
                       isSelected={isSelected}
                       normalized={token.normalized}
-                      isWordSelected={isWordSelected}
-                      isInPhraseSelection={isSelectingOrComplete ? isInPhraseSelection : undefined}
-                      tokenIndex={pageLocalIndex}
-                      onLayout={handleTokenLayout}
-                      onPress={
-                        isWord && !selectionState.isSelecting
-                          ? () => onTokenPress(token)
-                          : undefined
+                        isWordSelected={isWordSelected}
+                        isInPhraseSelection={isSelectingOrComplete ? isInPhraseSelection : undefined}
+                        tokenIndex={pageLocalIndex}
+                        onLayout={(tokenIndex, event) => {
+                          handleTokenLayout(tokenIndex, paraIndex, event);
+                        }}
+                        onPress={
+                          isWord && !selectionState.isSelecting
+                            ? () => onTokenPress(token)
+                            : undefined
                       }
                     />
                   );

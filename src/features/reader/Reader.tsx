@@ -7,7 +7,7 @@ import { api } from '../../../convex/_generated/api';
 import { Doc, Id } from '../../../convex/_generated/dataModel';
 import { ReaderPage } from './ReaderPage';
 import { WordDetails } from './WordDetails';
-import { TextSelectionProvider, TokenType, useTextSelection } from './TextSelectionProvider';
+import { TokenType } from './TextSelectionProvider';
 import { PhraseTranslationPopup } from './PhraseTranslationPopup';
 import { cn } from '../../lib/utils';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
@@ -60,7 +60,6 @@ export function Reader({ lesson }: ReaderProps) {
   // Phrase selection state
   const [selectedPhraseTokens, setSelectedPhraseTokens] = useState<TokenType[] | null>(null);
   const [phraseSelectionBounds, setPhraseSelectionBounds] = useState<LayoutRectangle | null>(null);
-  const selectionBoundsRef = useRef<(() => LayoutRectangle | null) | null>(null);
   const clearSelectionRef = useRef<(() => void) | null>(null);
 
   const WORDS_PER_PAGE = 200;
@@ -197,7 +196,7 @@ export function Reader({ lesson }: ReaderProps) {
 
   // Handle phrase selection completion
   const handlePhraseSelectionComplete = useCallback(
-    (tokens: TokenType[]) => {
+    (tokens: TokenType[], bounds: LayoutRectangle | null) => {
       // Close any open word details panel
       setSelectedToken(null);
       setSelectedNormalized(null);
@@ -206,14 +205,7 @@ export function Reader({ lesson }: ReaderProps) {
       // Set selected phrase tokens
       setSelectedPhraseTokens(tokens);
 
-      // Get bounds from the provider (will be set after render)
-      // Using a slight delay to ensure bounds are calculated after render
-      setTimeout(() => {
-        if (selectionBoundsRef.current) {
-          const bounds = selectionBoundsRef.current();
-          setPhraseSelectionBounds(bounds);
-        }
-      }, 50);
+      setPhraseSelectionBounds(bounds);
     },
     []
   );
@@ -263,9 +255,6 @@ export function Reader({ lesson }: ReaderProps) {
   );
   const showPhrasePopup = Boolean(selectedPhraseTokens && selectedPhraseTokens.length > 0);
 
-  // Current page tokens for the selection provider
-  const currentPageTokens = pages[currentPage] || [];
-
   return (
     <View className="flex-1 bg-canvas">
       <View className="flex-1" style={{ minHeight: 1 }}>
@@ -292,45 +281,43 @@ export function Reader({ lesson }: ReaderProps) {
               }}
             >
               {hasPages ? (
-                <TextSelectionProvider
-                  tokens={currentPageTokens}
-                  onSelectionComplete={handlePhraseSelectionComplete}
-                >
-                  <TextSelectionProviderBoundsCapture boundsRef={selectionBoundsRef} clearSelectionRef={clearSelectionRef} />
-                  <Carousel
-                    ref={carouselRef}
-                    width={carouselWidth}
-                    height={carouselHeight}
-                    style={{ flex: 1, height: carouselHeight, width: '100%' }}
-                    data={pages}
-                    loop={false}
-                    snapEnabled
-                    pagingEnabled
-                    scrollAnimationDuration={320}
-                    onSnapToItem={handlePageSnap}
-                    renderItem={({ item, index }) => (
-                      <ReaderPage
-                        key={`page-${index}`}
-                        tokens={item}
-                        vocabMap={vocabMap}
-                        onTokenPress={(token) => {
-                          // Only open word details if no phrase selection
-                          if (!showPhrasePopup) {
-                            setSelectedToken(token);
-                            setSelectedNormalized(token.normalized || null);
-                            setIsInspectorOpen(true);
-                          }
-                        }}
-                        selectedTokenId={selectedToken?._id ?? null}
-                        selectedNormalized={selectedNormalized}
-                        isSelectionModeActive={showPhrasePopup}
-                      />
-                    )}
-                    onConfigurePanGesture={(gesture) => {
-                      gesture.activeOffsetX([-16, 16]).failOffsetY([-16, 16]);
-                    }}
-                  />
-                </TextSelectionProvider>
+                <Carousel
+                  ref={carouselRef}
+                  width={carouselWidth}
+                  height={carouselHeight}
+                  style={{ flex: 1, height: carouselHeight, width: '100%' }}
+                  data={pages}
+                  loop={false}
+                  snapEnabled
+                  pagingEnabled
+                  scrollAnimationDuration={320}
+                  onSnapToItem={handlePageSnap}
+                  renderItem={({ item, index }) => (
+                    <ReaderPage
+                      key={`page-${index}`}
+                      tokens={item}
+                      vocabMap={vocabMap}
+                      onTokenPress={(token) => {
+                        // Only open word details if no phrase selection
+                        if (!showPhrasePopup) {
+                          setSelectedToken(token);
+                          setSelectedNormalized(token.normalized || null);
+                          setIsInspectorOpen(true);
+                        }
+                      }}
+                      selectedTokenId={selectedToken?._id ?? null}
+                      selectedNormalized={selectedNormalized}
+                      isActivePage={index === currentPage}
+                      onClearSelectionReady={(clearSelection: () => void) => {
+                        clearSelectionRef.current = clearSelection;
+                      }}
+                      onPhraseSelectionComplete={handlePhraseSelectionComplete}
+                    />
+                  )}
+                  onConfigurePanGesture={(gesture) => {
+                    gesture.activeOffsetX([-16, 16]).failOffsetY([-16, 16]);
+                  }}
+                />
               ) : (
                 <View className="flex-1 items-center justify-center">
                   <Text className="text-base text-subink font-sans-medium">
@@ -442,20 +429,4 @@ export function Reader({ lesson }: ReaderProps) {
   );
 }
 
-// Helper component to capture refs from selection context
-function TextSelectionProviderBoundsCapture({
-  boundsRef,
-  clearSelectionRef,
-}: {
-  boundsRef: React.MutableRefObject<(() => LayoutRectangle | null) | null>;
-  clearSelectionRef: React.MutableRefObject<(() => void) | null>;
-}) {
-  const { getSelectionBounds, clearSelection } = useTextSelection();
-
-  useEffect(() => {
-    boundsRef.current = getSelectionBounds;
-    clearSelectionRef.current = clearSelection;
-  }, [getSelectionBounds, clearSelection, boundsRef, clearSelectionRef]);
-
-  return null;
-}
+// (TextSelectionProviderBoundsCapture removed; selection now handled per page)

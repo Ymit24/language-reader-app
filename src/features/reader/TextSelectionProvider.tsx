@@ -4,6 +4,7 @@ import React, {
   useState,
   useCallback,
   useMemo,
+  useEffect,
   useRef,
 } from 'react';
 import { LayoutRectangle, Platform } from 'react-native';
@@ -44,9 +45,6 @@ interface TextSelectionContextValue {
   updateSelection: (tokenIndex: number) => void;
   completeSelection: () => void;
   clearSelection: () => void;
-
-  // For popup positioning
-  getSelectionBounds: () => LayoutRectangle | null;
 }
 
 const TextSelectionContext = createContext<TextSelectionContextValue | null>(null);
@@ -61,7 +59,7 @@ export function useTextSelection() {
 
 interface TextSelectionProviderProps {
   children: React.ReactNode;
-  onSelectionComplete?: (tokens: TokenType[]) => void;
+  onSelectionComplete?: (tokens: TokenType[], bounds: LayoutRectangle | null) => void;
   tokens: TokenType[];
 }
 
@@ -70,16 +68,31 @@ export function TextSelectionProvider({
   onSelectionComplete,
   tokens,
 }: TextSelectionProviderProps) {
-  const [selectionState, setSelectionState] = useState<SelectionState>({
-    isSelecting: false,
-    selectionStartIndex: null,
-    selectionEndIndex: null,
-    isComplete: false,
-  });
+  const initialSelectionState = useMemo<SelectionState>(
+    () => ({
+      isSelecting: false,
+      selectionStartIndex: null,
+      selectionEndIndex: null,
+      isComplete: false,
+    }),
+    []
+  );
+  const [selectionState, setSelectionState] = useState<SelectionState>(initialSelectionState);
+  const selectionStateRef = useRef(selectionState);
 
   // Use a ref for token bounds to avoid re-renders when registering
   const tokenBoundsRef = useRef<Map<number, TokenBounds>>(new Map());
   const lastHapticIndex = useRef<number | null>(null);
+
+  useEffect(() => {
+    selectionStateRef.current = selectionState;
+  }, [selectionState]);
+
+  useEffect(() => {
+    tokenBoundsRef.current.clear();
+    lastHapticIndex.current = null;
+    setSelectionState(initialSelectionState);
+  }, [tokens, initialSelectionState]);
 
   // Compute selected token indices
   const selectedTokenIndices = useMemo(() => {
@@ -170,91 +183,76 @@ export function TextSelectionProvider({
     });
   }, [triggerHaptic]);
 
-  const completeSelection = useCallback(() => {
-    setSelectionState((prev) => {
-      if (!prev.isSelecting || prev.selectionStartIndex === null) {
-        return prev;
+  const computeSelectionBounds = useCallback(
+    (start: number, end: number): LayoutRectangle | null => {
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+
+      for (let i = start; i <= end; i++) {
+        const bounds = tokenBoundsRef.current.get(i);
+        if (bounds && tokens[i]?.isWord) {
+          minX = Math.min(minX, bounds.x);
+          minY = Math.min(minY, bounds.pageY);
+          maxX = Math.max(maxX, bounds.x + bounds.width);
+          maxY = Math.max(maxY, bounds.pageY + bounds.height);
+        }
       }
 
-      triggerHaptic('complete');
-      lastHapticIndex.current = null;
-
-      // Get selected tokens for callback
-      const start = Math.min(prev.selectionStartIndex, prev.selectionEndIndex ?? prev.selectionStartIndex);
-      const end = Math.max(prev.selectionStartIndex, prev.selectionEndIndex ?? prev.selectionStartIndex);
-
-      const selectedTokens = tokens.slice(start, end + 1);
-
-      // Check if we have at least one word token selected
-      const hasWordToken = selectedTokens.some((t) => t.isWord);
-
-      if (!hasWordToken) {
-        // No words selected, cancel selection
-        return {
-          isSelecting: false,
-          selectionStartIndex: null,
-          selectionEndIndex: null,
-          isComplete: false,
-        };
+      if (minX === Infinity) {
+        return null;
       }
-
-      // Call the callback with selected tokens
-      onSelectionComplete?.(selectedTokens);
 
       return {
-        ...prev,
-        isSelecting: false,
-        isComplete: true,
+        x: minX,
+        y: minY,
+        width: maxX - minX,
+        height: maxY - minY,
       };
-    });
-  }, [tokens, onSelectionComplete, triggerHaptic]);
+    },
+    [tokens]
+  );
+
+  const completeSelection = useCallback(() => {
+    const current = selectionStateRef.current;
+    if (!current.isSelecting || current.selectionStartIndex === null) {
+      return;
+    }
+
+    const start = Math.min(current.selectionStartIndex, current.selectionEndIndex ?? current.selectionStartIndex);
+    const end = Math.max(current.selectionStartIndex, current.selectionEndIndex ?? current.selectionStartIndex);
+
+    const selectedTokens = tokens.slice(start, end + 1);
+    const hasWordToken = selectedTokens.some((t) => t.isWord);
+
+    if (!hasWordToken) {
+      selectionStateRef.current = initialSelectionState;
+      setSelectionState(initialSelectionState);
+      lastHapticIndex.current = null;
+      return;
+    }
+
+    const bounds = computeSelectionBounds(start, end);
+    const nextState: SelectionState = {
+      ...current,
+      isSelecting: false,
+      isComplete: true,
+      selectionEndIndex: current.selectionEndIndex ?? current.selectionStartIndex,
+    };
+
+    selectionStateRef.current = nextState;
+    setSelectionState(nextState);
+    triggerHaptic('complete');
+    lastHapticIndex.current = null;
+    onSelectionComplete?.(selectedTokens, bounds);
+  }, [computeSelectionBounds, initialSelectionState, onSelectionComplete, tokens, triggerHaptic]);
 
   const clearSelection = useCallback(() => {
     lastHapticIndex.current = null;
-    setSelectionState({
-      isSelecting: false,
-      selectionStartIndex: null,
-      selectionEndIndex: null,
-      isComplete: false,
-    });
-  }, []);
-
-  const getSelectionBounds = useCallback((): LayoutRectangle | null => {
-    const { selectionStartIndex, selectionEndIndex } = selectionState;
-
-    if (selectionStartIndex === null || selectionEndIndex === null) {
-      return null;
-    }
-
-    const start = Math.min(selectionStartIndex, selectionEndIndex);
-    const end = Math.max(selectionStartIndex, selectionEndIndex);
-
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-
-    for (let i = start; i <= end; i++) {
-      const bounds = tokenBoundsRef.current.get(i);
-      if (bounds && tokens[i]?.isWord) {
-        minX = Math.min(minX, bounds.x);
-        minY = Math.min(minY, bounds.pageY);
-        maxX = Math.max(maxX, bounds.x + bounds.width);
-        maxY = Math.max(maxY, bounds.pageY + bounds.height);
-      }
-    }
-
-    if (minX === Infinity) {
-      return null;
-    }
-
-    return {
-      x: minX,
-      y: minY,
-      width: maxX - minX,
-      height: maxY - minY,
-    };
-  }, [selectionState, tokens]);
+    selectionStateRef.current = initialSelectionState;
+    setSelectionState(initialSelectionState);
+  }, [initialSelectionState]);
 
   const value = useMemo<TextSelectionContextValue>(
     () => ({
@@ -267,7 +265,6 @@ export function TextSelectionProvider({
       updateSelection,
       completeSelection,
       clearSelection,
-      getSelectionBounds,
     }),
     [
       selectionState,
@@ -279,7 +276,6 @@ export function TextSelectionProvider({
       updateSelection,
       completeSelection,
       clearSelection,
-      getSelectionBounds,
     ]
   );
 
