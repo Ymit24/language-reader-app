@@ -81,6 +81,9 @@ function ReaderPageContent({
   // Track token positions using refs (no state to avoid re-renders)
   // Key: page-local index (0 to tokens.length-1)
   const tokenPositionsRef = useRef<Map<number, TokenBounds>>(new Map());
+  const tokenLayoutsRef = useRef<
+    Map<number, { x: number; y: number; width: number; height: number; paraIndex: number }>
+  >(new Map());
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollOffsetRef = useRef(0);
   const rootViewRef = useRef<View>(null);
@@ -95,22 +98,38 @@ function ReaderPageContent({
     }
   }, [clearSelection, isActivePage, onClearSelectionReady]);
 
-  const updateContentInset = useCallback(() => {
-    const root = rootViewRef.current;
-    const content = contentViewRef.current;
+  const computeAndRegisterBounds = useCallback(
+    (tokenIndex: number) => {
+      const layout = tokenLayoutsRef.current.get(tokenIndex);
+      if (!layout) return;
 
-    if (!root || !content) return;
+      const { x: insetX, y: insetY } = contentInsetRef.current;
+      const { x: rootX, y: rootY } = rootWindowRef.current;
+      const scrollOffset = scrollOffsetRef.current;
+      const paraOffset = paragraphOffsetsRef.current.get(layout.paraIndex) || { x: 0, y: 0 };
 
-    root.measureInWindow((rootX, rootY) => {
-      rootWindowRef.current = { x: rootX, y: rootY };
-      content.measureInWindow((contentX, contentY) => {
-        contentInsetRef.current = {
-          x: contentX - rootX,
-          y: contentY - rootY,
-        };
+      const contentX = paraOffset.x + layout.x;
+      const contentY = paraOffset.y + layout.y;
+
+      const bounds: TokenBounds = {
+        tokenIndex,
+        x: contentX,
+        y: contentY,
+        width: layout.width,
+        height: layout.height,
+        pageY: contentY,
+      };
+
+      tokenPositionsRef.current.set(tokenIndex, bounds);
+      registerTokenBounds(tokenIndex, {
+        ...bounds,
+        x: rootX + insetX + contentX,
+        y: rootY + insetY + contentY - scrollOffset,
+        pageY: rootY + insetY + contentY - scrollOffset,
       });
-    });
-  }, []);
+    },
+    [registerTokenBounds]
+  );
 
   const refreshRegisteredBounds = useCallback(() => {
     const { x: insetX, y: insetY } = contentInsetRef.current;
@@ -127,38 +146,33 @@ function ReaderPageContent({
     }
   }, [registerTokenBounds]);
 
+  const updateContentInset = useCallback(() => {
+    const root = rootViewRef.current;
+    const content = contentViewRef.current;
+
+    if (!root || !content) return;
+
+    root.measureInWindow((rootX, rootY) => {
+      rootWindowRef.current = { x: rootX, y: rootY };
+      content.measureInWindow((contentX, contentY) => {
+        contentInsetRef.current = {
+          x: contentX - rootX,
+          y: contentY - rootY,
+        };
+        refreshRegisteredBounds();
+      });
+    });
+  }, [refreshRegisteredBounds]);
+
   // Handle token layout updates
   // tokenIndex here is the PAGE-LOCAL index (0 to tokens.length-1)
   const handleTokenLayout = useCallback(
     (tokenIndex: number, paraIndex: number, event: LayoutChangeEvent) => {
       const { x, y, width, height } = event.nativeEvent.layout;
-      const { x: insetX, y: insetY } = contentInsetRef.current;
-      const { x: rootX, y: rootY } = rootWindowRef.current;
-      const scrollOffset = scrollOffsetRef.current;
-      const paraOffset = paragraphOffsetsRef.current.get(paraIndex) || { x: 0, y: 0 };
-
-      const contentX = paraOffset.x + x;
-      const contentY = paraOffset.y + y;
-
-      // Store position relative to the scroll content
-      const bounds: TokenBounds = {
-        tokenIndex,
-        x: contentX,
-        y: contentY,
-        width,
-        height,
-        pageY: contentY,
-      };
-
-      tokenPositionsRef.current.set(tokenIndex, bounds);
-      registerTokenBounds(tokenIndex, {
-        ...bounds,
-        x: rootX + insetX + contentX,
-        y: rootY + insetY + contentY - scrollOffset,
-        pageY: rootY + insetY + contentY - scrollOffset,
-      });
+      tokenLayoutsRef.current.set(tokenIndex, { x, y, width, height, paraIndex });
+      computeAndRegisterBounds(tokenIndex);
     },
-    [registerTokenBounds]
+    [computeAndRegisterBounds]
   );
 
   // Find token at position relative to gesture view
@@ -329,6 +343,12 @@ function ReaderPageContent({
                 onLayout={(event) => {
                   const { x, y } = event.nativeEvent.layout;
                   paragraphOffsetsRef.current.set(paraIndex, { x, y });
+
+                  for (const [tokenIndex, layout] of tokenLayoutsRef.current.entries()) {
+                    if (layout.paraIndex === paraIndex) {
+                      computeAndRegisterBounds(tokenIndex);
+                    }
+                  }
                 }}
               >
                 {paraTokens.map(({ token, pageLocalIndex }) => {
