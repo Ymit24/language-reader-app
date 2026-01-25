@@ -82,10 +82,12 @@ export function Sidebar() {
     >
       {/* Header */}
 
-      <View className={cn("h-16 flex-row items-center px-6", collapsed ? "justify-start" : "justify-between")}>
-        <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
-          <Text className="text-xl font-sans-bold text-ink" numberOfLines={1}>Reader</Text>
-        </AnimatedView>
+      <View className="h-16 flex-row items-center px-6 justify-between">
+        {!collapsed && (
+          <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
+            <Text className="text-xl font-sans-bold text-ink" numberOfLines={1}>Reader</Text>
+          </AnimatedView>
+        )}
 
         <Pressable
           onPress={toggleCollapse}
