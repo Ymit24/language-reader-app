@@ -420,9 +420,9 @@ function ReaderPageContent({
             }}
           >
             {paragraphs.map((paraTokens, paraIndex) => (
-              <Text
+              <View
                 key={`para-${paraIndex}`}
-                className="mb-8"
+                className="mb-8 flex-row flex-wrap"
                 onLayout={(event) => {
                   const { x, y } = event.nativeEvent.layout;
                   paragraphOffsetsRef.current.set(paraIndex, { x, y });
@@ -488,7 +488,7 @@ function ReaderPageContent({
                     />
                   );
                 })}
-              </Text>
+              </View>
             ))}
           </View>
         </ScrollView>
