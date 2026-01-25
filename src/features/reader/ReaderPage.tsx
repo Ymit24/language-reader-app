@@ -216,32 +216,24 @@ export function ReaderPage({
   }, []);
 
   // Split tokens into paragraphs, tracking page-local indices
+  // IMPORTANT: Each token must appear exactly once with a unique pageLocalIndex
+  // to ensure correct position tracking for phrase selection
   const paragraphs = useMemo(() => {
     const paras: { token: TokenType; pageLocalIndex: number }[][] = [[]];
 
     tokens.forEach((token, pageLocalIndex) => {
+      // Add the token to the current paragraph (keep it whole)
+      paras[paras.length - 1].push({ token, pageLocalIndex });
+
+      // If this token contains a paragraph break, start a new paragraph
+      // for subsequent tokens
       if (!token.isWord && token.surface.includes('\n\n')) {
-        const parts = token.surface.split('\n\n');
-        // First part goes to current paragraph
-        paras[paras.length - 1].push({
-          token: { ...token, surface: parts[0] },
-          pageLocalIndex,
-        });
-        // Subsequent parts start new paragraphs
-        for (let j = 1; j < parts.length; j++) {
-          paras.push([
-            {
-              token: { ...token, surface: parts[j] },
-              pageLocalIndex,
-            },
-          ]);
-        }
-      } else {
-        paras[paras.length - 1].push({ token, pageLocalIndex });
+        paras.push([]);
       }
     });
 
-    return paras;
+    // Filter out any empty paragraphs (e.g., if the last token was a paragraph break)
+    return paras.filter((para) => para.length > 0);
   }, [tokens]);
 
   const isSelectingOrComplete = selectionState.isSelecting || selectionState.isComplete;
