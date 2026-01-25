@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback, useRef, useEffect } from 'react';
 import { View, ScrollView, Text, LayoutChangeEvent, LayoutRectangle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
+import { runOnJS, useSharedValue } from 'react-native-reanimated';
 import { Token, TokenStatus } from './Token';
 import {
   useTextSelection,
@@ -235,6 +235,11 @@ function ReaderPageContent({
     [tokens]
   );
 
+  // Shared values to coordinate gesture state on the UI thread
+  const touchStartTime = useSharedValue(0);
+  const isLongPressTriggered = useSharedValue(false);
+  const startPosition = useSharedValue({ x: 0, y: 0 });
+
   // Handle long press start - wrapped for runOnJS
   const handleLongPressStart = useCallback(
     (x: number, y: number) => {
@@ -249,39 +254,106 @@ function ReaderPageContent({
   // Handle drag update - wrapped for runOnJS
   const handleDragUpdate = useCallback(
     (x: number, y: number) => {
-      if (!selectionState.isSelecting) return;
-
       const tokenIndex = findTokenAtPosition(x, y);
       if (tokenIndex !== null) {
         updateSelection(tokenIndex);
       }
     },
-    [findTokenAtPosition, selectionState.isSelecting, updateSelection]
+    [findTokenAtPosition, updateSelection]
   );
 
   // Handle drag end - wrapped for runOnJS
   const handleDragEnd = useCallback(() => {
-    if (selectionState.isSelecting) {
-      completeSelection();
-    }
-  }, [completeSelection, selectionState.isSelecting]);
+    completeSelection();
+  }, [completeSelection]);
 
-  // Pan gesture that activates after long press
-  const panGesture = Gesture.Pan()
-    .activateAfterLongPress(LONG_PRESS_DURATION)
-    .onStart((event) => {
-      // Use event.x/y which are relative to the gesture view
-      runOnJS(handleLongPressStart)(event.x, event.y);
+  // Manual gesture for full control over long press + drag behavior
+  const selectionGesture = Gesture.Manual()
+    .onTouchesDown((event, stateManager) => {
+      // Record touch start time and position
+      touchStartTime.value = Date.now();
+      isLongPressTriggered.value = false;
+      if (event.changedTouches.length > 0) {
+        const touch = event.changedTouches[0];
+        startPosition.value = { x: touch.x, y: touch.y };
+      }
+      stateManager.begin();
     })
-    .onUpdate((event) => {
-      // Use event.x/y which are relative to the gesture view
-      runOnJS(handleDragUpdate)(event.x, event.y);
+    .onTouchesMove((event, stateManager) => {
+      if (event.numberOfTouches !== 1) {
+        // Multi-touch - fail the gesture to allow other gestures
+        if (!isLongPressTriggered.value) {
+          stateManager.fail();
+        }
+        return;
+      }
+
+      const touch = event.changedTouches[0] || event.allTouches[0];
+      if (!touch) return;
+
+      const elapsed = Date.now() - touchStartTime.value;
+      const dx = touch.x - startPosition.value.x;
+      const dy = touch.y - startPosition.value.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // Check if long press duration has been met
+      if (!isLongPressTriggered.value && elapsed >= LONG_PRESS_DURATION) {
+        // Long press activated - check we haven't moved too far
+        if (distance <= 15) {
+          isLongPressTriggered.value = true;
+          stateManager.activate();
+          runOnJS(handleLongPressStart)(startPosition.value.x, startPosition.value.y);
+        } else {
+          // Moved too much before long press completed - fail
+          stateManager.fail();
+        }
+      } else if (isLongPressTriggered.value) {
+        // Already in selection mode - update selection
+        runOnJS(handleDragUpdate)(touch.x, touch.y);
+      } else if (distance > 15) {
+        // Moved too much before long press - fail to allow scrolling/swiping
+        stateManager.fail();
+      }
     })
-    .onFinalize(() => {
-      runOnJS(handleDragEnd)();
+    .onTouchesUp((event, stateManager) => {
+      const elapsed = Date.now() - touchStartTime.value;
+      
+      if (isLongPressTriggered.value) {
+        // Was in selection mode - complete it
+        runOnJS(handleDragEnd)();
+        stateManager.end();
+      } else if (elapsed >= LONG_PRESS_DURATION && event.numberOfTouches === 0) {
+        // Long press duration met on release without movement - trigger selection at start position
+        // This handles the case where user holds still without any movement events
+        const touch = event.changedTouches[0];
+        if (touch) {
+          const dx = touch.x - startPosition.value.x;
+          const dy = touch.y - startPosition.value.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance <= 15) {
+            runOnJS(handleLongPressStart)(startPosition.value.x, startPosition.value.y);
+            runOnJS(handleDragEnd)();
+            stateManager.end();
+            isLongPressTriggered.value = false;
+            return;
+          }
+        }
+        stateManager.fail();
+      } else {
+        // Long press never triggered
+        stateManager.fail();
+      }
+      isLongPressTriggered.value = false;
+    })
+    .onTouchesCancelled((_, stateManager) => {
+      if (isLongPressTriggered.value) {
+        runOnJS(handleDragEnd)();
+      }
+      isLongPressTriggered.value = false;
+      stateManager.end();
     });
 
-  const composedGesture = panGesture;
+  const composedGesture = selectionGesture;
 
   // Handle scroll offset tracking
   const handleScroll = useCallback((event: any) => {
