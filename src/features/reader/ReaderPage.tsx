@@ -38,12 +38,33 @@ export function ReaderPage({
   const tokenPositionsRef = useRef<Map<number, TokenBounds>>(new Map());
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollOffsetRef = useRef(0);
+  const rootViewRef = useRef<View>(null);
+  const contentViewRef = useRef<View>(null);
+  const contentInsetRef = useRef({ x: 0, y: 0 });
+
+  const updateContentInset = useCallback(() => {
+    const root = rootViewRef.current;
+    const content = contentViewRef.current;
+
+    if (!root || !content) return;
+
+    root.measureInWindow((rootX, rootY) => {
+      content.measureInWindow((contentX, contentY) => {
+        contentInsetRef.current = {
+          x: contentX - rootX,
+          y: contentY - rootY,
+        };
+      });
+    });
+  }, []);
 
   // Handle token layout updates
   // tokenIndex here is the PAGE-LOCAL index (0 to tokens.length-1)
   const handleTokenLayout = useCallback(
     (tokenIndex: number, event: LayoutChangeEvent) => {
       const { x, y, width, height } = event.nativeEvent.layout;
+      const { x: insetX, y: insetY } = contentInsetRef.current;
+      const scrollOffset = scrollOffsetRef.current;
 
       // Store position relative to the scroll content
       const bounds: TokenBounds = {
@@ -56,7 +77,12 @@ export function ReaderPage({
       };
 
       tokenPositionsRef.current.set(tokenIndex, bounds);
-      registerTokenBounds(tokenIndex, bounds);
+      registerTokenBounds(tokenIndex, {
+        ...bounds,
+        x: x + insetX,
+        y: y + insetY - scrollOffset,
+        pageY: y + insetY - scrollOffset,
+      });
     },
     [registerTokenBounds]
   );
@@ -66,10 +92,11 @@ export function ReaderPage({
   const findTokenAtPosition = useCallback(
     (x: number, y: number): number | null => {
       const scrollOffset = scrollOffsetRef.current;
+      const { x: insetX, y: insetY } = contentInsetRef.current;
 
       // Convert gesture position to content position (accounting for scroll)
-      const contentY = y + scrollOffset;
-      const contentX = x;
+      const contentY = y - insetY + scrollOffset;
+      const contentX = x - insetX;
 
       // Find matching token using page-local indices
       for (const [pageLocalIndex, bounds] of tokenPositionsRef.current.entries()) {
@@ -221,7 +248,13 @@ export function ReaderPage({
 
   return (
     <GestureDetector gesture={composedGesture}>
-      <View style={{ flex: 1 }}>
+      <View
+        ref={rootViewRef}
+        style={{ flex: 1 }}
+        onLayout={() => {
+          updateContentInset();
+        }}
+      >
         <ScrollView
           ref={scrollViewRef}
           className="flex-1 px-6 md:px-12 lg:px-20 pt-10"
@@ -230,7 +263,13 @@ export function ReaderPage({
           onScroll={handleScroll}
           scrollEventThrottle={16}
         >
-          <View className="flex-col items-start justify-start w-full max-w-3xl self-center">
+          <View
+            ref={contentViewRef}
+            className="flex-col items-start justify-start w-full max-w-3xl self-center"
+            onLayout={() => {
+              updateContentInset();
+            }}
+          >
             {paragraphs.map((paraTokens, paraIndex) => (
               <Text key={`para-${paraIndex}`} className="mb-8">
                 {paraTokens.map(({ token, pageLocalIndex }) => {

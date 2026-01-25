@@ -1,28 +1,28 @@
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
+import { Ionicons } from '@expo/vector-icons';
+import { useAction } from 'convex/react';
 import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  Pressable,
   ActivityIndicator,
-  useWindowDimensions,
   LayoutRectangle,
+  Pressable,
+  Text,
+  useWindowDimensions,
+  View,
 } from 'react-native';
 import Animated, {
+  FadeIn,
+  FadeOut,
+  runOnJS,
+  SlideInDown,
+  SlideOutDown,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
-  runOnJS,
-  FadeIn,
-  FadeOut,
-  SlideInDown,
-  SlideOutDown,
 } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface PhraseTranslationPopupProps {
   selectedText: string;
@@ -275,7 +275,7 @@ export function PhraseTranslationPopup({
           <Animated.View
             entering={FadeIn.duration(150)}
             exiting={FadeOut.duration(100)}
-            style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.35)' }}
+            style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.9)' }}
           />
         </Pressable>
 
@@ -284,7 +284,7 @@ export function PhraseTranslationPopup({
           entering={SlideInDown.springify().damping(20).stiffness(300)}
           exiting={SlideOutDown.duration(150)}
           className="absolute bottom-0 left-0 right-0 bg-panel rounded-t-3xl border-t border-border/70 shadow-pop"
-          style={{ paddingBottom: insets.bottom + 16 }}
+          style={{ paddingBottom: insets.bottom + 16, backgroundColor: colors['--panel'] }}
         >
           <View className="p-5">{renderContent()}</View>
         </Animated.View>
@@ -317,6 +317,7 @@ export function PhraseTranslationPopup({
             left: popupPosition.left,
             top: popupPosition.top,
             width: popupPosition.width,
+            backgroundColor: colors['--panel'],
           },
         ]}
         className="bg-panel rounded-2xl border border-border/70 shadow-pop"
