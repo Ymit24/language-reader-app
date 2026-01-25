@@ -148,55 +148,32 @@ function TokenComponent({
     );
   }
 
-  // When phrase selection is active, we need to render outside the Text flow
-  // to properly show animated backgrounds. We use a wrapper View approach
-  // but render it as a separate inline element.
-  if (isInPhraseSelection !== undefined) {
-    // For phrase selection mode, use AnimatedText with animated background
-    // This works because AnimatedText is still a Text component
-    return (
-      <AnimatedText
-        onPress={onPress}
-        onLayout={handleLayout}
-        suppressHighlighting={true}
-        style={[
-          {
-            fontSize: 22,
-            lineHeight: 38,
-            borderRadius: 6,
-            paddingHorizontal: 4,
-            paddingVertical: 2,
-            overflow: 'hidden',
-          },
-          animatedBgStyle,
-        ]}
-        className={cn(
-          'font-serif',
-          isInPhraseSelection ? 'text-ink' : textClass
-        )}
-      >
-        {surface}
-      </AnimatedText>
-    );
-  }
+  const hasPhraseSelection = isInPhraseSelection !== undefined;
 
-  // Standard rendering (no phrase selection active)
   return (
-    <Text
+    <AnimatedText
       onPress={onPress}
       onLayout={handleLayout}
       suppressHighlighting={true}
       className={cn(
         'text-[22px] font-serif rounded-md inline px-1 py-0.5 box-decoration-clone',
-        textClass,
-        bgClass
+        hasPhraseSelection ? (isInPhraseSelection ? 'text-ink' : textClass) : textClass,
+        hasPhraseSelection ? undefined : bgClass
       )}
-      style={{
-        lineHeight: 38,
-      }}
+      style={[
+        {
+          fontSize: 22,
+          lineHeight: 38,
+          borderRadius: 6,
+          paddingHorizontal: 4,
+          paddingVertical: 2,
+          overflow: 'hidden',
+        },
+        hasPhraseSelection ? animatedBgStyle : null,
+      ]}
     >
       {surface}
-    </Text>
+    </AnimatedText>
   );
 }
 

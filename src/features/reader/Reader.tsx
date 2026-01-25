@@ -4,6 +4,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutRectangle, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { GestureType } from 'react-native-gesture-handler';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { api } from '../../../convex/_generated/api';
 import { Doc, Id } from '../../../convex/_generated/dataModel';
@@ -255,6 +256,15 @@ export function Reader({ lesson }: ReaderProps) {
   );
   const showPhrasePopup = Boolean(selectedPhraseTokens && selectedPhraseTokens.length > 0);
 
+  const selectionGestureRef = useRef<GestureType | undefined>(undefined);
+
+  const handleSelectionGestureRef = useCallback(
+    (ref: React.RefObject<GestureType | undefined>) => {
+      selectionGestureRef.current = ref.current;
+    },
+    []
+  );
+
   return (
     <View className="flex-1 bg-canvas">
       <View className="flex-1" style={{ minHeight: 1 }}>
@@ -307,6 +317,9 @@ export function Reader({ lesson }: ReaderProps) {
                       }}
                       selectedTokenId={selectedToken?._id ?? null}
                       selectedNormalized={selectedNormalized}
+                      onSelectionGestureRef={
+                        index === currentPage ? handleSelectionGestureRef : undefined
+                      }
                       isActivePage={index === currentPage}
                       onClearSelectionReady={(clearSelection: () => void) => {
                         clearSelectionRef.current = clearSelection;
@@ -315,13 +328,22 @@ export function Reader({ lesson }: ReaderProps) {
                     />
                   )}
                   onConfigurePanGesture={(g) => {
-                    "worklet";
-                    // require a deliberate horizontal swipe
-                    g.activeOffsetX([-40, 40]);
+                    // "worklet";
+                    // // require a deliberate horizontal swipe
+                    // g.activeOffsetX([-40, 40]);
 
-                    // fail quickly when finger goes vertical (common during selection)
-                    g.failOffsetY([-8, 8]);
-                    // gesture.activeOffsetX([-16, 16]).failOffsetY([-16, 16]);
+                    // // fail quickly when finger goes vertical (common during selection)
+                    // g.failOffsetY([-8, 8]);
+
+                    // CRITICAL: If a selection gesture ref exists, require it to fail first
+                    if (selectionGestureRef.current) {
+                      console.log("Ensuring page swipe waits for selection gesture to fail");
+                      g.requireExternalGestureToFail(selectionGestureRef.current);
+                    } else {
+                      console.log("No selection gesture ref; skipping requireExternalGestureToFail");
+                    }
+
+                    g.activeOffsetX([-16, 16]).failOffsetY([-16, 16]);
                   }}
                 />
               ) : (
