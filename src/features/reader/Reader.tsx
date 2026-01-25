@@ -1,17 +1,17 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { View, Text, Pressable, useWindowDimensions, LayoutRectangle } from 'react-native';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery, useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LayoutRectangle, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { api } from '../../../convex/_generated/api';
 import { Doc, Id } from '../../../convex/_generated/dataModel';
-import { ReaderPage } from './ReaderPage';
-import { WordDetails } from './WordDetails';
-import { TokenType } from './TextSelectionProvider';
-import { PhraseTranslationPopup } from './PhraseTranslationPopup';
 import { cn } from '../../lib/utils';
-import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
-import { useAppTheme } from '@/src/theme/AppThemeProvider';
+import { PhraseTranslationPopup } from './PhraseTranslationPopup';
+import { ReaderPage } from './ReaderPage';
+import { TokenType } from './TextSelectionProvider';
+import { WordDetails } from './WordDetails';
 
 interface ReaderProps {
   lesson: Doc<'lessons'> & { tokens: Doc<'lessonTokens'>[] };
@@ -314,8 +314,14 @@ export function Reader({ lesson }: ReaderProps) {
                       onPhraseSelectionComplete={handlePhraseSelectionComplete}
                     />
                   )}
-                  onConfigurePanGesture={(gesture) => {
-                    gesture.activeOffsetX([-16, 16]).failOffsetY([-16, 16]);
+                  onConfigurePanGesture={(g) => {
+                    "worklet";
+                    // require a deliberate horizontal swipe
+                    g.activeOffsetX([-40, 40]);
+
+                    // fail quickly when finger goes vertical (common during selection)
+                    g.failOffsetY([-8, 8]);
+                    // gesture.activeOffsetX([-16, 16]).failOffsetY([-16, 16]);
                   }}
                 />
               ) : (

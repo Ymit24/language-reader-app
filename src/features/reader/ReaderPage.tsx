@@ -310,7 +310,7 @@ function ReaderPageContent({
       } else if (isLongPressTriggered.value) {
         // Already in selection mode - update selection
         runOnJS(handleDragUpdate)(touch.x, touch.y);
-      } else if (distance > 15) {
+      } else if (distance > 55) {
         // Moved too much before long press - fail to allow scrolling/swiping
         stateManager.fail();
       }
@@ -393,6 +393,71 @@ function ReaderPageContent({
           updateContentInset();
         }}
       >
+        <View className="p-4">
+          <View
+            className="bg-white/5 border border-gray-300 rounded-md p-3"
+            style={{ maxHeight: 384 }}
+          >
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text className="text-sm font-semibold mb-2">Gesture / Selection Debug</Text>
+
+              <Text className="text-xs mb-1">
+          selectionState: {JSON.stringify({
+            isSelecting: selectionState.isSelecting,
+            isComplete: selectionState.isComplete,
+            anchor: selectionState.anchor,
+            focus: selectionState.focus,
+          })}
+              </Text>
+
+              <Text className="text-xs mb-1">
+          isSelectingOrComplete: {String(isSelectingOrComplete)}
+              </Text>
+
+              <Text className="text-xs mb-1">
+          selectedTokenIndices (size): {selectedTokenIndices.size}
+              </Text>
+
+              <Text className="text-xs mb-1">
+          selectedTokenIndices (first 10): {JSON.stringify(
+            [...selectedTokenIndices].slice(0, 10)
+          )}
+              </Text>
+
+              <Text className="text-xs mb-1">
+          tokenPositions: {tokenPositionsRef.current.size} entries
+              </Text>
+
+              <Text className="text-xs mb-1">
+          tokenLayouts: {tokenLayoutsRef.current.size} entries
+              </Text>
+
+              <Text className="text-xs mb-1">paragraphs: {paragraphs.length}</Text>
+
+              <Text className="text-xs mb-1">
+          scrollOffset: {Number(scrollOffsetRef.current).toFixed(1)}
+              </Text>
+
+              <Text className="text-xs mb-1">
+          startPosition: {JSON.stringify(startPosition.value)}
+              </Text>
+
+              <Text className="text-xs mb-1">
+          touchStartTime: {String(touchStartTime.value)}
+              </Text>
+
+              <Text className="text-xs mb-1">
+          isLongPressTriggered: {String(isLongPressTriggered.value)}
+              </Text>
+
+              <Text className="text-xs mb-1">selectedTokenId: {String(selectedTokenId)}</Text>
+
+              <Text className="text-xs mb-1">
+          selectedNormalized: {String(selectedNormalized)}
+              </Text>
+            </ScrollView>
+          </View>
+        </View>
         <ScrollView
           ref={scrollViewRef}
           className="flex-1 px-6 md:px-12 lg:px-20 pt-10"
