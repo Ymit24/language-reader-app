@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Dimensions } from 'react-native';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { View, Text, Pressable, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAction } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -20,10 +22,30 @@ interface FlashCardProps {
   definition?: string;
   example?: string;
   context?: string;
-  language: string;
+  language: 'de' | 'fr' | 'ja';
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
   isInteractive?: boolean;
+}
+
+interface DictionaryEntry {
+  partOfSpeech: string;
+  phonetic?: string;
+  tags?: string[];
+  definitions: {
+    definition: string;
+    examples?: string[];
+    synonyms?: string[];
+    antonyms?: string[];
+  }[];
+}
+
+interface LookupResult {
+  success: boolean;
+  entries: DictionaryEntry[];
+  lemma?: string;
+  lemmaEntries: DictionaryEntry[];
+  error?: string;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -40,10 +62,58 @@ export function FlashCard({
   isInteractive = true,
 }: FlashCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [lookupResult, setLookupResult] = useState<LookupResult | null>(null);
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [hasLookupError, setHasLookupError] = useState(false);
   const flipProgress = useSharedValue(0);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const cardScale = useSharedValue(1);
+  const cacheRef = useRef(new Map<string, LookupResult>());
+  const lookupAction = useAction(api.dictionaryActions.lookupDefinition);
+
+  const lookupKey = useMemo(
+    () => `${language}:${word.toLowerCase()}`,
+    [language, word]
+  );
+
+  useEffect(() => {
+    setLookupResult(null);
+    setIsLookingUp(false);
+    setHasLookupError(false);
+  }, [lookupKey]);
+
+  useEffect(() => {
+    if (!isFlipped || lookupResult !== null || isLookingUp || !word) return;
+
+    const cached = cacheRef.current.get(lookupKey);
+    if (cached) {
+      setLookupResult(cached);
+      setHasLookupError(!cached.success);
+      return;
+    }
+
+    const fetchDefinition = async () => {
+      setIsLookingUp(true);
+      setHasLookupError(false);
+      try {
+        const result = (await lookupAction({
+          language,
+          term: word,
+        })) as LookupResult;
+        cacheRef.current.set(lookupKey, result);
+        setLookupResult(result);
+        setHasLookupError(!result.success);
+      } catch (_error) {
+        setLookupResult({ success: false, entries: [], lemmaEntries: [] });
+        setHasLookupError(true);
+      } finally {
+        setIsLookingUp(false);
+      }
+    };
+
+    fetchDefinition();
+  }, [isFlipped, lookupResult, isLookingUp, lookupKey, lookupAction, language, word]);
 
   const handleFlip = () => {
     if (!isInteractive) return;
@@ -146,6 +216,9 @@ export function FlashCard({
   };
 
   const accentColor = languageColors[language] || languageColors.fr;
+  const primaryDefinition =
+    lookupResult?.entries?.[0]?.definitions?.[0]?.definition;
+  const definitionText = primaryDefinition || definition?.trim();
 
   return (
     <GestureDetector gesture={panGesture}>
@@ -229,11 +302,11 @@ export function FlashCard({
               <Text className="text-3xl font-serif-bold text-ink text-center">
                 {word}
               </Text>
-              {context && (
-                <Text className="mt-4 text-base text-subink font-sans-medium text-center italic">
-                  "{context}"
-                </Text>
-              )}
+                {context && (
+                  <Text className="mt-4 text-base text-subink font-sans-medium text-center italic">
+                    &quot;{context}&quot;
+                  </Text>
+                )}
               <View className="absolute bottom-8 flex-row items-center gap-2">
                 <Ionicons name="hand-left-outline" size={16} color="#9a8c7e" />
                 <Text className="text-sm text-faint font-sans-medium">
@@ -276,9 +349,24 @@ export function FlashCard({
                 <View className="w-16 h-0.5 bg-border" />
 
                 {/* Definition */}
-                {definition && (
+                {isLookingUp ? (
+                  <View className="items-center gap-2">
+                    <ActivityIndicator size="small" color="#80776e" />
+                    <Text className="text-sm text-faint font-sans-medium">
+                      Looking up definition...
+                    </Text>
+                  </View>
+                ) : hasLookupError ? (
+                  <Text className="text-sm text-subink italic font-sans-medium text-center">
+                    Unable to load definition.
+                  </Text>
+                ) : definitionText ? (
                   <Text className="text-lg text-ink font-sans-medium text-center leading-relaxed">
-                    {definition}
+                    {definitionText}
+                  </Text>
+                ) : (
+                  <Text className="text-sm text-subink italic font-sans-medium text-center">
+                    No definition found.
                   </Text>
                 )}
 
@@ -286,7 +374,7 @@ export function FlashCard({
                 {example && (
                   <View className="mt-2 px-4 py-3 rounded-xl bg-muted/50">
                     <Text className="text-sm text-subink font-sans-medium text-center italic">
-                      "{example}"
+                      &quot;{example}&quot;
                     </Text>
                   </View>
                 )}

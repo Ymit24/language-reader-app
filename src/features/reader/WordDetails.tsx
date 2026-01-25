@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAction } from 'convex/react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { api } from '../../../convex/_generated/api';
 import { cn } from '../../lib/utils';
 
@@ -283,14 +283,27 @@ export function WordDetails({
                 <Text className="text-xs text-faint font-sans-medium">Updating status…</Text>
               </View>
             )}
-          </View>
-          <Pressable
+            </View>
+
+            <Pressable
+              onPress={() => {
+              // TODO: open Ask modal / prompt to query LLM about this word
+              }}
+              className="h-8 px-3 flex-row items-center justify-center rounded-full bg-muted active:bg-border mr-2"
+              hitSlop={20}
+              accessibilityLabel="Ask about word"
+            >
+              <Ionicons name="chatbubble-ellipses-outline" size={16} color="#2563eb" />
+              <Text className="text-sm text-brand font-sans-medium ml-2">Ask</Text>
+            </Pressable>
+
+            <Pressable
             onPress={onClose}
             className="h-8 w-8 items-center justify-center rounded-full bg-muted active:bg-border"
             hitSlop={20}
-          >
+            >
             <Ionicons name="close" size={18} color="#524a43" />
-          </Pressable>
+            </Pressable>
         </View>
       </View>
 
