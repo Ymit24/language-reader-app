@@ -81,6 +81,11 @@ export function FlashCard({
     setLookupResult(null);
     setIsLookingUp(false);
     setHasLookupError(false);
+    setIsFlipped(false);
+    flipProgress.value = 0;
+    translateX.value = 0;
+    translateY.value = 0;
+    cardScale.value = 1;
   }, [lookupKey]);
 
   useEffect(() => {

@@ -35,7 +35,6 @@ export default function ReviewSession() {
   const [sessionId, setSessionId] = useState<Id<'reviewSessions'> | null>(null);
   const [items, setItems] = useState<SessionItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [sessionStartTime] = useState(Date.now());
   const [totalXpEarned, setTotalXpEarned] = useState(0);
@@ -122,7 +121,6 @@ export default function ReviewSession() {
           setIsComplete(true);
         } else {
           setCurrentIndex((prev) => prev + 1);
-          setIsFlipped(false);
         }
       } catch (error) {
         console.error('Failed to grade card:', error);
