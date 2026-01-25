@@ -100,7 +100,6 @@ function ReaderPageContent({
 
   const computeAndRegisterBounds = useCallback(
     (tokenIndex: number) => {
-      console.log(`computeAndRegisterBounds for tokenIndex: ${tokenIndex}`);
       const layout = tokenLayoutsRef.current.get(tokenIndex);
       if (!layout) return;
 
@@ -170,7 +169,6 @@ function ReaderPageContent({
   const handleTokenLayout = useCallback(
     (tokenIndex: number, paraIndex: number, event: LayoutChangeEvent) => {
       const { x, y, width, height } = event.nativeEvent.layout;
-      console.log(`handleTokenLayout: tokenIndex: ${tokenIndex}, paraIndex: ${paraIndex}, x: ${x}, y: ${y}, width: ${width}, height: ${height}`);
       tokenLayoutsRef.current.set(tokenIndex, { x, y, width, height, paraIndex });
       computeAndRegisterBounds(tokenIndex);
     },
@@ -181,26 +179,20 @@ function ReaderPageContent({
   // x, y are relative to the GestureDetector view (which wraps ScrollView)
   const findTokenAtPosition = useCallback(
     (x: number, y: number): number | null => {
-      console.log(`findTokenAtPosition(x: ${x}, y: ${y}) - looking for token`);
-      console.log(`findTokenAtPosition - total tokens: ${tokens.length}. Tokens: `, tokens[0]);
       const scrollOffset = scrollOffsetRef.current;
       const { x: insetX, y: insetY } = contentInsetRef.current;
 
       // Convert gesture position to content position (accounting for scroll)
       const contentY = y - insetY + scrollOffset;
       const contentX = x - insetX;
-      console.log(`findTokenAtPosition - contentX: ${contentX}, contentY: ${contentY}, token positions ref entries: ${tokenPositionsRef.current.size}`);
 
       // Find matching token using page-local indices
       for (const [pageLocalIndex, bounds] of tokenPositionsRef.current.entries()) {
         // Verify this is a valid index and is a word token
-        console.log(`findTokenAtPosition - checking token index: ${pageLocalIndex}`);
         if (pageLocalIndex < 0 || pageLocalIndex >= tokens.length) {
-          console.log(`findTokenAtPosition - skipping invalid index: ${pageLocalIndex}`);
           continue;
         }
         if (!tokens[pageLocalIndex]?.isWord) {
-          console.log(`findTokenAtPosition - skipping non-word token at index: ${pageLocalIndex}`);
           continue;
         }
 
@@ -212,10 +204,7 @@ function ReaderPageContent({
           contentY >= bounds.y - hitPadding &&
           contentY <= bounds.y + bounds.height + hitPadding
         ) {
-          console.log(`findTokenAtPosition - found exact match at index: ${pageLocalIndex}`);
           return pageLocalIndex;
-        } else {
-          console.log(`findTokenAtPosition - no match at index: ${pageLocalIndex}`);
         }
       }
 
@@ -270,7 +259,6 @@ function ReaderPageContent({
   const handleDragUpdate = useCallback(
     (x: number, y: number) => {
       const tokenIndex = findTokenAtPosition(x, y);
-      console.log('handleDragUpdate', x, y, 'found tokenIndex:', tokenIndex);
       if (tokenIndex !== null) {
         updateSelection(tokenIndex);
       }
@@ -477,7 +465,6 @@ function ReaderPageContent({
                         isInPhraseSelection={isSelectingOrComplete ? isInPhraseSelection : undefined}
                         tokenIndex={pageLocalIndex}
                         onLayout={(tokenIndex, event) => {
-                          console.log(`\n\n\n\n\nToken onLayout - tokenIndex: ${tokenIndex}\n\n\n\n`);
                           handleTokenLayout(tokenIndex, paraIndex, event);
                         }}
                         onPress={
