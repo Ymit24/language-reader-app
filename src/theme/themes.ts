@@ -24,6 +24,8 @@ export type ThemeVariable =
   | '--vUnknownLine'
   | '--vLearningBg'
   | '--vLearningLine'
+  | '--vFamiliarBg'
+  | '--vFamiliarLine'
   | '--vKnownBg'
   | '--vKnownLine';
 
@@ -62,6 +64,8 @@ export const THEMES: ThemeDefinition[] = [
       '--vUnknownLine': '208 139 53',
       '--vLearningBg': '230 238 245',
       '--vLearningLine': '60 125 168',
+      '--vFamiliarBg': '251 247 213',
+      '--vFamiliarLine': '180 160 80',
       '--vKnownBg': '230 243 236',
       '--vKnownLine': '47 122 87',
     },
@@ -90,6 +94,8 @@ export const THEMES: ThemeDefinition[] = [
       '--vUnknownLine': '202 126 48',
       '--vLearningBg': '228 238 246',
       '--vLearningLine': '52 114 165',
+      '--vFamiliarBg': '251 247 215',
+      '--vFamiliarLine': '180 162 82',
       '--vKnownBg': '226 244 235',
       '--vKnownLine': '42 114 80',
     },
@@ -118,6 +124,8 @@ export const THEMES: ThemeDefinition[] = [
       '--vUnknownLine': '200 140 70',
       '--vLearningBg': '22 45 60',
       '--vLearningLine': '80 150 200',
+      '--vFamiliarBg': '45 40 22',
+      '--vFamiliarLine': '200 180 90',
       '--vKnownBg': '22 48 38',
       '--vKnownLine': '60 160 120',
     },
@@ -146,6 +154,8 @@ export const THEMES: ThemeDefinition[] = [
       '--vUnknownLine': '210 150 70',
       '--vLearningBg': '25 42 68',
       '--vLearningLine': '80 140 210',
+      '--vFamiliarBg': '48 42 25',
+      '--vFamiliarLine': '210 190 100',
       '--vKnownBg': '22 45 52',
       '--vKnownLine': '60 160 150',
     },

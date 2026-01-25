@@ -60,7 +60,10 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, se
                 if (vocabStatus !== undefined) {
                   if (vocabStatus === 4) {
                     status = 'known';
-                  } else if (vocabStatus >= 1 && vocabStatus <= 3) {
+                  } else if (vocabStatus === 3) {
+                    status = 'familiar';
+                    learningLevel = vocabStatus;
+                  } else if (vocabStatus >= 1 && vocabStatus <= 2) {
                     status = 'learning';
                     learningLevel = vocabStatus;
                   } else {

@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Text, View } from 'react-native';
 import { cn } from '../../lib/utils';
 
-export type TokenStatus = 'new' | 'learning' | 'known';
+export type TokenStatus = 'new' | 'learning' | 'familiar' | 'known';
 
 interface TokenProps {
   surface: string;
@@ -33,10 +33,12 @@ function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSel
   let textClass = 'text-ink';
 
   if (isWordSelected && normalized) {
-    bgClass = 'bg-brandSoft';
-    textClass = 'text-brand';
+    // Word details panel is open - lighter highlight to maintain readability
+    bgClass = 'bg-brand/15'; 
+    textClass = 'text-brand font-medium';
   } else if (isSelected) {
-    bgClass = 'bg-brandSoft';
+    // Transient selection / touch feedback - slightly darker
+    bgClass = 'bg-brand/25'; 
     textClass = 'text-brand';
   } else {
     switch (effectiveStatus) {
@@ -47,6 +49,10 @@ function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSel
       case 'learning':
         bgClass = 'bg-vLearningBg';
         textClass = 'text-vLearningLine';
+        break;
+      case 'familiar':
+        bgClass = 'bg-vFamiliarBg';
+        textClass = 'text-vFamiliarLine';
         break;
       case 'known':
         bgClass = 'bg-transparent';
@@ -60,7 +66,7 @@ function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSel
       onPress={onPress}
       suppressHighlighting={true}
       className={cn(
-        "text-[22px] font-serif rounded-sm inline",
+        "text-[22px] font-serif rounded-md inline px-1 py-0.5 box-decoration-clone",
         textClass,
         bgClass
       )}

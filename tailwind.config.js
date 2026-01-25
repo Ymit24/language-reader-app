@@ -29,6 +29,8 @@ module.exports = {
         vUnknownLine: withOpacity("--vUnknownLine"),
         vLearningBg: withOpacity("--vLearningBg"),
         vLearningLine: withOpacity("--vLearningLine"),
+        vFamiliarBg: withOpacity("--vFamiliarBg"),
+        vFamiliarLine: withOpacity("--vFamiliarLine"),
         vKnownBg: withOpacity("--vKnownBg"),
         vKnownLine: withOpacity("--vKnownLine"),
       },
