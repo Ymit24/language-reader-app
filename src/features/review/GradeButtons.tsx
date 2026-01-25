@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, Pressable, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import React from 'react';
+import { Platform, Pressable, Text, View } from 'react-native';
 
 interface GradeButtonsProps {
   onGrade: (quality: number) => void;
@@ -10,7 +10,8 @@ interface GradeButtonsProps {
 
 const grades = [
   { quality: 1, label: 'Again', shortcut: '1', color: 'bg-danger', textColor: 'text-white' },
-  { quality: 2, label: 'Hard', shortcut: '2', color: 'bg-warning', textColor: 'text-white' },
+  // Use a darker amber for better contrast against the light background
+  { quality: 2, label: 'Hard', shortcut: '2', color: 'bg-amber-700', textColor: 'text-white' },
   { quality: 4, label: 'Good', shortcut: '3', color: 'bg-success', textColor: 'text-white' },
   { quality: 5, label: 'Easy', shortcut: '4', color: 'bg-brand', textColor: 'text-white' },
 ];
