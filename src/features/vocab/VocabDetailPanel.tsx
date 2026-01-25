@@ -204,25 +204,66 @@ export function VocabDetailPanel({
               <ActivityIndicator size="small" color="#80776e" />
               <Text className="text-sm text-faint mt-2">Looking up definition...</Text>
             </View>
-          ) : lookupResult?.success && lookupResult.entries.length > 0 ? (
+          ) : lookupResult?.success &&
+            (lookupResult.entries.length > 0 ||
+              lookupResult.lemmaEntries.length > 0) ? (
             <View>
-              {lookupResult.entries.slice(0, 2).map((entry, idx) => (
-                <View key={idx} className="mb-3 last:mb-0">
-                  <View className="flex-row items-center gap-2 mb-1">
-                    <Text className="text-xs font-sans-semibold text-brand bg-brandSoft px-2 py-0.5 rounded">
-                      {entry.partOfSpeech}
-                    </Text>
-                    {entry.phonetic && (
-                      <Text className="text-xs text-faint font-mono">{entry.phonetic}</Text>
-                    )}
+              {lookupResult.entries.length > 0 &&
+                lookupResult.entries.slice(0, 2).map((entry, idx) => (
+                  <View key={idx} className="mb-3 last:mb-0">
+                    <View className="flex-row items-center gap-2 mb-1">
+                      <Text className="text-xs font-sans-semibold text-brand bg-brandSoft px-2 py-0.5 rounded">
+                        {entry.partOfSpeech}
+                      </Text>
+                      {entry.phonetic && (
+                        <Text className="text-xs text-faint font-mono">
+                          {entry.phonetic}
+                        </Text>
+                      )}
+                    </View>
+                    {entry.definitions.slice(0, 2).map((def, defIdx) => (
+                      <Text
+                        key={defIdx}
+                        className="text-sm text-ink leading-5 font-sans-medium"
+                      >
+                        {defIdx + 1}. {def.definition}
+                      </Text>
+                    ))}
                   </View>
-                  {entry.definitions.slice(0, 2).map((def, defIdx) => (
-                    <Text key={defIdx} className="text-sm text-ink leading-5 font-sans-medium">
-                      {defIdx + 1}. {def.definition}
+                ))}
+
+              {lookupResult.lemma && lookupResult.lemmaEntries.length > 0 && (
+                <View className="mt-4 pt-4 border-t border-border/30">
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Ionicons name="git-branch-outline" size={14} color="#2563eb" />
+                    <Text className="text-xs font-sans-semibold text-brand">
+                      Base form: {lookupResult.lemma}
                     </Text>
+                  </View>
+                  {lookupResult.lemmaEntries.slice(0, 2).map((entry, idx) => (
+                    <View key={idx} className="mb-3 last:mb-0">
+                      <View className="flex-row items-center gap-2 mb-1">
+                        <Text className="text-xs font-sans-semibold text-brand bg-brandSoft px-2 py-0.5 rounded">
+                          {entry.partOfSpeech}
+                        </Text>
+                        {entry.phonetic && (
+                          <Text className="text-xs text-faint font-mono">
+                            {entry.phonetic}
+                          </Text>
+                        )}
+                      </View>
+                      {entry.definitions.slice(0, 2).map((def, defIdx) => (
+                        <Text
+                          key={defIdx}
+                          className="text-sm text-ink leading-5 font-sans-medium"
+                        >
+                          {defIdx + 1}. {def.definition}
+                        </Text>
+                      ))}
+                    </View>
                   ))}
                 </View>
-              ))}
+              )}
             </View>
           ) : (
             <Text className="text-sm text-subink leading-5 italic font-sans-medium">

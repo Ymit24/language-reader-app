@@ -223,7 +223,14 @@ export function FlashCard({
   const accentColor = languageColors[language] || languageColors.fr;
   const primaryDefinition =
     lookupResult?.entries?.[0]?.definitions?.[0]?.definition;
-  const definitionText = primaryDefinition || definition?.trim();
+  const lemmaDefinition =
+    lookupResult?.lemmaEntries?.[0]?.definitions?.[0]?.definition;
+  const baseForm = lookupResult?.lemma;
+  const showBaseForm = Boolean(
+    baseForm && baseForm.toLowerCase() !== word.toLowerCase()
+  );
+  const definitionText =
+    lemmaDefinition || primaryDefinition || definition?.trim();
 
   return (
     <GestureDetector gesture={panGesture}>
@@ -366,9 +373,16 @@ export function FlashCard({
                     Unable to load definition.
                   </Text>
                 ) : definitionText ? (
-                  <Text className="text-lg text-ink font-sans-medium text-center leading-relaxed">
-                    {definitionText}
-                  </Text>
+                  <View className="items-center">
+                    {showBaseForm && (
+                      <Text className="text-xs text-brand font-sans-semibold mb-2">
+                        Base form: {baseForm}
+                      </Text>
+                    )}
+                    <Text className="text-lg text-ink font-sans-medium text-center leading-relaxed">
+                      {definitionText}
+                    </Text>
+                  </View>
                 ) : (
                   <Text className="text-sm text-subink italic font-sans-medium text-center">
                     No definition found.
