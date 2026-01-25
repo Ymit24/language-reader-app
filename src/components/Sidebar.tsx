@@ -1,18 +1,18 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { usePathname, useRouter } from 'expo-router';
+import { api } from '@/convex/_generated/api';
 import { Ionicons } from '@expo/vector-icons';
-import { PanelLeft } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from 'convex/react';
+import { usePathname, useRouter } from 'expo-router';
+import { PanelLeft, PanelRight } from 'lucide-react-native';
+import React from 'react';
+import { Pressable, Text, View } from 'react-native';
 import Animated, {
+  Easing,
+  useAnimatedStyle,
   useSharedValue,
   withTiming,
-  useAnimatedStyle,
-  Easing,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../lib/utils';
-import { api } from '@/convex/_generated/api';
 
 const AnimatedView = Animated.View;
 
@@ -39,10 +39,13 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const isCollapsed = useSharedValue(false);
+  const [collapsed, setCollapsed] = React.useState(false);
   const dueCount = useQuery(api.review.getTodayReviewCount);
 
   const toggleCollapse = () => {
-    isCollapsed.value = !isCollapsed.value;
+    const next = !collapsed;
+    isCollapsed.value = next;
+    setCollapsed(next);
   };
 
   const sidebarWidthStyle = useAnimatedStyle(() => {
@@ -51,17 +54,6 @@ export function Sidebar() {
         duration: 300,
         easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       }),
-    };
-  });
-
-  const chevronRotationStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{
-        rotate: withTiming(isCollapsed.value ? '180deg' : '0deg', {
-          duration: 300,
-          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-        }),
-      }],
     };
   });
 
@@ -75,13 +67,13 @@ export function Sidebar() {
   });
 
   return (
-    <AnimatedView 
+    <AnimatedView
       className="flex-col h-full bg-canvas"
       style={[
-        sidebarWidthStyle, 
-        { 
-          paddingTop: insets.top, 
-          paddingBottom: insets.bottom, 
+        sidebarWidthStyle,
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
           overflow: 'hidden',
           borderRightWidth: 1,
           borderRightColor: 'rgba(225, 215, 201, 0.7)', // border color with 70% opacity
@@ -89,19 +81,22 @@ export function Sidebar() {
       ]}
     >
       {/* Header */}
-      <View className="h-16 flex-row items-center px-6 justify-between">
+
+      <View className={cn("h-16 flex-row items-center px-6", collapsed ? "justify-start" : "justify-between")}>
         <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
           <Text className="text-xl font-sans-bold text-ink" numberOfLines={1}>Reader</Text>
         </AnimatedView>
-        
+
         <Pressable
           onPress={toggleCollapse}
-          className="h-9 w-9 items-center justify-center rounded-full active:bg-muted/80"
+          className="h-6 w-6 items-center justify-center rounded-full active:bg-muted/80"
           hitSlop={8}
         >
-          <Animated.View style={chevronRotationStyle}>
-            <PanelLeft size={20} color="#524a43" />
-          </Animated.View>
+          {
+            collapsed
+              ? <PanelLeft size={20} color="#524a43" />
+              : <PanelRight size={20} color="#524a43" />
+          }
         </Pressable>
       </View>
 
@@ -110,7 +105,7 @@ export function Sidebar() {
         {NAV_ITEMS.map((item) => {
           const isActive = pathname.startsWith(item.href);
           const showBadge = item.name === 'review' && dueCount !== undefined && dueCount > 0;
-          
+
           return (
             <Pressable
               key={item.name}
@@ -128,10 +123,10 @@ export function Sidebar() {
               accessibilityRole="link"
             >
               <View style={{ width: 24, alignItems: 'center', justifyContent: 'center' }}>
-                <Ionicons 
-                  name={item.iconName as any} 
-                  size={22} 
-                  color={isActive ? "#2f6b66" : "#524a43"} 
+                <Ionicons
+                  name={item.iconName as any}
+                  size={22}
+                  color={isActive ? "#2f6b66" : "#524a43"}
                 />
                 {showBadge && (
                   <View
@@ -154,9 +149,9 @@ export function Sidebar() {
                   </View>
                 )}
               </View>
-              
-              <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}> 
-                <Text 
+
+              <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
+                <Text
                   numberOfLines={1}
                   className={cn(
                     "text-base font-sans-semibold",
