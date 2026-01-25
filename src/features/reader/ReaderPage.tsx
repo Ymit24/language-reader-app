@@ -252,26 +252,12 @@ function ReaderPageContent({
     }
   }, [completeSelection, selectionState.isSelecting]);
 
-  // Compose gestures: Long press to start, then pan to extend
-  const longPressGesture = Gesture.LongPress()
-    .minDuration(LONG_PRESS_DURATION)
+  // Pan gesture that activates after long press
+  const panGesture = Gesture.Pan()
+    .activateAfterLongPress(LONG_PRESS_DURATION)
     .onStart((event) => {
       // Use event.x/y which are relative to the gesture view
       runOnJS(handleLongPressStart)(event.x, event.y);
-    })
-    .onEnd(() => {
-      runOnJS(handleDragEnd)();
-    });
-
-  const panGesture = Gesture.Pan()
-    .manualActivation(true)
-    .onTouchesMove((_, stateManager) => {
-      // Only activate pan if we're in selection mode
-      if (selectionState.isSelecting) {
-        stateManager.activate();
-      } else {
-        stateManager.fail();
-      }
     })
     .onUpdate((event) => {
       // Use event.x/y which are relative to the gesture view
@@ -281,8 +267,7 @@ function ReaderPageContent({
       runOnJS(handleDragEnd)();
     });
 
-  // Combine long press and pan gestures
-  const composedGesture = Gesture.Simultaneous(longPressGesture, panGesture);
+  const composedGesture = panGesture;
 
   // Handle scroll offset tracking
   const handleScroll = useCallback((event: any) => {
