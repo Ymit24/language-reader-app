@@ -1,16 +1,5 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Slot } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-import '../global.css';
-import { Platform } from 'react-native';
-import { useFonts } from 'expo-font';
-import {
-  PlusJakartaSans_400Regular,
-  PlusJakartaSans_500Medium,
-  PlusJakartaSans_600SemiBold,
-  PlusJakartaSans_700Bold,
-} from '@expo-google-fonts/plus-jakarta-sans';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import {
   Newsreader_400Regular,
   Newsreader_400Regular_Italic,
@@ -18,12 +7,23 @@ import {
   Newsreader_600SemiBold,
   Newsreader_700Bold,
 } from '@expo-google-fonts/newsreader';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+} from '@expo-google-fonts/plus-jakarta-sans';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { ConvexReactClient } from "convex/react";
+import { useFonts } from 'expo-font';
+import { Slot } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
+import { StatusBar } from 'expo-status-bar';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import '../global.css';
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
   unsavedChangesWarning: false,

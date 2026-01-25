@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 interface LevelBadgeProps {
   level: number;
@@ -22,22 +22,28 @@ const LEVEL_COLORS: Record<number, { bg: string; text: string; border: string }>
 
 export function LevelBadge({ level, title, size = 'medium' }: LevelBadgeProps) {
   const colors = LEVEL_COLORS[Math.min(level, 10)] || LEVEL_COLORS[1];
-  
+
   const sizeStyles = {
     small: {
-      container: 'px-2 py-0.5 rounded-md',
-      level: 'text-[10px]',
-      title: 'text-[10px]',
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 6,
+      levelSize: 10,
+      titleSize: 10,
     },
     medium: {
-      container: 'px-3 py-1 rounded-lg',
-      level: 'text-xs',
-      title: 'text-xs',
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 8,
+      levelSize: 12,
+      titleSize: 12,
     },
     large: {
-      container: 'px-4 py-2 rounded-xl',
-      level: 'text-sm',
-      title: 'text-sm',
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 12,
+      levelSize: 14,
+      titleSize: 14,
     },
   };
 
@@ -45,22 +51,37 @@ export function LevelBadge({ level, title, size = 'medium' }: LevelBadgeProps) {
 
   return (
     <View
-      className={`flex-row items-center gap-1.5 ${styles.container}`}
       style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start', // Don't stretch to fill parent
+        flexShrink: 0, // Never shrink
+        paddingHorizontal: styles.paddingHorizontal,
+        paddingVertical: styles.paddingVertical,
+        borderRadius: styles.borderRadius,
         backgroundColor: colors.bg,
         borderWidth: 1,
         borderColor: colors.border,
       }}
     >
       <Text
-        className={`font-sans-bold ${styles.level}`}
-        style={{ color: colors.text }}
+        style={{
+          fontWeight: '700',
+          fontSize: styles.levelSize,
+          color: colors.text,
+        }}
+        numberOfLines={1}
       >
         Lv.{level}
       </Text>
+      <View style={{ width: 6 }} />
       <Text
-        className={`font-sans-semibold ${styles.title}`}
-        style={{ color: colors.text }}
+        style={{
+          fontWeight: '600',
+          fontSize: styles.titleSize,
+          color: colors.text,
+        }}
+        numberOfLines={1}
       >
         {title}
       </Text>
