@@ -16,6 +16,7 @@ import type * as lib_tokenize from "../lib/tokenize.js";
 import type * as migrations from "../migrations.js";
 import type * as progress from "../progress.js";
 import type * as review from "../review.js";
+import type * as translationActions from "../translationActions.js";
 import type * as vocab from "../vocab.js";
 
 import type {
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   migrations: typeof migrations;
   progress: typeof progress;
   review: typeof review;
+  translationActions: typeof translationActions;
   vocab: typeof vocab;
 }>;
 
