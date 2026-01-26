@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { Token, TokenStatus } from './Token';
 import { measureInWindow, Rect } from '../../lib/measureElement';
 
@@ -23,10 +24,6 @@ interface ReaderPageProps {
 }
 
 interface ParagraphToken extends TokenType {}
-
-// Padding values matching the ScrollView styling
-const SCROLL_PADDING_TOP = 40; // pt-10 = 2.5rem = 40px
-const SCROLL_PADDING_HORIZONTAL = 24; // px-6 = 1.5rem = 24px (base)
 
 const ReaderToken = React.memo(({
   token,
@@ -110,10 +107,11 @@ export function ReaderPage({
 
   // Refs for measurement
   const contentContainerRef = useRef<View>(null);
-  const tokenRefs = useRef<Map<string, View>>(new Map());
+  // Use 'any' for token refs since they can be Text or View depending on platform
+  const tokenRefs = useRef<Map<string, any>>(new Map());
   const tokenLayoutsRef = useRef<Map<string, Rect>>(new Map());
   
-  // Scroll tracking
+  // Scroll tracking - stored as plain value, updated via runOnJS
   const scrollOffsetRef = useRef(0);
   
   // Debug overlay rects (content-relative coordinates)
@@ -126,7 +124,11 @@ export function ReaderPage({
   const [contentSize, setContentSize] = useState({ width: 0, height: 0 });
   
   // Offset of content container from gesture container (accounts for ScrollView padding)
-  const contentOffsetRef = useRef({ x: 0, y: 0 });
+  // Stored as state so it triggers re-render when it changes
+  const [contentOffset, setContentOffset] = useState({ x: 0, y: 0 });
+  
+  // Track layout version to trigger re-measurement
+  const [layoutVersion, setLayoutVersion] = useState(0);
 
   /**
    * Measures all token positions relative to the content container.
@@ -146,10 +148,10 @@ export function ReaderPage({
     if (!containerRect || !gestureRect) return;
     
     // Calculate offset from gesture container to content container
-    contentOffsetRef.current = {
+    setContentOffset({
       x: containerRect.x - gestureRect.x,
       y: containerRect.y - gestureRect.y,
-    };
+    });
 
     const newLayouts = new Map<string, Rect>();
     const rects: Rect[] = [];
@@ -181,7 +183,7 @@ export function ReaderPage({
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [isLayoutReady, isActive, measureAllTokens]);
+  }, [isLayoutReady, isActive, measureAllTokens, layoutVersion]);
 
   /**
    * Finds token at given content-relative coordinates
@@ -202,6 +204,33 @@ export function ReaderPage({
 
   // Gesture detector ref for coordinate conversion
   const gestureContainerRef = useRef<View>(null);
+  
+  // Store current values in refs for gesture handler access
+  const contentOffsetForGesture = useRef(contentOffset);
+  contentOffsetForGesture.current = contentOffset;
+
+  // Handler for pan update - runs on JS thread
+  const handlePanUpdate = useCallback((x: number, y: number) => {
+    // Convert gesture coordinates to content-relative coordinates
+    const contentX = x - contentOffsetForGesture.current.x;
+    const contentY = y - contentOffsetForGesture.current.y + scrollOffsetRef.current;
+
+    // For debugging: show a rect at the touch point
+    const touchRect: Rect = {
+      x: contentX - 25,
+      y: contentY - 25,
+      width: 50,
+      height: 50,
+    };
+
+    // Find which token is at this point
+    const tokenId = findTokenAtPoint(contentX, contentY);
+    if (tokenId) {
+      console.log('Token at point:', tokenId);
+    }
+
+    setHighlightRects([touchRect]);
+  }, [findTokenAtPoint]);
 
   const longPressGesture = Gesture
     .LongPress()
@@ -210,33 +239,12 @@ export function ReaderPage({
   const panGesture = Gesture
     .Pan()
     .onUpdate((e) => {
-      // Convert gesture coordinates to content-relative coordinates
-      // Gesture coordinates (e.x, e.y) are relative to the GestureDetector container
-      // We need to:
-      // 1. Subtract the content container offset (accounts for ScrollView padding)
-      // 2. Add scroll offset to get position within scrolled content
-      const contentX = e.x - contentOffsetRef.current.x;
-      const contentY = e.y - contentOffsetRef.current.y + scrollOffsetRef.current;
-
-      // For debugging: show a rect at the touch point
-      const touchRect: Rect = {
-        x: contentX - 25,
-        y: contentY - 25,
-        width: 50,
-        height: 50,
-      };
-
-      // Find which token is at this point
-      const tokenId = findTokenAtPoint(contentX, contentY);
-      if (tokenId) {
-        console.log('Token at point:', tokenId);
-      }
-
-      setHighlightRects([touchRect]);
+      // Use runOnJS to call our handler on the JS thread
+      runOnJS(handlePanUpdate)(e.x, e.y);
     })
     .onEnd(() => {
       // Re-show all token rects when gesture ends
-      measureAllTokens();
+      runOnJS(measureAllTokens)();
     });
 
   const combinedGesture = Gesture.Simultaneous(longPressGesture, panGesture);
@@ -247,7 +255,15 @@ export function ReaderPage({
 
   const handleContentLayout = useCallback((event: { nativeEvent: { layout: { width: number; height: number } } }) => {
     const { width, height } = event.nativeEvent.layout;
-    setContentSize({ width, height });
+    // Check if size actually changed to avoid unnecessary re-renders
+    setContentSize((prev) => {
+      if (prev.width !== width || prev.height !== height) {
+        // Trigger re-measurement on next frame
+        setLayoutVersion((v) => v + 1);
+        return { width, height };
+      }
+      return prev;
+    });
     setIsLayoutReady(true);
   }, []);
 

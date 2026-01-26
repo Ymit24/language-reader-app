@@ -13,7 +13,7 @@ interface TokenProps {
   isSelected?: boolean;
   normalized?: string;
   isWordSelected?: boolean;
-  /** Ref to the wrapper View for measurement (only for word tokens) */
+  /** Ref to the Text for measurement (only for word tokens) */
   measureRef?: React.Ref<View>;
 }
 
@@ -63,29 +63,23 @@ function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSel
     }
   }
 
-  // Use a View wrapper for measurement on native platforms
-  // The View is styled to behave inline-like with the text
+  // Cast ref to any since Text accepts View-compatible refs for measurement
   return (
-    <View
-      ref={measureRef}
-      style={{ flexDirection: 'row' }}
-      collapsable={false}
+    <Text
+      ref={measureRef as React.Ref<Text>}
+      onPress={onPress}
+      suppressHighlighting={true}
+      className={cn(
+        "text-[22px] font-serif rounded-md px-1 py-0.5 box-decoration-clone",
+        textClass,
+        bgClass
+      )}
+      style={{
+        lineHeight: 38,
+      }}
     >
-      <Text
-        onPress={onPress}
-        suppressHighlighting={true}
-        className={cn(
-          "text-[22px] font-serif rounded-md px-1 py-0.5 box-decoration-clone",
-          textClass,
-          bgClass
-        )}
-        style={{
-          lineHeight: 38,
-        }}
-      >
-        {surface}
-      </Text>
-    </View>
+      {surface}
+    </Text>
   );
 }
 
