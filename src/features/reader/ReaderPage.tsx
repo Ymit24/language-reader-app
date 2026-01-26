@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, ScrollView, Text } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { Token, TokenStatus } from './Token';
 
 interface TokenType {
@@ -49,7 +49,7 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, se
     >
       <View className="flex-col items-start justify-start w-full max-w-3xl self-center">
         {paragraphs.map((paraTokens, paraIndex) => (
-          <Text key={`para-${paraIndex}`} className="mb-8">
+          <View key={`para-${paraIndex}`} className="mb-8 flex-wrap flex-row gap-y-2">
             {paraTokens.map((token) => {
               const isWord: boolean = token.isWord;
               let status: TokenStatus = 'new';
@@ -90,7 +90,7 @@ export function ReaderPage({ tokens, vocabMap, onTokenPress, selectedTokenId, se
                 />
               );
             })}
-          </Text>
+          </View>
         ))}
       </View>
     </ScrollView>
