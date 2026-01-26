@@ -248,7 +248,7 @@ export function Reader({ lesson }: ReaderProps) {
                   pagingEnabled
                   scrollAnimationDuration={320}
                   onSnapToItem={handlePageSnap}
-                  renderItem={({ item }) => (
+                  renderItem={({ item, index }) => (
                     <ReaderPage
                       tokens={item}
                       vocabMap={vocabMap}
@@ -259,6 +259,7 @@ export function Reader({ lesson }: ReaderProps) {
                       }}
                       selectedTokenId={selectedToken?._id ?? null}
                       selectedNormalized={selectedNormalized}
+                      isActive={index === currentPage}
                     />
                   )}
                   onConfigurePanGesture={(gesture) => {

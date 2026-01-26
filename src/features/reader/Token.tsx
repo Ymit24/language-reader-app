@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { LayoutChangeEvent, Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { cn } from '../../lib/utils';
 
 export type TokenStatus = 'new' | 'learning' | 'familiar' | 'known';
@@ -12,12 +12,12 @@ interface TokenProps {
   onPress?: () => void;
   isSelected?: boolean;
   normalized?: string;
-  onLayout: (event: LayoutChangeEvent) => void;
   isWordSelected?: boolean;
-  ref: React.Ref<Text>;
+  /** Ref to the wrapper View for measurement (only for word tokens) */
+  measureRef?: React.Ref<View>;
 }
 
-function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSelected, normalized, onLayout, isWordSelected, ref }: TokenProps) {
+function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSelected, normalized, isWordSelected, measureRef }: TokenProps) {
   if (!isWord) {
     return (
       <Text
@@ -63,26 +63,29 @@ function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSel
     }
   }
 
+  // Use a View wrapper for measurement on native platforms
+  // The View is styled to behave inline-like with the text
   return (
-    <Text
-      ref={ref}
-      onPress={onPress}
-      suppressHighlighting={true}
-      onLayout={(e) => {
-        // console.log("Token layout:", surface, e.nativeEvent.layout);
-        onLayout(e);
-      }}
-      className={cn(
-        "text-[22px] font-serif rounded-md inline px-1 py-0.5 box-decoration-clone",
-        textClass,
-        bgClass
-      )}
-      style={{
-        lineHeight: 38,
-      }}
+    <View
+      ref={measureRef}
+      style={{ flexDirection: 'row' }}
+      collapsable={false}
     >
-      {surface}
-    </Text>
+      <Text
+        onPress={onPress}
+        suppressHighlighting={true}
+        className={cn(
+          "text-[22px] font-serif rounded-md px-1 py-0.5 box-decoration-clone",
+          textClass,
+          bgClass
+        )}
+        style={{
+          lineHeight: 38,
+        }}
+      >
+        {surface}
+      </Text>
+    </View>
   );
 }
 
