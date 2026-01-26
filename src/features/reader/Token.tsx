@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Text, View } from 'react-native';
+import { LayoutChangeEvent, Text } from 'react-native';
 import { cn } from '../../lib/utils';
 
 export type TokenStatus = 'new' | 'learning' | 'familiar' | 'known';
@@ -12,10 +12,12 @@ interface TokenProps {
   onPress?: () => void;
   isSelected?: boolean;
   normalized?: string;
+  onLayout: (event: LayoutChangeEvent) => void;
   isWordSelected?: boolean;
+  ref: React.Ref<Text>;
 }
 
-function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSelected, normalized, isWordSelected }: TokenProps) {
+function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSelected, normalized, onLayout, isWordSelected, ref }: TokenProps) {
   if (!isWord) {
     return (
       <Text
@@ -34,11 +36,11 @@ function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSel
 
   if (isWordSelected && normalized) {
     // Word details panel is open - lighter highlight to maintain readability
-    bgClass = 'bg-brand/15'; 
+    bgClass = 'bg-brand/15';
     textClass = 'text-brand font-medium';
   } else if (isSelected) {
     // Transient selection / touch feedback - slightly darker
-    bgClass = 'bg-brand/25'; 
+    bgClass = 'bg-brand/25';
     textClass = 'text-brand';
   } else {
     switch (effectiveStatus) {
@@ -56,21 +58,26 @@ function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSel
         break;
       case 'known':
         bgClass = 'bg-transparent';
-        textClass = 'text-subink'; 
+        textClass = 'text-subink';
         break;
     }
   }
 
   return (
     <Text
+      ref={ref}
       onPress={onPress}
       suppressHighlighting={true}
+      onLayout={(e) => {
+        // console.log("Token layout:", surface, e.nativeEvent.layout);
+        onLayout(e);
+      }}
       className={cn(
         "text-[22px] font-serif rounded-md inline px-1 py-0.5 box-decoration-clone",
         textClass,
         bgClass
       )}
-      style={{ 
+      style={{
         lineHeight: 38,
       }}
     >
