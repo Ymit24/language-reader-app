@@ -88,6 +88,7 @@ export function ReaderPage({
   selectedNormalized,
   isActive = true,
 }: ReaderPageProps) {
+  const readerColumnWidth = 768;
   const paragraphs = useMemo(() => {
     const paras: ParagraphToken[][] = [[]];
 
@@ -269,70 +270,72 @@ export function ReaderPage({
 
   return (
     <GestureDetector gesture={combinedGesture}>
-      <View ref={gestureContainerRef} className="relative flex-1">
-        <ScrollView
-          className="flex-1 px-6 md:px-12 lg:px-20 pt-10"
-          contentContainerStyle={{ paddingBottom: 96 }}
-          showsVerticalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        >
-          {/* Content container - all measurements are relative to this */}
-          <View
-            ref={contentContainerRef}
-            className="flex-col items-start justify-start w-full max-w-3xl self-center relative"
-            onLayout={handleContentLayout}
+      <View ref={gestureContainerRef} className="relative flex-1 items-center">
+        <View className="flex-1 w-full" style={{ maxWidth: readerColumnWidth }}>
+          <ScrollView
+            className="flex-1 px-6 md:px-12 lg:px-20 pt-10"
+            contentContainerStyle={{ paddingBottom: 96 }}
+            showsVerticalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
           >
-            {paragraphs.map((paraTokens, paraIndex) => (
-              <View key={`para-${paraIndex}`} className="mb-8 flex-wrap flex-row gap-y-2">
-                {paraTokens.map((token) => {
-                  const tokenKey = token._id || `token-${token.index}`;
-                  return (
-                    <ReaderToken
-                      key={tokenKey}
-                      token={token}
-                      vocabMap={vocabMap}
-                      selectedTokenId={selectedTokenId}
-                      selectedNormalized={selectedNormalized}
-                      measureRef={(node) => {
-                        if (node) {
-                          tokenRefs.current.set(tokenKey, node);
-                        } else {
-                          tokenRefs.current.delete(tokenKey);
-                        }
-                      }}
-                      onTokenPress={onTokenPress}
-                    />
-                  );
-                })}
-              </View>
-            ))}
-
-            {/* Overlay inside content container - scrolls with content */}
-            <View 
-              className="absolute pointer-events-none"
-              style={{
-                top: 0,
-                left: 0,
-                width: contentSize.width,
-                height: contentSize.height,
-              }}
+            {/* Content container - all measurements are relative to this */}
+            <View
+              ref={contentContainerRef}
+              className="flex-col items-start justify-start w-full relative"
+              onLayout={handleContentLayout}
             >
-              {highlightRects.map((rect, index) => (
-                <View
-                  key={index}
-                  className="absolute bg-blue-500 opacity-50"
-                  style={{
-                    left: rect.x,
-                    top: rect.y,
-                    width: rect.width,
-                    height: rect.height,
-                  }}
-                />
+              {paragraphs.map((paraTokens, paraIndex) => (
+                <View key={`para-${paraIndex}`} className="mb-8 flex-wrap flex-row gap-y-2">
+                  {paraTokens.map((token) => {
+                    const tokenKey = token._id || `token-${token.index}`;
+                    return (
+                      <ReaderToken
+                        key={tokenKey}
+                        token={token}
+                        vocabMap={vocabMap}
+                        selectedTokenId={selectedTokenId}
+                        selectedNormalized={selectedNormalized}
+                        measureRef={(node) => {
+                          if (node) {
+                            tokenRefs.current.set(tokenKey, node);
+                          } else {
+                            tokenRefs.current.delete(tokenKey);
+                          }
+                        }}
+                        onTokenPress={onTokenPress}
+                      />
+                    );
+                  })}
+                </View>
               ))}
+
+              {/* Overlay inside content container - scrolls with content */}
+              <View 
+                className="absolute pointer-events-none"
+                style={{
+                  top: 0,
+                  left: 0,
+                  width: contentSize.width,
+                  height: contentSize.height,
+                }}
+              >
+                {highlightRects.map((rect, index) => (
+                  <View
+                    key={index}
+                    className="absolute bg-blue-500 opacity-50"
+                    style={{
+                      left: rect.x,
+                      top: rect.y,
+                      width: rect.width,
+                      height: rect.height,
+                    }}
+                  />
+                ))}
+              </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </View>
       </View>
     </GestureDetector>
   );

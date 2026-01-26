@@ -26,6 +26,8 @@ interface ReaderToken {
 const STATUS_NEW = 0;
 
 const INSPECTOR_WIDTH = 360;
+const SIDEBAR_EXPANDED_WIDTH = 256;
+const READER_MAX_WIDTH = 1040;
 
 export function Reader({ lesson }: ReaderProps) {
   const router = useRouter();
@@ -41,8 +43,20 @@ export function Reader({ lesson }: ReaderProps) {
     // Keep a sane minimum so the carousel mounts on first layout.
     return Math.max(windowHeight - 320, 260);
   }, [windowHeight]);
-  const [carouselLayout, setCarouselLayout] = useState({ width, height: fallbackCarouselHeight });
-  const carouselWidth = carouselLayout.width > 0 ? carouselLayout.width : width;
+  const readerFrameWidth = useMemo(() => {
+    const horizontalPadding = 32;
+    const reservedSidebar = isLargeScreen ? SIDEBAR_EXPANDED_WIDTH : 0;
+    const availableWidth = Math.max(width - reservedSidebar - horizontalPadding, 0);
+    if (!isLargeScreen) {
+      return availableWidth;
+    }
+    return Math.min(availableWidth, READER_MAX_WIDTH);
+  }, [isLargeScreen, width]);
+  const [carouselLayout, setCarouselLayout] = useState({
+    width: readerFrameWidth,
+    height: fallbackCarouselHeight,
+  });
+  const carouselWidth = readerFrameWidth;
   const carouselHeight = carouselLayout.height > 0 ? carouselLayout.height : fallbackCarouselHeight;
 
   const language = lesson.language;
@@ -209,6 +223,13 @@ export function Reader({ lesson }: ReaderProps) {
     };
   }, []);
 
+  useEffect(() => {
+    setCarouselLayout((prev) => {
+      if (prev.width === readerFrameWidth) return prev;
+      return { ...prev, width: readerFrameWidth };
+    });
+  }, [readerFrameWidth]);
+
   const hasPages = totalPages > 0;
   const canGoPrev = currentPage > 0;
   const isLastPage = currentPage === totalPages - 1;
@@ -217,21 +238,24 @@ export function Reader({ lesson }: ReaderProps) {
   return (
     <View className="flex-1 bg-canvas">
       <View className="flex-1" style={{ minHeight: 1 }}>
-        <View className="flex-1 px-4 pt-4 pb-6">
-          <View className="flex-1 bg-panel/90 border border-border/70 rounded-3xl shadow-card overflow-hidden">
+        <View className="flex-1 px-4 pt-4 pb-6 items-center">
+          <View
+            className="flex-1 bg-panel/90 border border-border/70 rounded-3xl shadow-card overflow-hidden"
+            style={{ width: readerFrameWidth }}
+          >
             <View
               className="flex-1"
               style={{ minHeight: 1 }}
               onLayout={(event) => {
-                const { width: layoutWidth, height: layoutHeight } = event.nativeEvent.layout;
-                if (layoutWidth === 0 || layoutHeight === 0) return;
+                const { height: layoutHeight } = event.nativeEvent.layout;
+                if (layoutHeight === 0) return;
 
-                if (layoutWidth !== carouselLayout.width || layoutHeight !== carouselLayout.height) {
+                if (layoutHeight !== carouselLayout.height) {
                   if (layoutUpdateTimer.current) {
                     clearTimeout(layoutUpdateTimer.current);
                   }
                   layoutUpdateTimer.current = setTimeout(() => {
-                    setCarouselLayout({ width: layoutWidth, height: layoutHeight });
+                    setCarouselLayout({ width: readerFrameWidth, height: layoutHeight });
                   }, 80);
                 }
               }}
