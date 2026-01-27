@@ -411,6 +411,36 @@ export function ReaderPage({
     };
   }, [highlightRects]);
 
+  // Calculate panel position to ensure it stays within bounds
+  const selectionPanelStyle = useMemo(() => {
+    if (!selectionBounds) return null;
+
+    const PANEL_WIDTH = 300; 
+    const CONTAINER_PADDING = 0; // The content container is already padded by the ScrollView
+
+    const availableWidth = Math.max(0, contentSize.width - (CONTAINER_PADDING * 2));
+    // If screen is tiny, shrink panel to fit
+    const finalPanelWidth = Math.min(PANEL_WIDTH, availableWidth);
+    
+    // Start centered on selection
+    let left = selectionBounds.centerX - (finalPanelWidth / 2);
+    
+    // Clamp to container bounds
+    const minLeft = CONTAINER_PADDING;
+    const maxLeft = contentSize.width - CONTAINER_PADDING - finalPanelWidth;
+    
+    // Apply clamping
+    left = Math.max(minLeft, Math.min(left, maxLeft));
+    
+    return {
+      position: 'absolute' as const,
+      top: selectionBounds.bottomY + 12,
+      left,
+      width: finalPanelWidth,
+      zIndex: 50,
+    };
+  }, [selectionBounds, contentSize.width]);
+
   return (
     <GestureDetector gesture={combinedGesture}>
       <View ref={gestureContainerRef} className="relative flex-1 items-center">
@@ -495,25 +525,16 @@ export function ReaderPage({
                   
                   {/* Panel centered relative to selection */}
                   <View 
-                    style={{
-                      position: 'absolute',
-                      top: selectionBounds.bottomY + 12, // Position below
-                      left: selectionBounds.centerX,
-                      zIndex: 50,
-                      width: 0, // Zero width to allow centering
-                      alignItems: 'center', 
-                    }}
+                    style={selectionPanelStyle || {}}
                   >
-                    <View style={{ width: 320, transform: [{ translateX: -160 }] }}>
-                      <SelectionPanel 
-                        selectedText={selectionPanelText}
-                        onClose={clearSelection}
-                        onAsk={() => {
-                          // TODO: Implement ask
-                          console.log("Ask about: ", selectionPanelText);
-                        }}
-                      />
-                    </View>
+                    <SelectionPanel 
+                      selectedText={selectionPanelText}
+                      onClose={clearSelection}
+                      onAsk={() => {
+                        // TODO: Implement ask
+                        console.log("Ask about: ", selectionPanelText);
+                      }}
+                    />
                   </View>
                 </>
               )}
