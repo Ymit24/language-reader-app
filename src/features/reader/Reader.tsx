@@ -276,6 +276,7 @@ export function Reader({ lesson }: ReaderProps) {
                     <ReaderPage
                       tokens={item}
                       vocabMap={vocabMap}
+                      language={language}
                       onTokenPress={(token) => {
                         setSelectedToken(token);
                         setSelectedNormalized(token.normalized || null);

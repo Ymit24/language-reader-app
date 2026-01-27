@@ -20,6 +20,7 @@ interface ReaderPageProps {
   onTokenPress: (token: TokenType) => void;
   selectedTokenId: string | null;
   selectedNormalized: string | null;
+  language: 'de' | 'fr' | 'ja';
   /** Called when page layout is ready (e.g., after carousel settles) */
   isActive?: boolean;
 }
@@ -84,6 +85,7 @@ export function ReaderPage({
   onTokenPress,
   selectedTokenId,
   selectedNormalized,
+  language,
   isActive = true,
 }: ReaderPageProps) {
   const readerColumnWidth = 768;
@@ -545,6 +547,7 @@ export function ReaderPage({
                   >
                     <SelectionPanel 
                       selectedText={selectionPanelText}
+                      language={language}
                       onClose={clearSelection}
                       onAsk={() => {
                         // TODO: Implement ask

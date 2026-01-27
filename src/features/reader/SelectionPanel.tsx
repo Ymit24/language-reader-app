@@ -1,38 +1,84 @@
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
+import { useAction } from 'convex/react';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleProp, Text, View, ViewStyle } from 'react-native';
+import { api } from '../../../convex/_generated/api';
 
 interface SelectionPanelProps {
   selectedText: string;
+  language: 'de' | 'fr' | 'ja';
   onClose: () => void;
   onAsk?: () => void;
   style?: StyleProp<ViewStyle>;
 }
 
-export function SelectionPanel({ selectedText, onClose, onAsk, style }: SelectionPanelProps) {
+interface TranslationResult {
+  success: boolean;
+  translatedText?: string;
+  match?: number;
+  truncated?: boolean;
+  error?: string;
+}
+
+export function SelectionPanel({ selectedText, language, onClose, onAsk, style }: SelectionPanelProps) {
   const { colors } = useAppTheme();
+  const translateAction = useAction(api.translationActions.translate);
   const [translation, setTranslation] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let mounted = true;
+    const trimmed = selectedText.trim();
+
     setLoading(true);
     setTranslation(null);
+    setHasError(false);
+    setIsTruncated(false);
 
-    // Simulate API call
-    const timer = setTimeout(() => {
-      if (mounted) {
-        setTranslation("This is a placeholder translation for the selected text. In the future, this will be replaced by a real translation from the API.");
-        setLoading(false);
+    if (!trimmed) {
+      setLoading(false);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    const fetchTranslation = async () => {
+      try {
+        const result = (await translateAction({
+          sourceLanguage: language,
+          targetLanguage: 'en',
+          text: trimmed,
+        })) as TranslationResult;
+
+        if (!mounted) return;
+
+        if (result.success && result.translatedText) {
+          setTranslation(result.translatedText);
+          setIsTruncated(Boolean(result.truncated));
+        } else {
+          setHasError(true);
+        }
+      } catch {
+        if (mounted) {
+          setHasError(true);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-    }, 1000);
+    };
+
+    fetchTranslation();
 
     return () => {
       mounted = false;
-      clearTimeout(timer);
     };
-  }, [selectedText]);
+  }, [language, selectedText, translateAction, retryCount]);
 
   return (
     <View 
@@ -81,17 +127,32 @@ export function SelectionPanel({ selectedText, onClose, onAsk, style }: Selectio
         {/* Translation Section */}
         <View>
           {loading ? (
-             <View className="flex-row items-center gap-2">
+            <View className="flex-row items-center gap-2">
               <ActivityIndicator size="small" color={colors['--brand']} />
               <Text className="text-xs text-faint italic font-serif">Translating...</Text>
             </View>
+          ) : hasError ? (
+            <Pressable
+              onPress={() => setRetryCount((prev) => prev + 1)}
+              className="flex-row items-center gap-2 bg-muted/40 px-2 py-1.5 rounded-lg active:bg-muted"
+            >
+              <Ionicons name="refresh" size={14} color={colors['--subink']} />
+              <Text className="text-xs text-subink font-sans-medium">Unable to translate. Tap to retry.</Text>
+            </Pressable>
           ) : (
-             <View className="flex-row gap-2">
-                 <Ionicons name="language-outline" size={14} color={colors['--subink']} className="mt-0.5" />
-                 <Text className="text-sm text-ink leading-relaxed font-sans-medium flex-1">
-                  {translation}
+            <View className="flex-row gap-2">
+              <Ionicons name="language-outline" size={14} color={colors['--subink']} className="mt-0.5" />
+              <View className="flex-1">
+                <Text className="text-sm text-ink leading-relaxed font-sans-medium">
+                  {translation ?? 'No translation available.'}
                 </Text>
-             </View>
+                {isTruncated && (
+                  <Text className="text-[10px] text-faint font-sans-medium mt-1">
+                    Translation trimmed to fit MyMemory limits.
+                  </Text>
+                )}
+              </View>
+            </View>
           )}
         </View>
       </View>
