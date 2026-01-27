@@ -9,7 +9,6 @@ interface TokenProps {
   isWord: boolean;
   status?: TokenStatus;
   learningLevel?: number;
-  onPress?: () => void;
   isSelected?: boolean;
   normalized?: string;
   isWordSelected?: boolean;
@@ -67,7 +66,6 @@ function TokenComponent({ surface, isWord, status, learningLevel, onPress, isSel
   return (
     <Text
       ref={measureRef as React.Ref<Text>}
-      onPress={onPress}
       suppressHighlighting={true}
       className={cn(
         "text-[22px] font-serif rounded-md px-1 py-0.5 box-decoration-clone",

@@ -31,14 +31,12 @@ const ReaderToken = React.memo(({
   vocabMap,
   selectedTokenId,
   selectedNormalized,
-  onTokenPress,
   measureRef,
 }: {
   token: TokenType;
   vocabMap: Record<string, number>;
   selectedTokenId: string | null;
   selectedNormalized: string | null;
-  onTokenPress: (token: TokenType) => void;
   measureRef?: React.Ref<View>;
 }) => {
   const isWord: boolean = token.isWord;
@@ -76,7 +74,6 @@ const ReaderToken = React.memo(({
       isSelected={isSelected}
       normalized={token.normalized}
       isWordSelected={isWordSelected}
-      onPress={isWord ? (() => onTokenPress(token)) : undefined}
     />
   );
 });
@@ -229,10 +226,6 @@ export function ReaderPage({
     return { contentX, contentY };
   }, []);
 
-  const longPressGesture = Gesture
-    .LongPress()
-    .minDuration(500);
-
   const findTokenAndIndex = (x: number, y: number): { tokenId: string | null; index: number | null } => {
     // // Find which token is at this point
     const tokenId = findTokenAtPoint(x, y);
@@ -271,7 +264,7 @@ export function ReaderPage({
     } else {
         // Tapped empty space?
     }
-  }, [findTokenAtPoint, isSelectionPanelVisible]);
+  }, [findTokenAndIndex, getAdjustedContentPosition, isSelectionPanelVisible]);
 
   const handleGestureUpdate = useCallback((x: number, y: number) => {
     const { contentX, contentY } = getAdjustedContentPosition(x, y);
@@ -280,7 +273,19 @@ export function ReaderPage({
     if (tokenId && index !== null) {
       setTokenSelectionEndIndex(index);
     }
-  }, [findTokenAndIndex]);
+  }, [findTokenAndIndex, getAdjustedContentPosition]);
+
+  const handleTap = useCallback((x: number, y: number) => {
+    const { contentX, contentY } = getAdjustedContentPosition(x, y);
+    const { index } = findTokenAndIndex(contentX, contentY);
+
+    if (index === null) return;
+
+    const token = tokens[index];
+    if (!token?.isWord) return;
+
+    onTokenPress(token);
+  }, [findTokenAndIndex, getAdjustedContentPosition, onTokenPress, tokens]);
 
   const handleGestureEnd = useCallback((x: number, y: number) => {
     // Check if we have a valid selection
@@ -352,6 +357,7 @@ export function ReaderPage({
 
   const panGesture = Gesture
     .Pan()
+    .activateAfterLongPress(250)
     .onStart((e) => {
       runOnJS(handleGestureStart)(e.x, e.y);
     })
@@ -365,7 +371,18 @@ export function ReaderPage({
       runOnJS(handleGestureEnd)(e.x, e.y);
     });
 
-  const combinedGesture = Gesture.Simultaneous(longPressGesture, panGesture);
+  const tapGesture = Gesture
+    .Tap()
+    .onStart((e) => {
+      runOnJS(handleTap)(e.x, e.y);
+    });
+
+  const gesturesEnabled = isActive && !isSelectionPanelVisible;
+
+  panGesture.enabled(gesturesEnabled);
+  tapGesture.enabled(gesturesEnabled);
+
+  const combinedGesture = Gesture.Exclusive(panGesture, tapGesture);
 
   const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
     scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
@@ -500,7 +517,6 @@ export function ReaderPage({
                             tokenRefs.current.delete(tokenKey);
                           }
                         }}
-                        onTokenPress={onTokenPress}
                       />
                     );
                   })}
