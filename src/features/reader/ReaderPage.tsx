@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
-import { Token, TokenStatus } from './Token';
 import { measureInWindow, Rect } from '../../lib/measureElement';
+import { Token, TokenStatus } from './Token';
 
 interface TokenType {
   _id?: string;
@@ -23,7 +23,7 @@ interface ReaderPageProps {
   isActive?: boolean;
 }
 
-interface ParagraphToken extends TokenType {}
+interface ParagraphToken extends TokenType { }
 
 const ReaderToken = React.memo(({
   token,
@@ -111,23 +111,23 @@ export function ReaderPage({
   // Use 'any' for token refs since they can be Text or View depending on platform
   const tokenRefs = useRef<Map<string, any>>(new Map());
   const tokenLayoutsRef = useRef<Map<string, Rect>>(new Map());
-  
+
   // Scroll tracking - stored as plain value, updated via runOnJS
   const scrollOffsetRef = useRef(0);
-  
+
   // Debug overlay rects (content-relative coordinates)
   const [highlightRects, setHighlightRects] = useState<Rect[]>([]);
-  
+
   // Layout ready flag
   const [isLayoutReady, setIsLayoutReady] = useState(false);
-  
+
   // Content dimensions for overlay sizing
   const [contentSize, setContentSize] = useState({ width: 0, height: 0 });
-  
+
   // Offset of content container from gesture container (accounts for ScrollView padding)
   // Stored as state so it triggers re-render when it changes
   const [contentOffset, setContentOffset] = useState({ x: 0, y: 0 });
-  
+
   // Track layout version to trigger re-measurement
   const [layoutVersion, setLayoutVersion] = useState(0);
 
@@ -145,9 +145,9 @@ export function ReaderPage({
       measureInWindow(container),
       measureInWindow(gestureContainer),
     ]);
-    
+
     if (!containerRect || !gestureRect) return;
-    
+
     // Calculate offset from gesture container to content container
     setContentOffset({
       x: containerRect.x - gestureRect.x,
@@ -172,7 +172,7 @@ export function ReaderPage({
     }
 
     tokenLayoutsRef.current = newLayouts;
-    setHighlightRects(rects);
+    // setHighlightRects(rects);
   }, []);
 
   // Measure tokens when layout is ready and page is active
@@ -205,47 +205,123 @@ export function ReaderPage({
 
   // Gesture detector ref for coordinate conversion
   const gestureContainerRef = useRef<View>(null);
-  
+
   // Store current values in refs for gesture handler access
   const contentOffsetForGesture = useRef(contentOffset);
   contentOffsetForGesture.current = contentOffset;
 
-  // Handler for pan update - runs on JS thread
-  const handlePanUpdate = useCallback((x: number, y: number) => {
-    // Convert gesture coordinates to content-relative coordinates
+  const getAdjustedContentPosition = useCallback((x: number, y: number) => {
     const contentX = x - contentOffsetForGesture.current.x;
     const contentY = y - contentOffsetForGesture.current.y + scrollOffsetRef.current;
 
-    // For debugging: show a rect at the touch point
-    const touchRect: Rect = {
-      x: contentX - 25,
-      y: contentY - 25,
-      width: 50,
-      height: 50,
-    };
-
-    // Find which token is at this point
-    const tokenId = findTokenAtPoint(contentX, contentY);
-    if (tokenId) {
-      console.log('Token at point:', tokenId);
-    }
-
-    setHighlightRects([touchRect]);
-  }, [findTokenAtPoint]);
+    return { contentX, contentY };
+  }, []);
 
   const longPressGesture = Gesture
     .LongPress()
     .minDuration(500);
 
+  const findTokenAndIndex = (x: number, y: number): { tokenId: string | null; index: number | null } => {
+    // // Find which token is at this point
+    const tokenId = findTokenAtPoint(x, y);
+    if (!tokenId) {
+      return { tokenId: null, index: null };
+    }
+
+    const indexOfToken = tokens.findIndex((token) => {
+      const key = token._id || `token-${token.index}`;
+      return key === tokenId;
+    });
+
+    if (indexOfToken !== -1) {
+      return { tokenId, index: indexOfToken };
+    }
+
+    return { tokenId: null, index: null };
+  };
+
+  const [tokenSelectionStartIndex, setTokenSelectionStartIndex] = useState<number | null>(null);
+  const [tokenSelectionEndIndex, setTokenSelectionEndIndex] = useState<number | null>(null);
+
+  const handleGestureStart = useCallback((x: number, y: number) => {
+    const { contentX, contentY } = getAdjustedContentPosition(x, y);
+
+    const { tokenId, index } = findTokenAndIndex(contentX, contentY);
+    if (tokenId && index !== null) {
+      setTokenSelectionStartIndex(index);
+      setTokenSelectionEndIndex(index);
+    }
+  }, [findTokenAtPoint]);
+
+  const handleGestureUpdate = useCallback((x: number, y: number) => {
+    const { contentX, contentY } = getAdjustedContentPosition(x, y);
+    const { tokenId, index } = findTokenAndIndex(contentX, contentY);
+
+    if (tokenId && index !== null) {
+      setTokenSelectionEndIndex(index);
+    }
+  }, [findTokenAndIndex]);
+
+  const handleGestureEnd = useCallback((x: number, y: number) => {
+    setTokenSelectionStartIndex(null);
+    setTokenSelectionEndIndex(null);
+  }, [findTokenAndIndex]);
+
+  useEffect(() => {
+    if (tokenSelectionStartIndex !== null && tokenSelectionEndIndex !== null) {
+      const start = Math.min(tokenSelectionStartIndex, tokenSelectionEndIndex);
+      const end = Math.max(tokenSelectionStartIndex, tokenSelectionEndIndex);
+
+      const rects: Rect[] = [];
+
+      // group tokens by Y coordinate and create one rect per line
+      const lineMap: Map<number, { xMin: number; xMax: number, height: number }> = new Map();
+
+      for (let i = start; i <= end; i++) {
+        const token = tokens[i];
+        const key = token._id || `token-${token.index}`;
+        const rect = tokenLayoutsRef.current.get(key);
+        if (rect) {
+          const yKey = Math.round(rect.y); // group by rounded Y coordinate
+          const line = lineMap.get(yKey);
+          if (line) {
+            line.xMin = Math.min(line.xMin, rect.x);
+            line.xMax = Math.max(line.xMax, rect.x + rect.width);
+          } else {
+            lineMap.set(yKey, { xMin: rect.x, xMax: rect.x + rect.width, height: rect.height });
+          }
+        }
+      }
+
+      // Convert lineMap to rects
+      for (const [y, { xMin, xMax, height }] of lineMap.entries()) {
+        rects.push({
+          x: xMin,
+          y: y,
+          width: xMax - xMin,
+          height: height,
+        });
+      }
+
+      setHighlightRects(rects);
+    } else {
+      setHighlightRects([]);
+    }
+  }, [tokenSelectionStartIndex, tokenSelectionEndIndex, tokens]);
+
   const panGesture = Gesture
     .Pan()
+    .onStart((e) => {
+      runOnJS(handleGestureStart)(e.x, e.y);
+    })
     .onUpdate((e) => {
       // Use runOnJS to call our handler on the JS thread
-      runOnJS(handlePanUpdate)(e.x, e.y);
+      runOnJS(handleGestureUpdate)(e.x, e.y);
     })
-    .onEnd(() => {
+    .onEnd((e) => {
       // Re-show all token rects when gesture ends
       runOnJS(measureAllTokens)();
+      runOnJS(handleGestureEnd)(e.x, e.y);
     });
 
   const combinedGesture = Gesture.Simultaneous(longPressGesture, panGesture);
@@ -279,6 +355,30 @@ export function ReaderPage({
             onScroll={handleScroll}
             scrollEventThrottle={16}
           >
+            {/* Overlay inside content container - scrolls with content */}
+            <View
+              className="absolute pointer-events-none"
+              style={{
+                top: 0,
+                left: 0,
+                width: contentSize.width,
+                height: contentSize.height,
+              }}
+            >
+              {highlightRects.map((rect, index) => (
+                <View
+                  key={index}
+                  className="absolute bg-blue-500 opacity-50"
+                  style={{
+                    left: rect.x - 4,
+                    top: rect.y - 4,
+                    width: rect.width + 8,
+                    height: rect.height + 8,
+                    borderRadius: 4,
+                  }}
+                />
+              ))}
+            </View>
             {/* Content container - all measurements are relative to this */}
             <View
               ref={contentContainerRef}
@@ -309,34 +409,11 @@ export function ReaderPage({
                   })}
                 </View>
               ))}
-
-              {/* Overlay inside content container - scrolls with content */}
-              <View 
-                className="absolute pointer-events-none"
-                style={{
-                  top: 0,
-                  left: 0,
-                  width: contentSize.width,
-                  height: contentSize.height,
-                }}
-              >
-                {highlightRects.map((rect, index) => (
-                  <View
-                    key={index}
-                    className="absolute bg-blue-500 opacity-50"
-                    style={{
-                      left: rect.x,
-                      top: rect.y,
-                      width: rect.width,
-                      height: rect.height,
-                    }}
-                  />
-                ))}
-              </View>
             </View>
           </ScrollView>
         </View>
       </View>
     </GestureDetector>
   );
+
 }
