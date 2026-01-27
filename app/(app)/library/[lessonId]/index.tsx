@@ -1,11 +1,12 @@
-import { View, Text, ActivityIndicator } from 'react-native';
-import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { PageHeader } from '@/src/components/PageHeader';
-import { useLocalSearchParams, Stack, router } from 'expo-router';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
+import { useIsFocused } from '@react-navigation/native';
 import { useQuery } from 'convex/react';
-import { Reader } from '../../../../src/features/reader/Reader';
-import { Id } from '../../../../convex/_generated/dataModel';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { api } from '../../../../convex/_generated/api';
+import { Id } from '../../../../convex/_generated/dataModel';
+import { Reader } from '../../../../src/features/reader/Reader';
 
 function LoadingScreen() {
   return (
@@ -25,6 +26,7 @@ function NotFoundScreen() {
 
 export default function LessonReaderScreen() {
   const { lessonId } = useLocalSearchParams();
+  const isScreenFocused = useIsFocused();
 
   const safeLessonId = Array.isArray(lessonId) ? lessonId[0] : lessonId;
 
@@ -64,7 +66,7 @@ export default function LessonReaderScreen() {
           onPress: () => router.push(`/library/${lessonId}/edit`),
         }}
       />
-      <Reader lesson={lessonQuery} />
+      <Reader lesson={lessonQuery} isScreenFocused={isScreenFocused} />
     </ScreenLayout>
   );
 }

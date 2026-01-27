@@ -1,18 +1,19 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { View, Text, Pressable, useWindowDimensions } from 'react-native';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery, useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, Text, useWindowDimensions, View } from 'react-native';
+import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { api } from '../../../convex/_generated/api';
 import { Doc, Id } from '../../../convex/_generated/dataModel';
+import { cn } from '../../lib/utils';
 import { ReaderPage } from './ReaderPage';
 import { WordDetails } from './WordDetails';
-import { cn } from '../../lib/utils';
-import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
-import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface ReaderProps {
   lesson: Doc<"lessons"> & { tokens: Doc<"lessonTokens">[] };
+  isScreenFocused?: boolean;
 }
 
 interface ReaderToken {
@@ -29,7 +30,7 @@ const INSPECTOR_WIDTH = 360;
 const SIDEBAR_EXPANDED_WIDTH = 256;
 const READER_MAX_WIDTH = 1040;
 
-export function Reader({ lesson }: ReaderProps) {
+export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
   const router = useRouter();
   const { colors } = useAppTheme();
   const { width, height: windowHeight } = useWindowDimensions();
@@ -284,7 +285,7 @@ export function Reader({ lesson }: ReaderProps) {
                       }}
                       selectedTokenId={selectedToken?._id ?? null}
                       selectedNormalized={selectedNormalized}
-                      isActive={index === currentPage}
+                      isActive={isScreenFocused && index === currentPage}
                     />
                   )}
                   onConfigurePanGesture={(gesture) => {

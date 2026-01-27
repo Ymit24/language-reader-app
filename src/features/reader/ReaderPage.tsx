@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, View } from 'react-native';
+import { InteractionManager, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { measureInWindow, Rect } from '../../lib/measureElement';
@@ -128,6 +128,8 @@ export function ReaderPage({
   // Stored as state so it triggers re-render when it changes
   const [contentOffset, setContentOffset] = useState({ x: 0, y: 0 });
 
+  const [hasMeasuredTokens, setHasMeasuredTokens] = useState(false);
+
   // Track layout version to trigger re-measurement
   const [layoutVersion, setLayoutVersion] = useState(0);
 
@@ -162,7 +164,10 @@ export function ReaderPage({
     // Calculate offset from gesture container to content container
     setContentOffset({
       x: containerRect.x - gestureRect.x,
-      y: containerRect.y - gestureRect.y,
+      // Make Y offset scroll-neutral so taps don't shift after refocus.
+      // If measurement happens while scrolled, containerRect.y already includes the scroll.
+      // Adding the current scroll cancels that out.
+      y: containerRect.y - gestureRect.y + scrollOffsetRef.current,
     });
 
     const newLayouts = new Map<string, Rect>();
@@ -183,19 +188,37 @@ export function ReaderPage({
     }
 
     tokenLayoutsRef.current = newLayouts;
+    setHasMeasuredTokens(newLayouts.size > 0);
     // setHighlightRects(rects);
   }, []);
 
   // Measure tokens when layout is ready and page is active
   useEffect(() => {
-    if (isLayoutReady && isActive) {
-      // Small delay to ensure carousel animation is complete
-      const timer = setTimeout(() => {
-        measureAllTokens();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
+    if (!isLayoutReady || !isActive) return;
+
+    let cancelled = false;
+    const interactionHandle = InteractionManager.runAfterInteractions(() => {
+      if (cancelled) return;
+      requestAnimationFrame(() => {
+        if (!cancelled) {
+          measureAllTokens();
+        }
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      interactionHandle.cancel();
+    };
   }, [isLayoutReady, isActive, measureAllTokens, layoutVersion]);
+
+  useEffect(() => {
+    if (isActive) return;
+    clearSelection();
+    tokenLayoutsRef.current = new Map();
+    setContentOffset({ x: 0, y: 0 });
+    setHasMeasuredTokens(false);
+  }, [clearSelection, isActive]);
 
   /**
    * Finds token at given content-relative coordinates
@@ -379,7 +402,7 @@ export function ReaderPage({
       runOnJS(handleTap)(e.x, e.y);
     });
 
-  const gesturesEnabled = isActive && !isSelectionPanelVisible;
+  const gesturesEnabled = isActive && hasMeasuredTokens && !isSelectionPanelVisible;
 
   panGesture.enabled(gesturesEnabled);
   tapGesture.enabled(gesturesEnabled);
@@ -469,6 +492,8 @@ export function ReaderPage({
             contentContainerStyle={{ paddingBottom: 96 }}
             showsVerticalScrollIndicator={false}
             onScroll={handleScroll}
+            onScrollEndDrag={handleScroll}
+            onMomentumScrollEnd={handleScroll}
             scrollEventThrottle={16}
           >
             {/* Overlay inside content container - scrolls with content */}
