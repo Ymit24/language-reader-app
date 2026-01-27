@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Animated } from 'react-native';
+import { ActivityIndicator, View, Text, Pressable, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { VocabStatus, getStatusColor } from './StatusBadge';
 import { cn } from '../../lib/utils';
@@ -10,6 +10,7 @@ interface BulkActionBarProps {
   onSetStatus: (status: VocabStatus) => void;
   onDeselectAll: () => void;
   visible: boolean;
+  isBusy?: boolean;
 }
 
 const STATUS_OPTIONS: { value: VocabStatus; label: string; icon: string }[] = [
@@ -24,6 +25,7 @@ export function BulkActionBar({
   onSetStatus,
   onDeselectAll,
   visible,
+  isBusy = false,
 }: BulkActionBarProps) {
   const [showStatusPicker, setShowStatusPicker] = useState(false);
   const { colors } = useAppTheme();
@@ -45,9 +47,16 @@ export function BulkActionBar({
 
         {/* Right: Actions */}
         <View className="flex-row items-center gap-2">
+          {isBusy && (
+            <View className="flex-row items-center gap-2 mr-1">
+              <ActivityIndicator size="small" color={colors['--brand']} />
+              <Text className="text-xs text-faint font-sans-medium">Updating...</Text>
+            </View>
+          )}
           {/* Status picker button */}
           <Pressable
             onPress={() => setShowStatusPicker(!showStatusPicker)}
+            disabled={isBusy}
             className={cn(
               'flex-row items-center px-3 py-2 rounded-lg border',
               showStatusPicker
@@ -79,7 +88,11 @@ export function BulkActionBar({
           {/* Deselect button */}
           <Pressable
             onPress={onDeselectAll}
-            className="flex-row items-center px-3 py-2 rounded-lg bg-muted border border-border/70"
+            disabled={isBusy}
+            className={cn(
+              'flex-row items-center px-3 py-2 rounded-lg bg-muted border border-border/70',
+              isBusy ? 'opacity-50' : ''
+            )}
           >
             <Ionicons name="close" size={16} color={colors['--subink']} />
             <Text className="ml-1 text-sm font-sans-semibold text-subink">
@@ -102,7 +115,11 @@ export function BulkActionBar({
                     onSetStatus(opt.value);
                     setShowStatusPicker(false);
                   }}
-                  className="flex-row items-center px-3 py-2 rounded-lg border border-border/70 bg-canvas active:bg-muted"
+                  disabled={isBusy}
+                  className={cn(
+                    'flex-row items-center px-3 py-2 rounded-lg border border-border/70 bg-canvas active:bg-muted',
+                    isBusy ? 'opacity-50' : ''
+                  )}
                 >
                   <Ionicons name={opt.icon as any} size={16} color={color} />
                   <Text

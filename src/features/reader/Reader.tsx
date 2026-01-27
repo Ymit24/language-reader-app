@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery } from 'convex/react';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { api } from '../../../convex/_generated/api';
 import { Doc, Id } from '../../../convex/_generated/dataModel';
@@ -62,6 +62,7 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
 
   const language = lesson.language;
   const vocabData = useQuery(api.vocab.getVocabProfile, language ? { language } : "skip");
+  const isVocabLoading = vocabData === undefined;
 
   const [selectedToken, setSelectedToken] = useState<ReaderToken | null>(null);
   const [selectedNormalized, setSelectedNormalized] = useState<string | null>(null);
@@ -307,9 +308,19 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
                 <Ionicons name="chevron-back" size={22} color={colors['--ink']} />
               </Pressable>
 
-              <Text className="text-xs font-sans-semibold text-subink tracking-[0.3em] uppercase">
-                {currentPage + 1} / {totalPages || 1}
-              </Text>
+              <View className="items-center">
+                <Text className="text-xs font-sans-semibold text-subink tracking-[0.3em] uppercase">
+                  {currentPage + 1} / {totalPages || 1}
+                </Text>
+                {isVocabLoading && (
+                  <View className="flex-row items-center gap-1 mt-1">
+                    <ActivityIndicator size="small" color={colors['--faint']} />
+                    <Text className="text-[10px] text-faint font-sans-medium">
+                      Loading word status…
+                    </Text>
+                  </View>
+                )}
+              </View>
 
               <Pressable
                 onPress={isLastPage ? handleFinishLesson : handleNextPage}

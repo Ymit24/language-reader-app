@@ -121,8 +121,10 @@ export default function EditLessonScreen() {
             variant="primary"
             onPress={handleSave}
             disabled={isSubmitting || !title || !text}
+            isLoading={isSubmitting}
+            loadingText="Saving..."
           >
-            {isSubmitting ? 'Saving...' : 'Save'}
+            Save
           </Button>
         </View>
 

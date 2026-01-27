@@ -1,22 +1,20 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import {
-  View,
-  Text,
-  useWindowDimensions,
-  Modal,
-  Pressable,
-  ActivityIndicator,
-} from 'react-native';
-import { ScreenLayout } from '@/src/components/ScreenLayout';
-import { usePaginatedQuery, useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
-import { VocabFilterBar } from '@/src/features/vocab/VocabFilters';
-import { VocabList } from '@/src/features/vocab/VocabList';
-import { VocabDetailPanel } from '@/src/features/vocab/VocabDetailPanel';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { BulkActionBar } from '@/src/features/vocab/BulkActionBar';
 import { VocabStatus } from '@/src/features/vocab/StatusBadge';
+import { VocabDetailPanel } from '@/src/features/vocab/VocabDetailPanel';
+import { VocabFilterBar } from '@/src/features/vocab/VocabFilters';
+import { VocabList } from '@/src/features/vocab/VocabList';
 import { VocabItem } from '@/src/features/vocab/VocabRow';
+import { useMutation, usePaginatedQuery, useQuery } from 'convex/react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Modal,
+  Text,
+  useWindowDimensions,
+  View
+} from 'react-native';
 
 type Language = 'de' | 'fr' | 'ja';
 type SortBy = 'dateAdded' | 'alphabetical' | 'status';
@@ -36,6 +34,7 @@ export default function VocabScreen() {
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<Id<'vocab'>>>(new Set());
   const [activeWordId, setActiveWordId] = useState<Id<'vocab'> | null>(null);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   // Mobile detail modal
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -129,14 +128,19 @@ export default function VocabScreen() {
 
   const handleBulkSetStatus = useCallback(
     async (status: VocabStatus) => {
-      if (selectedIds.size === 0) return;
-      await bulkUpdateStatus({
-        termIds: Array.from(selectedIds),
-        status,
-      });
-      setSelectedIds(new Set());
+      if (selectedIds.size === 0 || isBulkUpdating) return;
+      setIsBulkUpdating(true);
+      try {
+        await bulkUpdateStatus({
+          termIds: Array.from(selectedIds),
+          status,
+        });
+        setSelectedIds(new Set());
+      } finally {
+        setIsBulkUpdating(false);
+      }
     },
-    [selectedIds, bulkUpdateStatus]
+    [selectedIds, bulkUpdateStatus, isBulkUpdating]
   );
 
   const handleLoadMore = useCallback(() => {
@@ -246,6 +250,7 @@ export default function VocabScreen() {
           onSetStatus={handleBulkSetStatus}
           onDeselectAll={handleDeselectAll}
           visible={selectionMode}
+          isBusy={isBulkUpdating}
         />
 
         {/* Mobile: Detail modal (bottom sheet style) */}

@@ -9,7 +9,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { useRouter } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { ActionSheetIOS, ActivityIndicator, Alert, Platform, Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { ActionSheetIOS, Alert, Platform, Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 // Estimated reading speed (words per minute)
 const WORDS_PER_MINUTE = 200;
@@ -39,6 +39,26 @@ function FilterPill({ label, isActive, onPress }: FilterPillProps) {
         {label}
       </Text>
     </Pressable>
+  );
+}
+
+function LessonCardSkeleton({ variant }: { variant: 'grid' | 'list' }) {
+  return (
+    <View
+      className={
+        variant === 'grid'
+          ? 'rounded-2xl border border-border/70 bg-panel/60 p-5'
+          : 'rounded-2xl border border-border/70 bg-panel/60 p-5'
+      }
+    >
+      <View className="h-4 w-32 rounded-full bg-muted/80" />
+      <View className="mt-3 h-3 w-24 rounded-full bg-muted/70" />
+      <View className="mt-5 h-24 rounded-xl bg-muted/60" />
+      <View className="mt-4 flex-row gap-2">
+        <View className="h-3 w-16 rounded-full bg-muted/70" />
+        <View className="h-3 w-16 rounded-full bg-muted/70" />
+      </View>
+    </View>
   );
 }
 
@@ -194,9 +214,24 @@ export default function LibraryScreen() {
         </View>
 
         {isLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" />
-          </View>
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+            <View
+              className={
+                variant === 'grid'
+                  ? `gap-4 ${numColumns === 1 ? '' : 'flex-row flex-wrap'}`
+                  : 'gap-4'
+              }
+            >
+              {Array.from({ length: numColumns * 2 }).map((_, index) => (
+                <View
+                  key={`lesson-skeleton-${index}`}
+                  className={variant === 'grid' ? 'w-full md:w-[48%] lg:w-[31%]' : 'w-full'}
+                >
+                  <LessonCardSkeleton variant={variant} />
+                </View>
+              ))}
+            </View>
+          </ScrollView>
         ) : lessons.length === 0 ? (
           <EmptyState
             title="No lessons yet"

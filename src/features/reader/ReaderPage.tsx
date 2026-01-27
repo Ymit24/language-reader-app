@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { InteractionManager, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, InteractionManager, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { measureInWindow, Rect } from '../../lib/measureElement';
@@ -404,6 +404,8 @@ export function ReaderPage({
 
   const gesturesEnabled = isActive && hasMeasuredTokens && !isSelectionPanelVisible;
 
+  const showPreparingOverlay = isActive && !hasMeasuredTokens;
+
   panGesture.enabled(gesturesEnabled);
   tapGesture.enabled(gesturesEnabled);
 
@@ -584,6 +586,15 @@ export function ReaderPage({
               )}
             </View>
           </ScrollView>
+
+          {showPreparingOverlay && (
+            <View className="absolute inset-0 items-center justify-center pointer-events-none">
+              <View className="px-4 py-2 rounded-full bg-panel/80 border border-border/60 flex-row items-center gap-2">
+                <ActivityIndicator size="small" />
+                <Text className="text-xs text-subink font-sans-medium">Preparing page…</Text>
+              </View>
+            </View>
+          )}
           
           {/* Removed old fixed position panel */}
 

@@ -61,8 +61,10 @@ export default function NewLessonScreen() {
             variant="primary" 
             onPress={handleCreate}
             disabled={isSubmitting || !title || !text}
+            isLoading={isSubmitting}
+            loadingText="Creating..."
           >
-            {isSubmitting ? 'Creating...' : 'Create'}
+            Create
           </Button>
         </View>
 
