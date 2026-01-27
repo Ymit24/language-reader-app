@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from 'react-native';
+import { NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { measureInWindow, Rect } from '../../lib/measureElement';
+import { SelectionPanel } from './SelectionPanel';
 import { Token, TokenStatus } from './Token';
 
 interface TokenType {
@@ -131,6 +132,17 @@ export function ReaderPage({
   // Track layout version to trigger re-measurement
   const [layoutVersion, setLayoutVersion] = useState(0);
 
+  // Selection Panel State
+  const [isSelectionPanelVisible, setIsSelectionPanelVisible] = useState(false);
+  const [selectionPanelText, setSelectionPanelText] = useState('');
+
+  const clearSelection = useCallback(() => {
+    setTokenSelectionStartIndex(null);
+    setTokenSelectionEndIndex(null);
+    setIsSelectionPanelVisible(false);
+    setSelectionPanelText('');
+  }, []);
+
   /**
    * Measures all token positions relative to the content container.
    * Also calculates the offset from gesture container to content container.
@@ -246,12 +258,20 @@ export function ReaderPage({
   const handleGestureStart = useCallback((x: number, y: number) => {
     const { contentX, contentY } = getAdjustedContentPosition(x, y);
 
+    // If panel is visible, check if we tapped outside/start new selection
+    if (isSelectionPanelVisible) {
+       setIsSelectionPanelVisible(false);
+       // we don't return here, we let the new selection start if applicable
+    }
+
     const { tokenId, index } = findTokenAndIndex(contentX, contentY);
     if (tokenId && index !== null) {
       setTokenSelectionStartIndex(index);
       setTokenSelectionEndIndex(index);
+    } else {
+        // Tapped empty space?
     }
-  }, [findTokenAtPoint]);
+  }, [findTokenAtPoint, isSelectionPanelVisible]);
 
   const handleGestureUpdate = useCallback((x: number, y: number) => {
     const { contentX, contentY } = getAdjustedContentPosition(x, y);
@@ -263,9 +283,30 @@ export function ReaderPage({
   }, [findTokenAndIndex]);
 
   const handleGestureEnd = useCallback((x: number, y: number) => {
+    // Check if we have a valid selection
+    if (tokenSelectionStartIndex !== null && tokenSelectionEndIndex !== null) {
+       const start = Math.min(tokenSelectionStartIndex, tokenSelectionEndIndex);
+       const end = Math.max(tokenSelectionStartIndex, tokenSelectionEndIndex);
+       
+       // Only show panel if we selected something (and maybe more than just 1 token? or even 1 token is fine?)
+       // Note: Long press on a word usually selects it via onTokenPress logic in UI if it wasn't a gesture.
+       // But here we are handling swipe selection.
+       
+       const selectedTokens = tokens.slice(start, end + 1);
+       const text = selectedTokens.map(t => t.surface).join('');
+       
+       if (text.trim().length > 0) {
+           setSelectionPanelText(text);
+           setIsSelectionPanelVisible(true);
+           // Do NOT clear selection indices here, so the highlight remains
+           return;
+       }
+    }
+    
+    // If no selection or empty, clear
     setTokenSelectionStartIndex(null);
     setTokenSelectionEndIndex(null);
-  }, [findTokenAndIndex]);
+  }, [tokenSelectionStartIndex, tokenSelectionEndIndex, tokens]);
 
   useEffect(() => {
     if (tokenSelectionStartIndex !== null && tokenSelectionEndIndex !== null) {
@@ -344,6 +385,32 @@ export function ReaderPage({
     setIsLayoutReady(true);
   }, []);
 
+  // Calculate selection bounds when highlights change
+  const selectionBounds = useMemo(() => {
+    if (highlightRects.length === 0) return null;
+    
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const rect of highlightRects) {
+      minX = Math.min(minX, rect.x);
+      minY = Math.min(minY, rect.y);
+      maxX = Math.max(maxX, rect.x + rect.width);
+      maxY = Math.max(maxY, rect.y + rect.height);
+    }
+
+    return {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+      centerX: minX + (maxX - minX) / 2,
+      bottomY: maxY,
+    };
+  }, [highlightRects]);
+
   return (
     <GestureDetector gesture={combinedGesture}>
       <View ref={gestureContainerRef} className="relative flex-1 items-center">
@@ -368,13 +435,13 @@ export function ReaderPage({
               {highlightRects.map((rect, index) => (
                 <View
                   key={index}
-                  className="absolute bg-blue-500 opacity-50"
+                  className="absolute bg-blue-500 opacity-30"
                   style={{
-                    left: rect.x - 4,
-                    top: rect.y - 4,
-                    width: rect.width + 8,
-                    height: rect.height + 8,
-                    borderRadius: 4,
+                    left: rect.x - 2,
+                    top: rect.y - 2,
+                    width: rect.width + 4,
+                    height: rect.height + 4,
+                    borderRadius: 3,
                   }}
                 />
               ))}
@@ -409,11 +476,54 @@ export function ReaderPage({
                   })}
                 </View>
               ))}
+
+              {/* Selection UI attached to content */}
+              {isSelectionPanelVisible && selectionBounds && (
+                <>
+                  {/* Backdrop for easy dismissal - covers content area */}
+                  <Pressable 
+                    onPress={clearSelection}
+                    style={{
+                      position: 'absolute',
+                      top: -1000, 
+                      left: -1000,
+                      right: -1000,
+                      bottom: -1000,
+                      zIndex: 40,
+                    }}
+                  />
+                  
+                  {/* Panel centered relative to selection */}
+                  <View 
+                    style={{
+                      position: 'absolute',
+                      top: selectionBounds.bottomY + 12, // Position below
+                      left: selectionBounds.centerX,
+                      zIndex: 50,
+                      width: 0, // Zero width to allow centering
+                      alignItems: 'center', 
+                    }}
+                  >
+                    <View style={{ width: 320, transform: [{ translateX: -160 }] }}>
+                      <SelectionPanel 
+                        selectedText={selectionPanelText}
+                        onClose={clearSelection}
+                        onAsk={() => {
+                          // TODO: Implement ask
+                          console.log("Ask about: ", selectionPanelText);
+                        }}
+                      />
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           </ScrollView>
+          
+          {/* Removed old fixed position panel */}
+
         </View>
       </View>
     </GestureDetector>
   );
-
 }
