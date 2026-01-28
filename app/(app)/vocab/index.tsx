@@ -7,6 +7,7 @@ import { VocabDetailPanel } from '@/src/features/vocab/VocabDetailPanel';
 import { VocabFilterBar } from '@/src/features/vocab/VocabFilters';
 import { VocabList } from '@/src/features/vocab/VocabList';
 import { VocabItem } from '@/src/features/vocab/VocabRow';
+import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
 import { useMutation, usePaginatedQuery, useQuery } from 'convex/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -16,15 +17,14 @@ import {
   View
 } from 'react-native';
 
-type Language = 'de' | 'fr' | 'ja';
 type SortBy = 'dateAdded' | 'alphabetical' | 'status';
 
 export default function VocabScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
+  const { selectedLanguage } = useSelectedLanguage();
 
   // Filter & sort state
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>('fr');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<VocabStatus | null>(null);
@@ -70,9 +70,6 @@ export default function VocabScreen() {
   );
 
   const bulkUpdateStatus = useMutation(api.vocab.bulkUpdateStatusById);
-
-  // Available languages (for now, just show all three)
-  const availableLanguages: Language[] = ['fr', 'de', 'ja'];
 
   // Transform vocab results
   const vocabList: VocabItem[] = useMemo(() => {
@@ -192,9 +189,6 @@ export default function VocabScreen() {
 
           {/* Filters */}
           <VocabFilterBar
-            selectedLanguage={selectedLanguage}
-            onLanguageChange={setSelectedLanguage}
-            availableLanguages={availableLanguages}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             statusFilter={statusFilter}

@@ -1,5 +1,6 @@
 import { api } from '@/convex/_generated/api';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
+import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
 import { Ionicons } from '@expo/vector-icons';
 import { useConvexAuth, useQuery } from 'convex/react';
 import { Redirect, Tabs } from 'expo-router';
@@ -25,7 +26,8 @@ function LoadingScreen() {
 
 function ReviewTabIcon({ color, size, focused }: { color: string; size: number; focused: boolean }) {
   const { colors } = useAppTheme();
-  const dueCount = useQuery(api.review.getTodayReviewCount);
+  const { selectedLanguage } = useSelectedLanguage();
+  const dueCount = useQuery(api.review.getDueCount, { language: selectedLanguage });
   
   return (
     <View>

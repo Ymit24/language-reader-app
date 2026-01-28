@@ -24,6 +24,7 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
 import { AppThemeProvider, useAppTheme } from '@/src/theme/AppThemeProvider';
+import { SelectedLanguageProvider } from '@/src/lib/selectedLanguage';
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
   unsavedChangesWarning: false,
@@ -64,7 +65,9 @@ export default function RootLayout() {
       >
         <SafeAreaProvider>
           <AppThemeProvider>
-            <RootThemeBridge />
+            <SelectedLanguageProvider>
+              <RootThemeBridge />
+            </SelectedLanguageProvider>
           </AppThemeProvider>
         </SafeAreaProvider>
       </ConvexAuthProvider>

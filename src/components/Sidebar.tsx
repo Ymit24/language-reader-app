@@ -14,6 +14,8 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../lib/utils';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
+import { LanguageSelector } from '@/src/components/LanguageSelector';
+import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
 
 const AnimatedView = Animated.View;
 
@@ -40,9 +42,10 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { colors, alpha } = useAppTheme();
+  const { selectedLanguage, setSelectedLanguage } = useSelectedLanguage();
   const isCollapsed = useSharedValue(false);
   const [collapsed, setCollapsed] = React.useState(false);
-  const dueCount = useQuery(api.review.getTodayReviewCount);
+  const dueCount = useQuery(api.review.getDueCount, { language: selectedLanguage });
 
   const toggleCollapse = () => {
     const next = !collapsed;
@@ -102,6 +105,16 @@ export function Sidebar() {
               : <PanelRight size={20} color={colors['--subink']} />
           }
         </Pressable>
+      </View>
+
+      {/* Language selector */}
+      <View className="px-4">
+        <LanguageSelector
+          value={selectedLanguage}
+          onChange={setSelectedLanguage}
+          showLabels={!collapsed}
+          size="sm"
+        />
       </View>
 
       {/* Nav Items */}

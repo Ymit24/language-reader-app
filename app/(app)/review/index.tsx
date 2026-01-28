@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from 'convex/react';
@@ -7,9 +7,12 @@ import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { ProgressHeader } from '@/src/features/review/ProgressHeader';
 import { LanguageCard } from '@/src/features/review/LanguageCard';
 import { ActivityHeatmap } from '@/src/features/review/ActivityHeatmap';
+import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
+import { LANGUAGE_LABELS } from '@/src/lib/languages';
 
 export default function ReviewDashboard() {
   const router = useRouter();
+  const { selectedLanguage } = useSelectedLanguage();
   
   const progress = useQuery(api.progress.getProgress);
   const languageStats = useQuery(api.review.getAllLanguageStats);
@@ -25,6 +28,11 @@ export default function ReviewDashboard() {
       params: { language },
     });
   };
+
+  const selectedStats = useMemo(() => {
+    if (!languageStats) return undefined;
+    return languageStats.find((stats) => stats.language === selectedLanguage);
+  }, [languageStats, selectedLanguage]);
 
   return (
     <ScreenLayout>
@@ -92,7 +100,7 @@ export default function ReviewDashboard() {
 
         {/* Language Cards */}
         <View className="gap-4">
-          <Text className="text-lg font-sans-bold text-ink">Your Languages</Text>
+          <Text className="text-lg font-sans-bold text-ink">Your Language</Text>
           
           {isLoading ? (
             <>
@@ -115,26 +123,23 @@ export default function ReviewDashboard() {
                 isLoading={true}
               />
             </>
-          ) : languageStats && languageStats.length > 0 ? (
-            languageStats.map((stats) => (
-              <LanguageCard
-                key={stats.language}
-                language={stats.language as 'fr' | 'de' | 'ja'}
-                languageName={stats.languageName}
-                dueCount={stats.dueCount}
-                learningCount={stats.learningCount}
-                knownCount={stats.knownCount}
-                onStartReview={() => handleStartReview(stats.language as 'fr' | 'de' | 'ja')}
-              />
-            ))
+          ) : selectedStats ? (
+            <LanguageCard
+              language={selectedStats.language as 'fr' | 'de' | 'ja'}
+              languageName={selectedStats.languageName}
+              dueCount={selectedStats.dueCount}
+              learningCount={selectedStats.learningCount}
+              knownCount={selectedStats.knownCount}
+              onStartReview={() => handleStartReview(selectedLanguage)}
+            />
           ) : (
             <View className="rounded-2xl border border-border/80 bg-panel p-8 items-center">
               <Text className="text-4xl mb-3">📚</Text>
               <Text className="text-lg font-sans-semibold text-ink text-center">
-                No vocabulary yet
+                No vocabulary yet in {LANGUAGE_LABELS[selectedLanguage]}
               </Text>
               <Text className="text-sm text-subink font-sans-medium text-center mt-1">
-                Start reading lessons to build your vocabulary
+                Start reading lessons in this language to build your vocabulary
               </Text>
             </View>
           )}

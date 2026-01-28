@@ -5,6 +5,8 @@ import { EmptyState, LessonCard } from '@/src/components/Card';
 import { Input } from '@/src/components/Input';
 import { ScreenLayout } from '@/src/components/ScreenLayout';
 import type { VocabCounts } from '@/src/components/StackedProgressBar';
+import { LanguageSelector } from '@/src/components/LanguageSelector';
+import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
 import { useMutation, useQuery } from 'convex/react';
 import { useRouter } from 'expo-router';
 import { Plus } from 'lucide-react-native';
@@ -20,7 +22,6 @@ const STATUS_LEARNING_MIN = 1;
 const STATUS_LEARNING_MAX = 3;
 const STATUS_KNOWN = 4;
 
-type LanguageFilter = 'all' | 'de' | 'fr' | 'ja';
 type StatusFilter = 'all' | 'in_progress' | 'completed';
 
 interface FilterPillProps {
@@ -68,21 +69,18 @@ export default function LibraryScreen() {
   const lessons = useQuery(api.lessons.listLessonsWithVocab);
   const deleteLesson = useMutation(api.lessons.deleteLesson);
   const [searchQuery, setSearchQuery] = useState('');
-  const [languageFilter, setLanguageFilter] = useState<LanguageFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const { selectedLanguage, setSelectedLanguage } = useSelectedLanguage();
 
-  const vocabDe = useQuery(api.vocab.getVocabProfile, { language: 'de' });
-  const vocabFr = useQuery(api.vocab.getVocabProfile, { language: 'fr' });
-  const vocabJa = useQuery(api.vocab.getVocabProfile, { language: 'ja' });
+  const vocabProfile = useQuery(api.vocab.getVocabProfile, { language: selectedLanguage });
 
   const vocabMap = useMemo(() => {
     const map: Record<string, number> = {};
-    const allVocab = [...(vocabDe || []), ...(vocabFr || []), ...(vocabJa || [])];
-    for (const v of allVocab) {
+    for (const v of vocabProfile || []) {
       map[v.term] = v.status;
     }
     return map;
-  }, [vocabDe, vocabFr, vocabJa]);
+  }, [vocabProfile]);
 
   const isDesktop = width >= 768;
   const numColumns = width >= 1024 ? 3 : width >= 768 ? 2 : 1;
@@ -171,7 +169,7 @@ export default function LibraryScreen() {
     return Math.round(((lesson.currentPage + 1) / totalPages) * 100);
   };
 
-  const isLoading = lessons === undefined || vocabDe === undefined || vocabFr === undefined || vocabJa === undefined;
+  const isLoading = lessons === undefined || vocabProfile === undefined;
 
   const filteredLessons = useMemo(() => {
     if (!lessons) return [];
@@ -179,7 +177,7 @@ export default function LibraryScreen() {
 
     return lessons.filter((lesson) => {
       const matchesSearch = !searchLower || lesson.title.toLowerCase().includes(searchLower);
-      const matchesLanguage = languageFilter === 'all' || lesson.language === languageFilter;
+      const matchesLanguage = lesson.language === selectedLanguage;
       const isCompleted = !!lesson.completedAt;
       const matchesStatus =
         statusFilter === 'all' ||
@@ -187,7 +185,7 @@ export default function LibraryScreen() {
 
       return matchesSearch && matchesLanguage && matchesStatus;
     });
-  }, [lessons, searchQuery, languageFilter, statusFilter]);
+  }, [lessons, searchQuery, selectedLanguage, statusFilter]);
 
   const continueLesson = useMemo(() => {
     if (filteredLessons.length === 0) {
@@ -212,6 +210,15 @@ export default function LibraryScreen() {
             <Text className="text-white font-sans-semibold">New Lesson</Text>
           </Button>
         </View>
+
+        {!isDesktop && (
+          <View className="mb-4">
+            <LanguageSelector
+              value={selectedLanguage}
+              onChange={setSelectedLanguage}
+            />
+          </View>
+        )}
 
         {isLoading ? (
           <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -257,28 +264,6 @@ export default function LibraryScreen() {
                     autoCorrect={false}
                   />
                   <View className="gap-2">
-                    <View className="flex-row flex-wrap gap-2">
-                      <FilterPill
-                        label="All languages"
-                        isActive={languageFilter === 'all'}
-                        onPress={() => setLanguageFilter('all')}
-                      />
-                      <FilterPill
-                        label="French"
-                        isActive={languageFilter === 'fr'}
-                        onPress={() => setLanguageFilter('fr')}
-                      />
-                      <FilterPill
-                        label="German"
-                        isActive={languageFilter === 'de'}
-                        onPress={() => setLanguageFilter('de')}
-                      />
-                      <FilterPill
-                        label="Japanese"
-                        isActive={languageFilter === 'ja'}
-                        onPress={() => setLanguageFilter('ja')}
-                      />
-                    </View>
                     <View className="flex-row flex-wrap gap-2">
                       <FilterPill
                         label="All status"
