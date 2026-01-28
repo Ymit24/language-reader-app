@@ -123,6 +123,9 @@ Never:
 - Avoid N+1 backend calls:
   - Reader should fetch tokens once and vocab map once per language.
 
+## Theme
+This app uses a themes.ts file, all new UI _MUST_ respect this theme.
+
 ## File organization
 
 Suggested structure:
