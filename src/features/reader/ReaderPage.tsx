@@ -1,3 +1,4 @@
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, InteractionManager, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -88,6 +89,7 @@ export function ReaderPage({
   language,
   isActive = true,
 }: ReaderPageProps) {
+  const { colors } = useAppTheme();
   const readerColumnWidth = 768;
   const paragraphs = useMemo(() => {
     const paras: ParagraphToken[][] = [[]];
@@ -497,6 +499,7 @@ export function ReaderPage({
             onScrollEndDrag={handleScroll}
             onMomentumScrollEnd={handleScroll}
             scrollEventThrottle={16}
+            style={showPreparingOverlay ? { opacity: 0 } : { opacity: 1 }}
           >
             {/* Overlay inside content container - scrolls with content */}
             <View
@@ -588,10 +591,15 @@ export function ReaderPage({
           </ScrollView>
 
           {showPreparingOverlay && (
-            <View className="absolute inset-0 items-center justify-center pointer-events-none">
-              <View className="px-4 py-2 rounded-full bg-panel/80 border border-border/60 flex-row items-center gap-2">
-                <ActivityIndicator size="small" />
-                <Text className="text-xs text-subink font-sans-medium">Preparing page…</Text>
+            <View className="absolute inset-0 bg-canvas items-center justify-center pointer-events-none z-50">
+              <View className="items-center gap-6">
+                <View className="w-16 h-16 rounded-2xl bg-panel border border-border/40 items-center justify-center shadow-card">
+                  <ActivityIndicator size="small" color={colors['--brand']} />
+                </View>
+                <View className="items-center gap-2">
+                  <Text className="text-sm font-sans-semibold text-ink tracking-tight">Preparing Reader</Text>
+                  <Text className="text-[10px] text-faint font-sans-bold uppercase tracking-[0.2em]">Optimizing Layout</Text>
+                </View>
               </View>
             </View>
           )}

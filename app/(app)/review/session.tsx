@@ -156,13 +156,14 @@ export default function ReviewSession() {
   if (!sessionId || items.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-canvas items-center justify-center">
-        <View className="items-center gap-4">
-          <View className="w-16 h-16 rounded-full bg-muted items-center justify-center">
-            <Ionicons name="flash" size={32} color={colors['--faint']} />
+        <View className="items-center gap-6">
+          <View className="w-20 h-20 rounded-3xl bg-panel border border-border/40 items-center justify-center shadow-card">
+            <ActivityIndicator size="small" color={colors['--brand']} />
           </View>
-          <Text className="text-lg font-sans-semibold text-ink">
-            Loading review...
-          </Text>
+          <View className="items-center gap-2">
+            <Text className="text-lg font-sans-semibold text-ink tracking-tight">Preparing Session</Text>
+            <Text className="text-xs text-faint font-sans-bold uppercase tracking-[0.2em]">Gathering Cards</Text>
+          </View>
         </View>
       </SafeAreaView>
     );

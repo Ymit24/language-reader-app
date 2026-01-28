@@ -1,15 +1,24 @@
-import { Redirect, Tabs } from 'expo-router';
-import { Text, View, useWindowDimensions } from 'react-native';
-import { useConvexAuth, useQuery } from 'convex/react';
-import { Ionicons } from '@expo/vector-icons';
-import { Sidebar } from '../../src/components/Sidebar';
 import { api } from '@/convex/_generated/api';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
+import { Ionicons } from '@expo/vector-icons';
+import { useConvexAuth, useQuery } from 'convex/react';
+import { Redirect, Tabs } from 'expo-router';
+import { ActivityIndicator, Text, View, useWindowDimensions } from 'react-native';
+import { Sidebar } from '../../src/components/Sidebar';
 
 function LoadingScreen() {
+  const { colors } = useAppTheme();
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Loading...</Text>
+    <View className="flex-1 items-center justify-center bg-canvas">
+      <View className="items-center gap-6">
+        <View className="w-16 h-16 rounded-2xl bg-panel border border-border/40 items-center justify-center shadow-card">
+          <ActivityIndicator size="small" color={colors['--brand']} />
+        </View>
+        <View className="items-center gap-2">
+          <Text className="text-sm font-sans-semibold text-ink tracking-tight">Syncing</Text>
+          <Text className="text-[10px] text-faint font-sans-bold uppercase tracking-[0.2em]">Authenticating</Text>
+        </View>
+      </View>
     </View>
   );
 }
