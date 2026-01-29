@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { Input } from '@/src/components/Input';
 import { Button } from '@/src/components/Button';
@@ -50,8 +50,17 @@ export default function SignInScreen() {
 
   return (
     <ScreenLayout edges={['top']}>
-      <View className="flex-1 items-center justify-center px-6">
-        <View className="w-full max-w-sm bg-panel/90 border border-border/80 rounded-2xl p-6 shadow-card">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View className="w-full max-w-sm mx-auto bg-panel/90 border border-border/80 rounded-2xl p-6 shadow-card">
           <View className="mb-8 items-center">
             <Text className="text-3xl font-sans-bold text-ink">Reader</Text>
             <Text className="mt-2 text-sm text-subink font-sans-medium text-center">
@@ -108,8 +117,10 @@ export default function SignInScreen() {
               </Text>
             </Pressable>
           </View>
-        </View>
-      </View>
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </ScreenLayout>
   );
 }
