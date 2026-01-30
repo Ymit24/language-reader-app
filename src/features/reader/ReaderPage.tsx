@@ -514,13 +514,13 @@ export function ReaderPage({
               {highlightRects.map((rect, index) => (
                 <View
                   key={index}
-                  className="absolute bg-blue-500 opacity-30"
+                  className="absolute bg-brand opacity-20"
                   style={{
                     left: rect.x - 2,
-                    top: rect.y - 2,
+                    top: rect.y + 4,
                     width: rect.width + 4,
-                    height: rect.height + 4,
-                    borderRadius: 3,
+                    height: rect.height - 8,
+                    borderRadius: 6,
                   }}
                 />
               ))}

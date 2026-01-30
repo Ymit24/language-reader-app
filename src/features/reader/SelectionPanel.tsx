@@ -81,27 +81,27 @@ export function SelectionPanel({ selectedText, language, onClose, onAsk, style }
   }, [language, selectedText, translateAction, retryCount]);
 
   return (
-    <View 
-      className="bg-panel rounded-2xl shadow-pop border border-border/70 overflow-hidden w-full max-w-sm" 
+    <View
+      className="bg-panel rounded-2xl shadow-lift border border-border overflow-hidden w-full max-w-sm"
       style={style}
     >
       {/* Header */}
-      <View className="flex-row items-center justify-between px-3 py-2 border-b border-border/50 bg-muted/30">
+      <View className="flex-row items-center justify-between px-3.5 py-2.5 bg-muted/20">
         <View className="flex-row items-center gap-2">
-          <Ionicons name="documents-outline" size={14} color={colors['--brand']} />
-          <Text className="text-[10px] font-sans-bold text-brand uppercase tracking-wider">
+          {/* <Ionicons name="documents-outline" size={14} color={colors['--brand']} /> */}
+          <Text className="text-[10px] font-sans-bold text-subink/80 uppercase tracking-widest">
             Selection
           </Text>
         </View>
-        <View className="flex-row items-center gap-1">
+        <View className="flex-row items-center gap-1.5">
           <Pressable
             onPress={onAsk}
-            className="h-7 px-3 flex-row items-center justify-center rounded-full bg-muted active:bg-border mr-1"
+            className="h-7 px-3 flex-row items-center justify-center rounded-full bg-brand/10 active:bg-brand/20 mr-1"
             hitSlop={10}
             accessibilityLabel="Ask AI"
           >
-            <Ionicons name="chatbubble-ellipses-outline" size={14} color={colors['--brand']} />
-            <Text className="text-xs text-brand font-sans-medium ml-1.5">Ask</Text>
+            <Ionicons name="sparkles" size={12} color={colors['--brand']} />
+            <Text className="text-xs text-brand font-sans-bold ml-1.5">Ask</Text>
           </Pressable>
           <Pressable
             onPress={onClose}
@@ -113,45 +113,47 @@ export function SelectionPanel({ selectedText, language, onClose, onAsk, style }
         </View>
       </View>
 
-      <View className="p-3 gap-3">
+      <View className="p-3.5 gap-4">
         {/* Selected Text Preview */}
-        <View className="bg-canvas rounded-lg p-2 border border-border/30">
-          <Text 
-            className="text-sm font-serif text-ink italic leading-relaxed" 
+        <View className="relative">
+          <View className="absolute left-0 top-0 bottom-0 w-1 bg-brand/30 rounded-full" />
+          <Text
+            className="text-sm font-serif-italic text-ink/90 leading-relaxed pl-3.5"
             numberOfLines={4}
           >
-            "{selectedText}"
+            {selectedText}
           </Text>
         </View>
 
         {/* Translation Section */}
-        <View>
+        <View className="pt-2 border-t border-border/20">
           {loading ? (
-            <View className="flex-row items-center gap-2">
+            <View className="flex-row items-center gap-2.5">
               <ActivityIndicator size="small" color={colors['--brand']} />
-              <Text className="text-xs text-faint italic font-serif">Translating...</Text>
+              <Text className="text-xs text-faint font-sans-medium tracking-wide">Translating...</Text>
             </View>
           ) : hasError ? (
             <Pressable
               onPress={() => setRetryCount((prev) => prev + 1)}
-              className="flex-row items-center gap-2 bg-muted/40 px-2 py-1.5 rounded-lg active:bg-muted"
+              className="flex-row items-center gap-2 bg-danger/5 px-2 py-1.5 rounded-lg active:bg-danger/10 self-start"
             >
-              <Ionicons name="refresh" size={14} color={colors['--subink']} />
-              <Text className="text-xs text-subink font-sans-medium">Unable to translate. Tap to retry.</Text>
+              <Ionicons name="refresh" size={14} color={colors['--danger']} />
+              <Text className="text-xs text-danger font-sans-medium">Retry translation</Text>
             </Pressable>
           ) : (
-            <View className="flex-row gap-2">
-              <Ionicons name="language-outline" size={14} color={colors['--subink']} className="mt-0.5" />
-              <View className="flex-1">
-                <Text className="text-sm text-ink leading-relaxed font-sans-medium">
-                  {translation ?? 'No translation available.'}
-                </Text>
-                {isTruncated && (
-                  <Text className="text-[10px] text-faint font-sans-medium mt-1">
-                    Translation trimmed to fit MyMemory limits.
-                  </Text>
-                )}
+            <View className="gap-1.5">
+              <View className="flex-row items-center gap-2 mb-1">
+                <Ionicons name="language" size={12} color={colors['--subink']} style={{ opacity: 0.7 }} />
+                <Text className="text-[10px] text-subink/70 font-sans-bold uppercase tracking-wider">English</Text>
               </View>
+              <Text className="text-base text-ink leading-relaxed font-serif">
+                {translation ?? 'No translation available.'}
+              </Text>
+              {isTruncated && (
+                <Text className="text-[10px] text-faint font-sans-medium mt-1">
+                  Translation trimmed.
+                </Text>
+              )}
             </View>
           )}
         </View>
