@@ -1,7 +1,7 @@
-import { View, Text, Pressable, PressableProps } from 'react-native';
+import { Pressable, PressableProps, Text, View } from 'react-native';
+import { CompletedBadge } from './CompletedBadge';
 import { ProgressBar } from './ProgressBar';
 import { StackedProgressBar, type VocabCounts } from './StackedProgressBar';
-import { CompletedBadge } from './CompletedBadge';
 
 interface CardProps {
   children: React.ReactNode;
@@ -99,7 +99,7 @@ export function LessonCard({
 
         <View className="gap-1">
           <Text
-            className={`${titleStyle} font-serif-semibold text-ink leading-tight`}
+            className={`${titleStyle} font-semibold text-ink leading-tight`}
             numberOfLines={variant === 'feature' ? 3 : 2}
           >
             {title}
