@@ -2,12 +2,13 @@ import { api } from '@/convex/_generated/api';
 import { LanguageSelector } from '@/src/components/LanguageSelector';
 import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
+import { useAuthActions } from '@convex-dev/auth/react';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from 'convex/react';
 import { usePathname, useRouter } from 'expo-router';
 import { PanelLeft, PanelRight } from 'lucide-react-native';
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -24,7 +25,6 @@ type NavItemProps = {
   href: any;
   iconName: keyof typeof Ionicons.glyphMap;
   label: string;
-  badge?: number;
 };
 
 const NAV_ITEMS: NavItemProps[] = [
@@ -33,18 +33,22 @@ const NAV_ITEMS: NavItemProps[] = [
   { name: 'review', href: '/review', iconName: 'flash', label: 'Review' },
 ];
 
-const EXPANDED_WIDTH = 256;
-const COLLAPSED_WIDTH = 80;
+const EXPANDED_WIDTH = 260;
+const COLLAPSED_WIDTH = 72;
 
 export function Sidebar() {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const router = useRouter();
+  const { signOut } = useAuthActions();
   const { colors, alpha } = useAppTheme();
   const { selectedLanguage, setSelectedLanguage } = useSelectedLanguage();
   const isCollapsed = useSharedValue(false);
   const [collapsed, setCollapsed] = React.useState(false);
+
+  // Data fetching
   const dueCount = useQuery(api.review.getDueCount, { language: selectedLanguage });
+  const progress = useQuery(api.progress.getProgress);
 
   const toggleCollapse = () => {
     const next = !collapsed;
@@ -52,162 +56,182 @@ export function Sidebar() {
     setCollapsed(next);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace("/(auth)/sign-in");
+  };
+
   const sidebarWidthStyle = useAnimatedStyle(() => {
     return {
       width: withTiming(isCollapsed.value ? COLLAPSED_WIDTH : EXPANDED_WIDTH, {
-        duration: 300,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+        duration: 350,
+        easing: Easing.bezier(0.2, 0, 0, 1),
       }),
     };
   });
 
-  const labelContainerStyle = useAnimatedStyle(() => {
+  const fadeStyle = useAnimatedStyle(() => {
     const isCollapsing = isCollapsed.value;
     return {
-      opacity: withTiming(isCollapsing ? 0 : 1, { duration: 200 }),
-      marginLeft: withTiming(isCollapsing ? 0 : 12, { duration: 300 }),
-      maxWidth: withTiming(isCollapsing ? 0 : 160, { duration: 300 }),
+      opacity: withTiming(isCollapsing ? 0 : 1, { duration: 250 }),
     };
   });
 
   return (
     <AnimatedView
-      className="flex-col h-full bg-canvas"
+      className="flex-col h-full bg-panel shadow-sm z-50"
       style={[
         sidebarWidthStyle,
         {
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
-          overflow: 'hidden',
           borderRightWidth: 1,
-          borderRightColor: alpha('--border', 0.7),
+          borderRightColor: alpha('--border', 0.6),
         }
       ]}
     >
       {/* Header */}
-
-      <View className="h-16 flex-row items-center px-6 justify-between">
+      <View className={cn("h-16 flex-row items-center px-4", collapsed ? "justify-center" : "justify-between")}>
         {!collapsed && (
-          <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
-            <Text className="text-xl font-sans-bold text-ink" numberOfLines={1}>Reader</Text>
+          <AnimatedView style={[fadeStyle, { overflow: 'hidden', flex: 1 }]}>
+            <View className="flex-row items-center gap-2">
+              <View className="w-8 h-8 rounded-lg bg-brand/10 items-center justify-center">
+                <Ionicons name="book" size={18} color={colors['--brand']} />
+              </View>
+              <Text className="text-lg font-sans-bold text-ink tracking-tight">Reader</Text>
+            </View>
           </AnimatedView>
         )}
 
         <Pressable
           onPress={toggleCollapse}
-          className="h-6 w-6 items-center justify-center rounded-full active:bg-muted/80"
-          hitSlop={8}
+          className="h-8 w-8 items-center justify-center rounded-lg hover:bg-muted active:bg-muted/80"
+          style={({ pressed }) => pressed && { backgroundColor: colors['--muted'] }}
         >
-          {
-            collapsed
-              ? <PanelLeft size={20} color={colors['--subink']} />
-              : <PanelRight size={20} color={colors['--subink']} />
+          {collapsed
+            ? <PanelLeft size={18} color={colors['--subink']} />
+            : <PanelRight size={18} color={colors['--subink']} />
           }
         </Pressable>
       </View>
 
-      {/* Language selector */}
-      <View className="px-4">
-        <LanguageSelector
-          value={selectedLanguage}
-          onChange={setSelectedLanguage}
-          showLabels={!collapsed}
-          size="sm"
-        />
-      </View>
+      <ScrollView
+        className="flex-1 px-3"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        {/* Language Selector Section */}
+        <View className="mb-6 mt-2">
+          {!collapsed && (
+            <Text className="text-xs font-sans-bold text-faint mb-2 px-2 uppercase tracking-wider">
+              Learning
+            </Text>
+          )}
+          <View className={cn(collapsed && "items-center")}>
+            <LanguageSelector
+              value={selectedLanguage}
+              onChange={setSelectedLanguage}
+              showLabels={!collapsed}
+              size="md"
+              className="w-full"
+            />
+          </View>
+        </View>
 
-      {/* Nav Items */}
-      <View className="flex-1 mt-3">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname.startsWith(item.href);
-          const showBadge = item.name === 'review' && dueCount !== undefined && dueCount > 0;
+        {/* Navigation Items */}
+        <View className="gap-1 mb-6">
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            const showBadge = item.name === 'review' && dueCount !== undefined && dueCount > 0;
 
-          return (
-            <Pressable
-              key={item.name}
-              onPress={() => router.push(item.href)}
-              className="flex-row items-center h-11 px-4 mx-2 mb-1 rounded-xl"
-              style={({ pressed }) => [
-                isActive && {
-                  backgroundColor: colors['--brandSoft'],
-                  borderColor: alpha('--brand', 0.1),
-                  borderWidth: 1,
-                },
-                pressed && !isActive && { backgroundColor: colors['--muted'] },
-              ]}
-              focusable={false}
-              accessibilityRole="link"
-            >
-              <View style={{ width: 24, alignItems: 'center', justifyContent: 'center' }}>
-                <Ionicons
-                  name={item.iconName as any}
-                  size={22}
-                  color={isActive ? colors['--brand'] : colors['--subink']}
-                />
-                {showBadge && (
-                  <View
-                    style={{
-                      position: 'absolute',
-                      right: -8,
-                      top: -6,
-                      backgroundColor: colors['--accent'],
-                      borderRadius: 8,
-                      minWidth: 16,
-                      height: 16,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      paddingHorizontal: 3,
-                    }}
-                  >
-                    <Text style={{ color: 'white', fontSize: 9, fontWeight: '600' }}>
-                      {dueCount > 99 ? '99+' : dueCount}
-                    </Text>
-                  </View>
+            return (
+              <Pressable
+                key={item.name}
+                onPress={() => router.push(item.href)}
+                className={cn(
+                  "flex-row items-center h-10 rounded-lg transition-colors",
+                  collapsed ? "justify-center px-0" : "px-3"
                 )}
-              </View>
-
-              <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
-                <Text
-                  numberOfLines={1}
-                  className={cn(
-                    "text-base font-sans-semibold",
-                    isActive ? "text-ink" : "text-subink"
+                style={({ pressed }) => [
+                  isActive && {
+                    backgroundColor: colors['--brandSoft'],
+                  },
+                  pressed && !isActive && { backgroundColor: colors['--muted'] },
+                ]}
+              >
+                <View className="relative">
+                  <Ionicons
+                    name={isActive ? item.iconName : `${item.iconName}-outline` as any}
+                    size={20}
+                    color={isActive ? colors['--brand'] : colors['--subink']}
+                  />
+                  {showBadge && (
+                    <View
+                      className="absolute -top-1.5 -right-2 min-w-[16px] h-4 rounded-full bg-accent items-center justify-center border border-panel px-1"
+                    >
+                      <Text className="text-[9px] font-sans-bold text-white">
+                        {dueCount && dueCount > 99 ? '99+' : dueCount}
+                      </Text>
+                    </View>
                   )}
-                >
-                  {item.label}
-                </Text>
-              </AnimatedView>
-            </Pressable>
-          );
-        })}
-      </View>
+                </View>
+
+                {!collapsed && (
+                  <AnimatedView style={[fadeStyle, { marginLeft: 12, flex: 1 }]}>
+                    <Text
+                      numberOfLines={1}
+                      className={cn(
+                        "text-sm",
+                        isActive ? "font-sans-bold text-ink" : "font-sans-medium text-subink"
+                      )}
+                    >
+                      {item.label}
+                    </Text>
+                  </AnimatedView>
+                )}
+
+                {isActive && !collapsed && (
+                  <AnimatedView style={[fadeStyle]}>
+                    <View className="w-1.5 h-1.5 rounded-full bg-brand" />
+                  </AnimatedView>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+
+
+      </ScrollView>
 
       {/* Footer */}
-      <View className="h-14 px-6 flex-row items-center">
+      <View className={cn("border-t border-border/50 p-3 gap-1", collapsed && "items-center")}>
         <Pressable
           onPress={() => router.push("/settings")}
-          className="flex-row items-center h-11 rounded-xl"
+          className={cn(
+            "flex-row items-center h-10 rounded-lg",
+            collapsed ? "justify-center w-10" : "px-3"
+          )}
           style={({ pressed }) => [
-            pathname.startsWith('/settings') && {
-              backgroundColor: colors['--brandSoft'],
-              borderColor: alpha('--brand', 0.1),
-              borderWidth: 1,
-            },
-            pressed && !pathname.startsWith('/settings') && { backgroundColor: colors['--muted'] },
+            pressed && { backgroundColor: colors['--muted'] },
+            pathname.startsWith('/settings') && { backgroundColor: colors['--brandSoft'] }
           ]}
-          focusable={false}
-          accessibilityRole="link"
         >
           <Ionicons
-            name={"settings"}
-            size={22}
+            name="settings-outline"
+            size={20}
             color={pathname.startsWith('/settings') ? colors['--brand'] : colors['--subink']}
           />
-          <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
-            <Text className={cn("text-base font-sans-semibold", pathname.startsWith('/settings') ? "text-ink" : "text-subink")} numberOfLines={1}>Preferences</Text>
-          </AnimatedView>
+          {!collapsed && (
+            <AnimatedView style={[fadeStyle, { marginLeft: 12 }]}>
+              <Text className={cn(
+                "text-sm font-sans-medium",
+                pathname.startsWith('/settings') ? "text-ink" : "text-subink"
+              )}>Settings</Text>
+            </AnimatedView>
+          )}
         </Pressable>
+
       </View>
-    </AnimatedView >
+    </AnimatedView>
   );
 }
