@@ -1,4 +1,7 @@
 import { api } from '@/convex/_generated/api';
+import { LanguageSelector } from '@/src/components/LanguageSelector';
+import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from 'convex/react';
 import { usePathname, useRouter } from 'expo-router';
@@ -13,9 +16,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../lib/utils';
-import { useAppTheme } from '@/src/theme/AppThemeProvider';
-import { LanguageSelector } from '@/src/components/LanguageSelector';
-import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
 
 const AnimatedView = Animated.View;
 
@@ -31,7 +31,6 @@ const NAV_ITEMS: NavItemProps[] = [
   { name: 'library', href: '/library', iconName: 'book', label: 'Library' },
   { name: 'vocab', href: '/vocab', iconName: 'reader', label: 'Vocab' },
   { name: 'review', href: '/review', iconName: 'flash', label: 'Review' },
-  { name: 'settings', href: '/settings', iconName: 'settings', label: 'Settings' },
 ];
 
 const EXPANDED_WIDTH = 256;
@@ -185,10 +184,30 @@ export function Sidebar() {
 
       {/* Footer */}
       <View className="h-14 px-6 flex-row items-center">
-        <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}> 
-          <Text className="text-xs text-faint font-sans-medium" numberOfLines={1}>v1.0.0</Text>
-        </AnimatedView>
+        <Pressable
+          onPress={() => router.push("/settings")}
+          className="flex-row items-center h-11 rounded-xl"
+          style={({ pressed }) => [
+            pathname.startsWith('/settings') && {
+              backgroundColor: colors['--brandSoft'],
+              borderColor: alpha('--brand', 0.1),
+              borderWidth: 1,
+            },
+            pressed && !pathname.startsWith('/settings') && { backgroundColor: colors['--muted'] },
+          ]}
+          focusable={false}
+          accessibilityRole="link"
+        >
+          <Ionicons
+            name={"settings"}
+            size={22}
+            color={pathname.startsWith('/settings') ? colors['--brand'] : colors['--subink']}
+          />
+          <AnimatedView style={[labelContainerStyle, { overflow: 'hidden' }]}>
+            <Text className={cn("text-base font-sans-semibold", pathname.startsWith('/settings') ? "text-ink" : "text-subink")} numberOfLines={1}>Preferences</Text>
+          </AnimatedView>
+        </Pressable>
       </View>
-    </AnimatedView>
+    </AnimatedView >
   );
 }
