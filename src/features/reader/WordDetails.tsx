@@ -1,10 +1,11 @@
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useAction } from 'convex/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../../convex/_generated/api';
 import { cn } from '../../lib/utils';
-import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 interface WordDetailsProps {
   surface: string;
@@ -48,6 +49,7 @@ export function WordDetails({
   isUpdating = false,
 }: WordDetailsProps) {
   const { colors } = useAppTheme();
+  const insets = useSafeAreaInsets();
   const isSidebar = mode === 'sidebar';
   const cacheRef = useRef(new Map<string, LookupResult>());
 
@@ -313,7 +315,10 @@ export function WordDetails({
         {renderDictionaryContent()}
       </ScrollView>
 
-      <View className="p-6 pt-4 border-t border-border/60 bg-panel/95">
+      <View
+        className="p-6 pt-4 border-t border-border/60 bg-panel/95"
+        style={!isSidebar ? { paddingBottom: Math.max(insets.bottom, 24) } : undefined}
+      >
         <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-faint mb-4">
           Set Word Status
         </Text>

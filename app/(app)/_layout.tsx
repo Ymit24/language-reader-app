@@ -4,7 +4,8 @@ import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useConvexAuth, useQuery } from 'convex/react';
 import { Redirect, Tabs } from 'expo-router';
-import { ActivityIndicator, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Platform, Text, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Sidebar } from '../../src/components/Sidebar';
 
 function LoadingScreen() {
@@ -59,6 +60,7 @@ function ReviewTabIcon({ color, size, focused }: { color: string; size: number; 
 export default function AppLayout() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const isLargeScreen = width >= 768;
   const { colors, alpha } = useAppTheme();
 
@@ -81,6 +83,7 @@ export default function AppLayout() {
             tabBarInactiveTintColor: colors['--subink'],
             tabBarLabelStyle: {
               fontFamily: 'PlusJakartaSans_500Medium',
+              fontSize: 11,
             },
             tabBarStyle: isLargeScreen
               ? { display: 'none' }
@@ -88,8 +91,18 @@ export default function AppLayout() {
                   backgroundColor: colors['--canvas'],
                   borderTopWidth: 1,
                   borderTopColor: alpha('--border', 0.9),
-                  paddingTop: 6,
-                  height: 64,
+                  ...Platform.select({
+                    ios: {
+                      height: 54 + insets.bottom,
+                      paddingBottom: insets.bottom,
+                      paddingTop: 10,
+                    },
+                    default: {
+                      height: 76,
+                      paddingBottom: 14,
+                      paddingTop: 10,
+                    },
+                  }),
                 },
           }}
         >
