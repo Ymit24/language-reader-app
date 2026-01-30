@@ -1,13 +1,13 @@
-import { View, Text, Alert, ActivityIndicator, Platform, Pressable } from 'react-native';
-import { useState } from 'react';
+import { Button } from '@/src/components/Button';
 import { ScreenLayout } from '@/src/components/ScreenLayout';
+import { cn } from '@/src/lib/utils';
+import { useAppTheme } from '@/src/theme/AppThemeProvider';
+import type { ThemePreference } from '@/src/theme/themes';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { useConvexAuth } from 'convex/react';
-import { Button } from '@/src/components/Button';
 import { useRouter } from 'expo-router';
-import { useAppTheme } from '@/src/theme/AppThemeProvider';
-import { cn } from '@/src/lib/utils';
-import type { ThemePreference } from '@/src/theme/themes';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 
 export default function SettingsScreen() {
   const { signOut } = useAuthActions();
@@ -67,7 +67,8 @@ export default function SettingsScreen() {
 
   return (
     <ScreenLayout edges={['top']}>
-      <View className="flex-1 px-5 pt-6">
+      <ScrollView className="flex-1 px-5 py-6"
+            showsVerticalScrollIndicator={false}>
         <Text className="mb-2 text-2xl font-sans-semibold tracking-tight text-ink">Settings</Text>
         <Text className="mb-6 text-sm text-subink font-sans-medium">
           Account details and app preferences.
@@ -143,7 +144,7 @@ export default function SettingsScreen() {
             )}
           </Button>
         </View>
-      </View>
+      </ScrollView>
     </ScreenLayout>
   );
 }
