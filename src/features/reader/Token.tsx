@@ -62,7 +62,7 @@ function TokenComponent({ surface, isWord, status, learningLevel, isSelected, no
         // Familiar: Yellow/Amber Text + Yellow/Amber Underline.
         // Using yellow-400/amber-400 for readability.
         bgClass = 'bg-transparent';
-        textClass = 'text-yellow-500 decoration-yellow-500/50 underline decoration-dashed decoration-2';
+        textClass = 'text-red-400 decoration-red-400/50 underline decoration-dashed decoration-2';
         break;
       case 'known':
         // Known: Plain.
