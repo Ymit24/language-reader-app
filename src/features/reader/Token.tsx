@@ -37,9 +37,7 @@ function TokenComponent({ surface, isWord, status, learningLevel, isSelected, no
   if (isWordSelected && normalized) {
     // Word details panel is open - solid highlight to indicate active selection
     bgClass = 'bg-brand/20';
-    // Active selection uses faint brand color for text to coordinate, or just ink?
-    // Let's use ink to be safe/readable, or brand-light.
-    textClass = 'text-brand-light font-semibold';
+    textClass = 'text-ink';
   } else if (isSelected) {
     // Transient selection / touch feedback
     bgClass = 'bg-brand/10';
@@ -51,7 +49,7 @@ function TokenComponent({ surface, isWord, status, learningLevel, isSelected, no
         // New: Blue Text. Stands out as "Unknown".
         // Using blue-400 for better dark mode visibility (vs 700).
         bgClass = 'bg-transparent';
-        textClass = 'text-blue-400 font-medium decoration-blue-400/50 underline decoration-2';
+        textClass = 'text-blue-400 decoration-blue-400/50 underline decoration-2';
         break;
       case 'learning':
         // Learning: Orange Text + Orange Underline.
