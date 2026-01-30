@@ -61,11 +61,11 @@ export const THEMES: ThemeDefinition[] = [
       '--success': '29 107 79',
       '--successSoft': '232 245 239',
       '--vUnknownBg': '253 241 225',
-      '--vUnknownLine': '208 139 53',
+      '--vUnknownLine': '37 99 235', // Blue 600
       '--vLearningBg': '230 238 245',
-      '--vLearningLine': '60 125 168',
+      '--vLearningLine': '234 88 12', // Orange 600
       '--vFamiliarBg': '251 247 213',
-      '--vFamiliarLine': '180 160 80',
+      '--vFamiliarLine': '220 38 38', // Red 600
       '--vKnownBg': '230 243 236',
       '--vKnownLine': '47 122 87',
     },
@@ -91,11 +91,11 @@ export const THEMES: ThemeDefinition[] = [
       '--success': '22 102 77',
       '--successSoft': '228 244 237',
       '--vUnknownBg': '252 239 224',
-      '--vUnknownLine': '202 126 48',
+      '--vUnknownLine': '37 99 235', // Blue 600
       '--vLearningBg': '228 238 246',
-      '--vLearningLine': '52 114 165',
+      '--vLearningLine': '234 88 12', // Orange 600
       '--vFamiliarBg': '251 247 215',
-      '--vFamiliarLine': '180 162 82',
+      '--vFamiliarLine': '220 38 38', // Red 600
       '--vKnownBg': '226 244 235',
       '--vKnownLine': '42 114 80',
     },
@@ -121,11 +121,11 @@ export const THEMES: ThemeDefinition[] = [
       '--success': '34 165 125',
       '--successSoft': '20 45 40',
       '--vUnknownBg': '55 38 22',
-      '--vUnknownLine': '200 140 70',
+      '--vUnknownLine': '96 165 250', // Blue 400
       '--vLearningBg': '22 45 60',
-      '--vLearningLine': '80 150 200',
+      '--vLearningLine': '251 146 60', // Orange 400
       '--vFamiliarBg': '45 40 22',
-      '--vFamiliarLine': '200 180 90',
+      '--vFamiliarLine': '248 113 113', // Red 400
       '--vKnownBg': '22 48 38',
       '--vKnownLine': '60 160 120',
     },
@@ -151,11 +151,11 @@ export const THEMES: ThemeDefinition[] = [
       '--success': '60 170 110',
       '--successSoft': '15 45 30',
       '--vUnknownBg': '55 38 25',
-      '--vUnknownLine': '210 150 70',
+      '--vUnknownLine': '96 165 250', // Blue 400
       '--vLearningBg': '25 42 68',
-      '--vLearningLine': '80 140 210',
+      '--vLearningLine': '251 146 60', // Orange 400
       '--vFamiliarBg': '48 42 25',
-      '--vFamiliarLine': '210 190 100',
+      '--vFamiliarLine': '248 113 113', // Red 400
       '--vKnownBg': '22 45 52',
       '--vKnownLine': '60 160 150',
     },

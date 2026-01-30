@@ -49,18 +49,18 @@ function TokenComponent({ surface, isWord, status, learningLevel, isSelected, no
         // New: Blue Text. Stands out as "Unknown".
         // Using blue-400 for better dark mode visibility (vs 700).
         bgClass = 'bg-transparent';
-        textClass = 'text-blue-400 decoration-blue-400/50 underline decoration-2';
+        textClass = 'text-vUnknownLine decoration-vUnknownLine/50 underline decoration-2';
         break;
       case 'learning':
         // Learning: Orange Text + Orange Underline.
         bgClass = 'bg-transparent';
-        textClass = 'text-orange-400 decoration-orange-400 underline decoration-2';
+        textClass = 'text-vLearningLine decoration-vLearningLine underline decoration-2';
         break;
       case 'familiar':
         // Familiar: Yellow/Amber Text + Yellow/Amber Underline.
         // Using yellow-400/amber-400 for readability.
         bgClass = 'bg-transparent';
-        textClass = 'text-red-400 decoration-red-400/50 underline decoration-dashed decoration-2';
+        textClass = 'text-vFamiliarLine decoration-vFamiliarLine/50 underline decoration-dashed decoration-2';
         break;
       case 'known':
         // Known: Plain.

@@ -122,8 +122,9 @@ export function WordDetails({
       icon: 'sparkles-outline',
       activeIcon: 'sparkles',
       color: colors['--vUnknownLine'],
-      bg: 'bg-vUnknownBg',
-      border: 'border-vUnknownLine/40',
+      bg: 'bg-vUnknownBg/50', // Subtle background from theme
+      activeBg: 'bg-vUnknownLine/15',
+      border: 'border-vUnknownLine/30',
     },
     {
       value: 1,
@@ -132,8 +133,9 @@ export function WordDetails({
       icon: 'book-outline',
       activeIcon: 'book',
       color: colors['--vLearningLine'],
-      bg: 'bg-vLearningBg',
-      border: 'border-vLearningLine/40',
+      bg: 'bg-vLearningBg/50',
+      activeBg: 'bg-vLearningLine/15',
+      border: 'border-vLearningLine/30',
     },
     {
       value: 3,
@@ -141,9 +143,10 @@ export function WordDetails({
       desc: 'Almost known',
       icon: 'star-outline',
       activeIcon: 'star',
-      color: colors['--brand'],
-      bg: 'bg-brandSoft',
-      border: 'border-brand/20',
+      color: colors['--vFamiliarLine'],
+      bg: 'bg-vFamiliarBg/50',
+      activeBg: 'bg-vFamiliarLine/15',
+      border: 'border-vFamiliarLine/30',
     },
     {
       value: 4,
@@ -151,9 +154,10 @@ export function WordDetails({
       desc: 'Mastered',
       icon: 'checkmark-circle-outline',
       activeIcon: 'checkmark-circle',
-      color: colors['--success'],
-      bg: 'bg-successSoft',
-      border: 'border-success/30',
+      color: colors['--vKnownLine'], // Or customize if we want "Ink" style, but Green is standard for Known
+      bg: 'bg-vKnownBg/50',
+      activeBg: 'bg-vKnownLine/15',
+      border: 'border-vKnownLine/30',
     },
   ];
 
@@ -228,9 +232,9 @@ export function WordDetails({
 
     if ((!entries || entries.length === 0) && lemmaEntries.length === 0) {
       return (
-      <View className="px-6 py-4 bg-canvas/60 border-y border-border/40">
-        <View className="flex-row items-center mb-2 opacity-50">
-          <Ionicons name="search-outline" size={14} color={colors['--subink']} />
+        <View className="px-6 py-4 bg-canvas/60 border-y border-border/40">
+          <View className="flex-row items-center mb-2 opacity-50">
+            <Ionicons name="search-outline" size={14} color={colors['--subink']} />
             <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink ml-1.5">
               Definition
             </Text>
@@ -287,27 +291,27 @@ export function WordDetails({
                 <Text className="text-xs text-faint font-sans-medium">Updating status…</Text>
               </View>
             )}
-            </View>
+          </View>
 
-            <Pressable
-              onPress={() => {
+          <Pressable
+            onPress={() => {
               // TODO: open Ask modal / prompt to query LLM about this word
-              }}
-              className="h-8 px-3 flex-row items-center justify-center rounded-full bg-muted active:bg-border mr-2"
-              hitSlop={20}
-              accessibilityLabel="Ask about word"
-            >
-              <Ionicons name="chatbubble-ellipses-outline" size={16} color={colors['--brand']} />
-              <Text className="text-sm text-brand font-sans-medium ml-2">Ask</Text>
-            </Pressable>
+            }}
+            className="h-8 px-3 flex-row items-center justify-center rounded-full bg-muted active:bg-border mr-2"
+            hitSlop={20}
+            accessibilityLabel="Ask about word"
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={16} color={colors['--brand']} />
+            <Text className="text-sm text-brand font-sans-medium ml-2">Ask</Text>
+          </Pressable>
 
-            <Pressable
+          <Pressable
             onPress={onClose}
             className="h-8 w-8 items-center justify-center rounded-full bg-muted active:bg-border"
             hitSlop={20}
-            >
+          >
             <Ionicons name="close" size={18} color={colors['--subink']} />
-            </Pressable>
+          </Pressable>
         </View>
       </View>
 
@@ -316,31 +320,35 @@ export function WordDetails({
       </ScrollView>
 
       <View
-        className="p-6 pt-4 border-t border-border/60 bg-panel/95"
+        className="p-5 pt-4 border-t border-border/40 bg-panel"
         style={!isSidebar ? { paddingBottom: Math.max(insets.bottom, 24) } : undefined}
       >
-        <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-faint mb-4">
+        <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink/70 mb-3.5 pl-1">
           Set Word Status
         </Text>
         <View
           className={cn(
-            'flex-row flex-wrap gap-3',
+            'flex-row flex-wrap gap-2.5',
             isSidebar ? 'flex-col' : 'flex-row'
           )}
         >
           {statusOptions.map((opt) => {
             const isActive = currentStatus === opt.value;
+            // Use specialized active background or default muted
+            const bgClass = isActive ? opt.activeBg : 'bg-muted/30';
+            const borderClass = isActive ? opt.border : 'border-transparent';
+            const textClass = isActive ? 'text-ink' : 'text-subink';
+
             return (
               <Pressable
                 key={opt.value}
                 onPress={() => onUpdateStatus(opt.value)}
                 disabled={isUpdating}
                 className={cn(
-                  'p-3 rounded-xl border',
+                  'p-3 rounded-xl border transition-all',
                   isSidebar ? 'w-full' : 'flex-1 min-w-[140px]',
-                  isActive
-                    ? `${opt.bg} ${opt.border}`
-                    : 'bg-panel border-border/70 active:bg-muted/70',
+                  bgClass,
+                  borderClass,
                   isUpdating ? 'opacity-50' : ''
                 )}
               >
@@ -348,7 +356,7 @@ export function WordDetails({
                   <View
                     className={cn(
                       'w-8 h-8 rounded-lg items-center justify-center mr-3',
-                      isActive ? 'bg-panel/70' : 'bg-canvas'
+                      isActive ? 'bg-panel/80 shadow-sm' : 'bg-panel/40' // Inner icon container
                     )}
                   >
                     <Ionicons
@@ -357,19 +365,24 @@ export function WordDetails({
                       color={isActive ? opt.color : colors['--faint']}
                     />
                   </View>
-                  <View>
+                  <View className="flex-1">
                     <Text
                       className={cn(
-                        'text-sm font-sans-bold',
-                        isActive ? 'text-ink' : 'text-subink'
+                        'text-sm font-sans-bold leading-tight',
+                        textClass
                       )}
+                      style={isActive ? { color: opt.color } : undefined}
                     >
                       {opt.label}
                     </Text>
-                    <Text className="text-[10px] text-faint font-sans-medium">
+                    <Text className="text-[10px] text-faint font-sans-medium leading-tight mt-0.5">
                       {opt.desc}
                     </Text>
                   </View>
+
+                  {isActive && (
+                    <View className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: opt.color }} />
+                  )}
                 </View>
               </Pressable>
             );
