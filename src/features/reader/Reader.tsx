@@ -240,9 +240,9 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
   return (
     <View className="flex-1 bg-canvas">
       <View className="flex-1" style={{ minHeight: 1 }}>
-        <View className="flex-1 px-4 pt-4 pb-6 items-center">
+        <View className="flex-1 items-center">
           <View
-            className="flex-1 bg-panel/90 border border-border/70 rounded-3xl shadow-card overflow-hidden"
+            className="flex-1"
             style={{ width: readerFrameWidth }}
           >
             <View
@@ -299,25 +299,24 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
                 </View>
               )}
             </View>
-            <View className="flex-row items-center justify-between px-5 py-3 border-t border-border/60 bg-panel/95">
+            
+            {/* Pagination Controls */}
+            <View className="flex-row items-center justify-between px-5 -mx-5 py-3">
               <Pressable
                 onPress={handlePrevPage}
                 disabled={!canGoPrev}
-                className={cn('h-10 w-10 items-center justify-center rounded-full', !canGoPrev ? 'opacity-20' : 'active:bg-muted/70')}
+                className={cn('h-10 w-10 items-center justify-center rounded-full', !canGoPrev ? 'opacity-0' : 'active:bg-muted/70')}
               >
-                <Ionicons name="chevron-back" size={22} color={colors['--ink']} />
+                <Ionicons name="chevron-back" size={24} color={colors['--ink']} />
               </Pressable>
 
               <View className="items-center">
-                <Text className="text-xs font-sans-semibold text-subink tracking-[0.3em] uppercase">
+                <Text className="text-xs font-sans-medium text-faint tracking-[0.2em] uppercase">
                   {currentPage + 1} / {totalPages || 1}
                 </Text>
                 {isVocabLoading && (
                   <View className="flex-row items-center gap-1 mt-1">
                     <ActivityIndicator size="small" color={colors['--faint']} />
-                    <Text className="text-[10px] text-faint font-sans-medium">
-                      Loading word status…
-                    </Text>
                   </View>
                 )}
               </View>
@@ -327,12 +326,12 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
                 disabled={!hasPages}
                 className={cn(
                   'h-10 w-10 items-center justify-center rounded-full',
-                  !hasPages ? 'opacity-30' : isLastPage ? 'active:bg-successSoft' : 'active:bg-muted/70'
+                  !hasPages ? 'opacity-0' : isLastPage ? 'active:bg-successSoft' : 'active:bg-muted/70'
                 )}
               >
                 <Ionicons
                   name={isLastPage ? 'checkmark' : 'chevron-forward'}
-                  size={22}
+                  size={24}
                   color={isLastPage ? colors['--success'] : colors['--ink']}
                 />
               </Pressable>

@@ -280,8 +280,8 @@ export function ReaderPage({
 
     // If panel is visible, check if we tapped outside/start new selection
     if (isSelectionPanelVisible) {
-       setIsSelectionPanelVisible(false);
-       // we don't return here, we let the new selection start if applicable
+      setIsSelectionPanelVisible(false);
+      // we don't return here, we let the new selection start if applicable
     }
 
     const { tokenId, index } = findTokenAndIndex(contentX, contentY);
@@ -289,7 +289,7 @@ export function ReaderPage({
       setTokenSelectionStartIndex(index);
       setTokenSelectionEndIndex(index);
     } else {
-        // Tapped empty space?
+      // Tapped empty space?
     }
   }, [findTokenAndIndex, getAdjustedContentPosition, isSelectionPanelVisible]);
 
@@ -317,24 +317,24 @@ export function ReaderPage({
   const handleGestureEnd = useCallback((x: number, y: number) => {
     // Check if we have a valid selection
     if (tokenSelectionStartIndex !== null && tokenSelectionEndIndex !== null) {
-       const start = Math.min(tokenSelectionStartIndex, tokenSelectionEndIndex);
-       const end = Math.max(tokenSelectionStartIndex, tokenSelectionEndIndex);
-       
-       // Only show panel if we selected something (and maybe more than just 1 token? or even 1 token is fine?)
-       // Note: Long press on a word usually selects it via onTokenPress logic in UI if it wasn't a gesture.
-       // But here we are handling swipe selection.
-       
-       const selectedTokens = tokens.slice(start, end + 1);
-       const text = selectedTokens.map(t => t.surface).join('');
-       
-       if (text.trim().length > 0) {
-           setSelectionPanelText(text);
-           setIsSelectionPanelVisible(true);
-           // Do NOT clear selection indices here, so the highlight remains
-           return;
-       }
+      const start = Math.min(tokenSelectionStartIndex, tokenSelectionEndIndex);
+      const end = Math.max(tokenSelectionStartIndex, tokenSelectionEndIndex);
+
+      // Only show panel if we selected something (and maybe more than just 1 token? or even 1 token is fine?)
+      // Note: Long press on a word usually selects it via onTokenPress logic in UI if it wasn't a gesture.
+      // But here we are handling swipe selection.
+
+      const selectedTokens = tokens.slice(start, end + 1);
+      const text = selectedTokens.map(t => t.surface).join('');
+
+      if (text.trim().length > 0) {
+        setSelectionPanelText(text);
+        setIsSelectionPanelVisible(true);
+        // Do NOT clear selection indices here, so the highlight remains
+        return;
+      }
     }
-    
+
     // If no selection or empty, clear
     setTokenSelectionStartIndex(null);
     setTokenSelectionEndIndex(null);
@@ -434,7 +434,7 @@ export function ReaderPage({
   // Calculate selection bounds when highlights change
   const selectionBounds = useMemo(() => {
     if (highlightRects.length === 0) return null;
-    
+
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
@@ -461,23 +461,23 @@ export function ReaderPage({
   const selectionPanelStyle = useMemo(() => {
     if (!selectionBounds) return null;
 
-    const PANEL_WIDTH = 300; 
+    const PANEL_WIDTH = 300;
     const CONTAINER_PADDING = 0; // The content container is already padded by the ScrollView
 
     const availableWidth = Math.max(0, contentSize.width - (CONTAINER_PADDING * 2));
     // If screen is tiny, shrink panel to fit
     const finalPanelWidth = Math.min(PANEL_WIDTH, availableWidth);
-    
+
     // Start centered on selection
     let left = selectionBounds.centerX - (finalPanelWidth / 2);
-    
+
     // Clamp to container bounds
     const minLeft = CONTAINER_PADDING;
     const maxLeft = contentSize.width - CONTAINER_PADDING - finalPanelWidth;
-    
+
     // Apply clamping
     left = Math.max(minLeft, Math.min(left, maxLeft));
-    
+
     return {
       position: 'absolute' as const,
       top: selectionBounds.bottomY + 12,
@@ -532,7 +532,7 @@ export function ReaderPage({
               onLayout={handleContentLayout}
             >
               {paragraphs.map((paraTokens, paraIndex) => (
-                <View key={`para-${paraIndex}`} className="mb-8 flex-wrap flex-row gap-y-2">
+                <View key={`para-${paraIndex}`} className="mb-6 flex-wrap flex-row items-baseline">
                   {paraTokens.map((token) => {
                     const tokenKey = token._id || `token-${token.index}`;
                     return (
@@ -559,23 +559,23 @@ export function ReaderPage({
               {isSelectionPanelVisible && selectionBounds && (
                 <>
                   {/* Backdrop for easy dismissal - covers content area */}
-                  <Pressable 
+                  <Pressable
                     onPress={clearSelection}
                     style={{
                       position: 'absolute',
-                      top: -1000, 
+                      top: -1000,
                       left: -1000,
                       right: -1000,
                       bottom: -1000,
                       zIndex: 40,
                     }}
                   />
-                  
+
                   {/* Panel centered relative to selection */}
-                  <View 
+                  <View
                     style={selectionPanelStyle || {}}
                   >
-                    <SelectionPanel 
+                    <SelectionPanel
                       selectedText={selectionPanelText}
                       language={language}
                       onClose={clearSelection}
@@ -603,7 +603,7 @@ export function ReaderPage({
               </View>
             </View>
           )}
-          
+
           {/* Removed old fixed position panel */}
 
         </View>
