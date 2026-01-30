@@ -165,35 +165,45 @@ export function Sidebar() {
                     size={20}
                     color={isActive ? colors['--brand'] : colors['--subink']}
                   />
-                  {showBadge && (
+                  {collapsed && showBadge && (
                     <View
-                      className="absolute -top-1.5 -right-2 min-w-[16px] h-4 rounded-full bg-accent items-center justify-center border border-panel px-1"
-                    >
-                      <Text className="text-[9px] font-sans-bold text-white">
-                        {dueCount && dueCount > 99 ? '99+' : dueCount}
-                      </Text>
-                    </View>
+                      className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-accent border border-panel"
+                    />
                   )}
                 </View>
 
                 {!collapsed && (
-                  <AnimatedView style={[fadeStyle, { marginLeft: 12, flex: 1 }]}>
-                    <Text
-                      numberOfLines={1}
-                      className={cn(
-                        "text-sm",
-                        isActive ? "font-sans-bold text-ink" : "font-sans-medium text-subink"
-                      )}
-                    >
-                      {item.label}
-                    </Text>
-                  </AnimatedView>
-                )}
+                  <>
+                    <AnimatedView style={[fadeStyle, { marginLeft: 12, flex: 1 }]}>
+                      <Text
+                        numberOfLines={1}
+                        className={cn(
+                          "text-sm",
+                          isActive ? "font-sans-bold text-ink" : "font-sans-medium text-subink"
+                        )}
+                      >
+                        {item.label}
+                      </Text>
+                    </AnimatedView>
 
-                {isActive && !collapsed && (
-                  <AnimatedView style={[fadeStyle]}>
-                    <View className="w-1.5 h-1.5 rounded-full bg-brand" />
-                  </AnimatedView>
+                    {showBadge && (
+                      <AnimatedView style={[fadeStyle, { marginLeft: 8 }]}>
+                        <View
+                          className="min-w-[20px] h-5 rounded-full bg-accent items-center justify-center px-1.5"
+                        >
+                          <Text className="text-[10px] font-sans-bold text-white leading-none">
+                            {dueCount && dueCount > 99 ? '99+' : dueCount}
+                          </Text>
+                        </View>
+                      </AnimatedView>
+                    )}
+
+                    {isActive && (
+                      <AnimatedView style={[fadeStyle, { marginLeft: 8 }]}>
+                        <View className="w-1.5 h-1.5 rounded-full bg-brand" />
+                      </AnimatedView>
+                    )}
+                  </>
                 )}
               </Pressable>
             );
