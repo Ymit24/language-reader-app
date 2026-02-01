@@ -1,10 +1,10 @@
-import { View, Text, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { ScreenLayout } from '@/src/components/ScreenLayout';
-import { Input } from '@/src/components/Input';
 import { Button } from '@/src/components/Button';
+import { Input } from '@/src/components/Input';
+import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { useAuthActions } from '@convex-dev/auth/react';
-import { useState } from 'react';
 import { router } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TouchableWithoutFeedback, View } from 'react-native';
 
 type AuthStep = 'signIn' | 'signUp';
 
@@ -48,6 +48,12 @@ export default function SignInScreen() {
     setError('');
   };
 
+  const dismissKeyboard = () => {
+    if (Platform.OS !== 'web') {
+      Keyboard.dismiss();
+    }
+  };
+
   return (
     <ScreenLayout edges={['top']}>
       <KeyboardAvoidingView
@@ -55,7 +61,7 @@ export default function SignInScreen() {
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <TouchableWithoutFeedback onPress={dismissKeyboard}>
           <ScrollView
             contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 }}
             keyboardShouldPersistTaps="handled"
