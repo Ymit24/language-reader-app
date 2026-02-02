@@ -20,10 +20,6 @@ export function useVocabSelection() {
     setSelectedIds(new Set());
   }, []);
 
-  const clearSelection = useCallback(() => {
-    setSelectedIds(new Set());
-  }, []);
-
   const selectionCount = selectedIds.size;
   const hasSelection = selectionCount > 0;
 
@@ -33,6 +29,6 @@ export function useVocabSelection() {
     hasSelection,
     toggleSelect,
     deselectAll,
-    clearSelection,
+    clearSelection: deselectAll, // Alias for consistency
   };
 }

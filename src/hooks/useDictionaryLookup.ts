@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
@@ -44,7 +44,7 @@ export function useDictionaryLookup({
     [language, term]
   );
 
-  const performLookup = async () => {
+  const performLookup = useCallback(async () => {
     if (!term || isLookingUp) return;
 
     // Check cache first
@@ -80,14 +80,14 @@ export function useDictionaryLookup({
     } finally {
       setIsLookingUp(false);
     }
-  };
+  }, [term, language, lookupKey, isLookingUp, lookupAction]);
 
   // Auto-lookup on mount if requested
   useEffect(() => {
     if (autoLookup && term) {
       performLookup();
     }
-  }, [lookupKey, autoLookup]);
+  }, [autoLookup, term, performLookup]);
 
   const clearLookup = () => {
     setLookupResult(null);
