@@ -9,7 +9,7 @@ interface UseReaderVocabOptions {
 export function useReaderVocab({ language }: UseReaderVocabOptions) {
   const vocabData = useQuery(
     api.vocab.getVocabProfile,
-    language ? { language } : 'skip'
+    language ? { language: language as 'de' | 'fr' | 'ja' } : 'skip'
   );
   const isVocabLoading = vocabData === undefined;
 

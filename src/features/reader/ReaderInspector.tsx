@@ -10,7 +10,7 @@ interface ReaderInspectorProps {
   isLargeScreen: boolean;
   surface: string;
   normalized: string;
-  language: string;
+  language: 'de' | 'fr' | 'ja';
   currentStatus: number;
   isUpdating: boolean;
   onUpdateStatus: (status: number) => Promise<void>;

@@ -27,7 +27,18 @@ interface UseReviewSessionReturn {
   sessionStartTime: number;
   currentItem: SessionItem | undefined;
   isLoading: boolean;
-  handleGrade: (quality: number) => Promise<void>;
+  handleGrade: (quality: number) => Promise<{
+    ease: number;
+    isComplete: boolean;
+    xpEarned: number;
+    baseXp: number;
+    bonusXp: number;
+    leveledUp: boolean;
+    newLevel: number | null;
+    newTitle: string | null;
+    currentStreak: number;
+    isFirstReviewOfDay: boolean;
+  } | undefined>;
   handleAbandon: () => Promise<void>;
 }
 
