@@ -1,91 +1,39 @@
-import { useAppTheme } from '@/src/theme/AppThemeProvider';
-import { Ionicons } from '@expo/vector-icons';
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation } from 'convex/react';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, useWindowDimensions, View } from 'react-native';
-import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
+import { Text, View } from 'react-native';
+import Carousel from 'react-native-reanimated-carousel';
 import { api } from '../../../convex/_generated/api';
 import { Doc, Id } from '../../../convex/_generated/dataModel';
-import { cn } from '../../lib/utils';
 import { ReaderPage } from './ReaderPage';
-import { WordDetails } from './WordDetails';
+import { PaginationControls } from './PaginationControls';
+import { ReaderInspector } from './ReaderInspector';
+import { useReaderCarousel } from './hooks/useReaderCarousel';
+import { useReaderVocab } from './hooks/useReaderVocab';
+import { useReaderInspector } from './hooks/useReaderInspector';
 
 interface ReaderProps {
   lesson: Doc<"lessons"> & { tokens: Doc<"lessonTokens">[] };
   isScreenFocused?: boolean;
 }
 
-interface ReaderToken {
-  _id?: string;
-  index?: number;
-  isWord: boolean;
-  surface: string;
-  normalized?: string;
-}
-
 const STATUS_NEW = 0;
-
-const INSPECTOR_WIDTH = 360;
-const SIDEBAR_EXPANDED_WIDTH = 256;
-const READER_MAX_WIDTH = 1040;
+const WORDS_PER_PAGE = 200;
 
 export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
   const router = useRouter();
-  const { colors } = useAppTheme();
-  const { width, height: windowHeight } = useWindowDimensions();
-  const isLargeScreen = width >= 768;
-  const carouselRef = useRef<ICarouselInstance>(null);
-  const hasSetInitialPage = useRef(false);
-  const layoutUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const progressUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fallbackCarouselHeight = useMemo(() => {
-    // Leave room for the app header + reader card padding + the in-card footer.
-    // Keep a sane minimum so the carousel mounts on first layout.
-    return Math.max(windowHeight - 320, 260);
-  }, [windowHeight]);
-  const readerFrameWidth = useMemo(() => {
-    const horizontalPadding = 32;
-    const reservedSidebar = isLargeScreen ? SIDEBAR_EXPANDED_WIDTH : 0;
-    const availableWidth = Math.max(width - reservedSidebar - horizontalPadding, 0);
-    if (!isLargeScreen) {
-      return availableWidth;
-    }
-    return Math.min(availableWidth, READER_MAX_WIDTH);
-  }, [isLargeScreen, width]);
-  const [carouselLayout, setCarouselLayout] = useState({
-    width: readerFrameWidth,
-    height: fallbackCarouselHeight,
-  });
-  const carouselWidth = readerFrameWidth;
-  const carouselHeight = carouselLayout.height > 0 ? carouselLayout.height : fallbackCarouselHeight;
+  const progressUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   const language = lesson.language;
-  const vocabData = useQuery(api.vocab.getVocabProfile, language ? { language } : "skip");
-  const isVocabLoading = vocabData === undefined;
 
-  const [selectedToken, setSelectedToken] = useState<ReaderToken | null>(null);
-  const [selectedNormalized, setSelectedNormalized] = useState<string | null>(null);
-  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(() => Math.max(0, lesson.currentPage ?? 0));
-  const [localStatusOverrides, setLocalStatusOverrides] = useState<Record<string, number>>({});
+  // Custom hooks for state management
+  const { vocabMap, isVocabLoading, setLocalStatusOverrides } = useReaderVocab({
+    language,
+  });
+
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-
-  const WORDS_PER_PAGE = 200;
-
-  // 4. Transform Vocab for fast lookup
-  const vocabMap = useMemo(() => {
-    const map: Record<string, number> = {};
-    if (vocabData) {
-      for (const v of vocabData) {
-        map[v.term] = v.status;
-      }
-    }
-    for (const [term, status] of Object.entries(localStatusOverrides)) {
-      map[term] = status;
-    }
-    return map;
-  }, [vocabData, localStatusOverrides]);
 
   // Pagination Logic
   const pages = useMemo(() => {
@@ -102,9 +50,10 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
       if (token.isWord) {
         wordCount++;
       }
-      
+
       if (wordCount >= WORDS_PER_PAGE) {
-        const isParagraphBreak = !token.isWord && token.surface.includes('\n\n');
+        const isParagraphBreak =
+          !token.isWord && token.surface.includes('\n\n');
         const isSentenceEnd = !token.isWord && /[.!?]/.test(token.surface);
         const isForced = wordCount >= WORDS_PER_PAGE * 1.5;
 
@@ -115,12 +64,12 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
             const next = allTokens[j];
             if (next.isWord) break;
             if (next.surface.includes('\n\n')) break;
-            
+
             currentChunk.push(next);
             i = j;
             j++;
           }
-          
+
           pagesArray.push(currentChunk);
           currentChunk = [];
           wordCount = 0;
@@ -133,19 +82,23 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
     return pagesArray;
   }, [lesson.tokens]);
 
-
   const totalPages = pages.length;
 
-  // 5. Mutations
+  const carousel = useReaderCarousel({
+    initialPage: lesson.currentPage ?? 0,
+    totalPages,
+  });
+
+  const inspector = useReaderInspector();
+
+  // Mutations
   const updateStatusMutation = useMutation(api.vocab.updateVocabStatus);
   const updateProgressMutation = useMutation(api.lessons.updateLessonProgress);
 
   const handlePageSnap = useCallback(
     (newPage: number) => {
-      setCurrentPage(newPage);
-      setSelectedToken(null);
-      setSelectedNormalized(null);
-      setIsInspectorOpen(false);
+      carousel.setCurrentPage(newPage);
+      inspector.closeInspector();
 
       if (progressUpdateTimer.current) {
         clearTimeout(progressUpdateTimer.current);
@@ -158,13 +111,13 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
         });
       }, 240);
     },
-    [lesson._id, updateProgressMutation]
+    [lesson._id, updateProgressMutation, carousel, inspector]
   );
 
   const handleUpdateStatus = async (newStatus: number) => {
-    if (!selectedToken || !language || !selectedToken.normalized) return;
+    if (!inspector.selectedToken || !language || !inspector.selectedToken.normalized) return;
 
-    const term = selectedToken.normalized;
+    const term = inspector.selectedToken.normalized;
     const previousStatus = vocabMap[term] ?? STATUS_NEW;
 
     setLocalStatusOverrides((prev) => ({ ...prev, [term]: newStatus }));
@@ -183,93 +136,53 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
     }
   };
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) {
-      carouselRef.current?.scrollTo({ count: 1, animated: true });
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 0) {
-      carouselRef.current?.scrollTo({ count: -1, animated: true });
-    }
-  };
-
   const handleFinishLesson = () => {
     router.push(`/(app)/library/${lesson._id}/summary`);
   };
 
-  useEffect(() => {
-    if (!lesson || pages.length === 0) return;
-    if (hasSetInitialPage.current) return;
-    if (carouselLayout.width === 0 || carouselLayout.height === 0) return;
-
-    const initialPage = Math.min(
-      Math.max(lesson.currentPage ?? 0, 0),
-      pages.length - 1
-    );
-
-    hasSetInitialPage.current = true;
-    setCurrentPage(initialPage);
-    carouselRef.current?.scrollTo({ index: initialPage, animated: false });
-  }, [carouselLayout.height, carouselLayout.width, lesson, pages.length]);
-
+  // Cleanup timer on unmount
   useEffect(() => {
     return () => {
-      if (layoutUpdateTimer.current) {
-        clearTimeout(layoutUpdateTimer.current);
-      }
       if (progressUpdateTimer.current) {
         clearTimeout(progressUpdateTimer.current);
       }
     };
   }, []);
 
-  useEffect(() => {
-    setCarouselLayout((prev) => {
-      if (prev.width === readerFrameWidth) return prev;
-      return { ...prev, width: readerFrameWidth };
-    });
-  }, [readerFrameWidth]);
-
   const hasPages = totalPages > 0;
-  const canGoPrev = currentPage > 0;
-  const isLastPage = currentPage === totalPages - 1;
-  const showInspector = Boolean(selectedToken && language && (isLargeScreen || isInspectorOpen));
+  const canGoPrev = carousel.currentPage > 0;
+  const isLastPage = carousel.currentPage === totalPages - 1;
+  const showInspector = Boolean(
+    inspector.selectedToken &&
+      language &&
+      (carousel.isLargeScreen || inspector.isInspectorOpen)
+  );
 
   return (
     <View className="flex-1 bg-canvas">
       <View className="flex-1" style={{ minHeight: 1 }}>
         <View className="flex-1 items-center">
-          <View
-            className="flex-1"
-            style={{ width: readerFrameWidth }}
-          >
+          <View className="flex-1" style={{ width: carousel.readerFrameWidth }}>
             <View
               className="flex-1"
               style={{ minHeight: 1 }}
               onLayout={(event) => {
                 const { height: layoutHeight } = event.nativeEvent.layout;
-                if (layoutHeight === 0) return;
-
-                if (layoutHeight !== carouselLayout.height) {
-                  if (layoutUpdateTimer.current) {
-                    clearTimeout(layoutUpdateTimer.current);
-                  }
-                  layoutUpdateTimer.current = setTimeout(() => {
-                    setCarouselLayout({ width: readerFrameWidth, height: layoutHeight });
-                  }, 80);
-                }
+                carousel.handleLayoutChange(layoutHeight);
               }}
             >
               {hasPages ? (
-                 <Carousel
-                   ref={carouselRef}
-                   width={carouselWidth}
-                   height={carouselHeight}
-                   style={{ flex: 1, height: carouselHeight, width: '100%' }}
-                   data={pages}
-                   loop={false}
+                <Carousel
+                  ref={carousel.carouselRef}
+                  width={carousel.carouselWidth}
+                  height={carousel.carouselHeight}
+                  style={{
+                    flex: 1,
+                    height: carousel.carouselHeight,
+                    width: '100%',
+                  }}
+                  data={pages}
+                  loop={false}
                   snapEnabled
                   pagingEnabled
                   scrollAnimationDuration={320}
@@ -280,13 +193,11 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
                       vocabMap={vocabMap}
                       language={language}
                       onTokenPress={(token) => {
-                        setSelectedToken(token);
-                        setSelectedNormalized(token.normalized || null);
-                        setIsInspectorOpen(true);
+                        inspector.openInspector(token);
                       }}
-                      selectedTokenId={selectedToken?._id ?? null}
-                      selectedNormalized={selectedNormalized}
-                      isActive={isScreenFocused && index === currentPage}
+                      selectedTokenId={inspector.selectedToken?._id ?? null}
+                      selectedNormalized={inspector.selectedNormalized}
+                      isActive={isScreenFocused && index === carousel.currentPage}
                     />
                   )}
                   onConfigurePanGesture={(gesture) => {
@@ -295,100 +206,45 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
                 />
               ) : (
                 <View className="flex-1 items-center justify-center">
-                  <Text className="text-base text-subink font-sans-medium">No text available for this lesson.</Text>
+                  <Text className="text-base text-subink font-sans-medium">
+                    No text available for this lesson.
+                  </Text>
                 </View>
               )}
             </View>
-            
-            {/* Pagination Controls */}
-            <View className="flex-row items-center justify-between px-5 -mx-5 py-3">
-              <Pressable
-                onPress={handlePrevPage}
-                disabled={!canGoPrev}
-                className={cn('h-10 w-10 items-center justify-center rounded-full', !canGoPrev ? 'opacity-0' : 'active:bg-muted/70')}
-              >
-                <Ionicons name="chevron-back" size={24} color={colors['--ink']} />
-              </Pressable>
 
-              <View className="items-center">
-                <Text className="text-xs font-sans-medium text-faint tracking-[0.2em] uppercase">
-                  {currentPage + 1} / {totalPages || 1}
-                </Text>
-                {isVocabLoading && (
-                  <View className="flex-row items-center gap-1 mt-1">
-                    <ActivityIndicator size="small" color={colors['--faint']} />
-                  </View>
-                )}
-              </View>
-
-              <Pressable
-                onPress={isLastPage ? handleFinishLesson : handleNextPage}
-                disabled={!hasPages}
-                className={cn(
-                  'h-10 w-10 items-center justify-center rounded-full',
-                  !hasPages ? 'opacity-0' : isLastPage ? 'active:bg-successSoft' : 'active:bg-muted/70'
-                )}
-              >
-                <Ionicons
-                  name={isLastPage ? 'checkmark' : 'chevron-forward'}
-                  size={24}
-                  color={isLastPage ? colors['--success'] : colors['--ink']}
-                />
-              </Pressable>
-            </View>
+            <PaginationControls
+              currentPage={carousel.currentPage}
+              totalPages={totalPages}
+              isVocabLoading={isVocabLoading}
+              isLastPage={isLastPage}
+              canGoPrev={canGoPrev}
+              hasPages={hasPages}
+              onPrevPage={carousel.prevPage}
+              onNextPage={carousel.nextPage}
+              onFinishLesson={handleFinishLesson}
+            />
           </View>
         </View>
       </View>
 
-      {showInspector && selectedToken && selectedToken.normalized && (
-        <View className={cn('absolute inset-0', isLargeScreen ? 'items-end' : 'justify-end')}>
-          <Pressable
-            className="absolute inset-0"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.35)' }}
-            onPress={() => {
-              setIsInspectorOpen(false);
-              setSelectedToken(null);
-              setSelectedNormalized(null);
-            }}
+      {showInspector &&
+        inspector.selectedToken &&
+        inspector.selectedToken.normalized && (
+          <ReaderInspector
+            isVisible={showInspector}
+            isLargeScreen={carousel.isLargeScreen}
+            surface={inspector.selectedToken.surface}
+            normalized={inspector.selectedToken.normalized}
+            language={language}
+            currentStatus={
+              vocabMap[inspector.selectedToken.normalized] ?? STATUS_NEW
+            }
+            isUpdating={isUpdatingStatus}
+            onUpdateStatus={handleUpdateStatus}
+            onClose={inspector.closeInspector}
           />
-          {isLargeScreen ? (
-            <View
-              className="bg-panel h-full border-l border-border/70"
-              style={{ width: INSPECTOR_WIDTH }}
-            >
-              <WordDetails
-                mode="sidebar"
-                surface={selectedToken.surface}
-                normalized={selectedToken.normalized}
-                language={language}
-                currentStatus={vocabMap[selectedToken.normalized] ?? 0}
-                isUpdating={isUpdatingStatus}
-                onUpdateStatus={handleUpdateStatus}
-                onClose={() => {
-                  setIsInspectorOpen(false);
-                  setSelectedToken(null);
-                  setSelectedNormalized(null);
-                }}
-              />
-            </View>
-          ) : (
-            <WordDetails
-              mode="popup"
-              surface={selectedToken.surface}
-              normalized={selectedToken.normalized}
-              language={language}
-              currentStatus={vocabMap[selectedToken.normalized] ?? 0}
-              isUpdating={isUpdatingStatus}
-              onUpdateStatus={handleUpdateStatus}
-              onClose={() => {
-                setIsInspectorOpen(false);
-                setSelectedToken(null);
-                setSelectedNormalized(null);
-              }}
-            />
-          )}
-        </View>
-      )}
+        )}
     </View>
   );
 }
