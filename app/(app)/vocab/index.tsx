@@ -8,49 +8,32 @@ import { VocabFilterBar } from '@/src/features/vocab/VocabFilters';
 import { VocabList } from '@/src/features/vocab/VocabList';
 import { VocabItem } from '@/src/features/vocab/VocabRow';
 import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
+import { useVocabFilters } from '@/src/features/vocab/hooks/useVocabFilters';
+import { useVocabSelection } from '@/src/features/vocab/hooks/useVocabSelection';
 import { useMutation, usePaginatedQuery, useQuery } from 'convex/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Modal,
-  Text,
-  useWindowDimensions,
-  View
-} from 'react-native';
-
-type SortBy = 'dateAdded' | 'alphabetical' | 'status';
+import { Modal, Text, useWindowDimensions, View } from 'react-native';
 
 export default function VocabScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
   const { selectedLanguage } = useSelectedLanguage();
 
-  // Filter & sort state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<VocabStatus | null>(null);
-  const [sortBy, setSortBy] = useState<SortBy>('dateAdded');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  // Custom hooks for filters and selection
+  const filters = useVocabFilters();
+  const selection = useVocabSelection();
 
-  // Selection state
-  const [selectedIds, setSelectedIds] = useState<Set<Id<'vocab'>>>(new Set());
+  // Active word state
   const [activeWordId, setActiveWordId] = useState<Id<'vocab'> | null>(null);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   // Mobile detail modal
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // Debounce search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
   // Convex queries
   const vocabCounts = useQuery(api.vocab.getVocabCounts, {
     language: selectedLanguage,
-    search: debouncedSearch || undefined,
+    search: filters.debouncedSearch || undefined,
   });
 
   const {
@@ -61,10 +44,10 @@ export default function VocabScreen() {
     api.vocab.listVocab,
     {
       language: selectedLanguage,
-      search: debouncedSearch || undefined,
-      statusFilter: statusFilter !== null ? [statusFilter] : undefined,
-      sortBy,
-      sortOrder,
+      search: filters.debouncedSearch || undefined,
+      statusFilter: filters.statusFilter !== null ? [filters.statusFilter] : undefined,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder,
     },
     { initialNumItems: 50 }
   );
@@ -90,16 +73,8 @@ export default function VocabScreen() {
 
   // Handlers
   const handleToggleSelect = useCallback((id: Id<'vocab'>) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }, []);
+    selection.toggleSelect(id);
+  }, [selection]);
 
   const handleSelectWord = useCallback(
     (id: Id<'vocab'>) => {
@@ -119,25 +94,21 @@ export default function VocabScreen() {
     }
   }, [isDesktop]);
 
-  const handleDeselectAll = useCallback(() => {
-    setSelectedIds(new Set());
-  }, []);
-
   const handleBulkSetStatus = useCallback(
     async (status: VocabStatus) => {
-      if (selectedIds.size === 0 || isBulkUpdating) return;
+      if (selection.selectionCount === 0 || isBulkUpdating) return;
       setIsBulkUpdating(true);
       try {
         await bulkUpdateStatus({
-          termIds: Array.from(selectedIds),
+          termIds: Array.from(selection.selectedIds),
           status,
         });
-        setSelectedIds(new Set());
+        selection.clearSelection();
       } finally {
         setIsBulkUpdating(false);
       }
     },
-    [selectedIds, bulkUpdateStatus, isBulkUpdating]
+    [selection, bulkUpdateStatus, isBulkUpdating]
   );
 
   const handleLoadMore = useCallback(() => {
@@ -153,25 +124,24 @@ export default function VocabScreen() {
 
   // Reset selection when language changes
   useEffect(() => {
-    setSelectedIds(new Set());
+    selection.clearSelection();
     setActiveWordId(null);
-  }, [selectedLanguage]);
+  }, [selectedLanguage, selection]);
 
   const isLoading = paginationStatus === 'LoadingFirstPage';
   const isEmpty = !isLoading && vocabList.length === 0;
   const hasMore = paginationStatus === 'CanLoadMore';
-  const selectionMode = selectedIds.size > 0;
 
   // Empty message based on filters
   const emptyMessage = useMemo(() => {
-    if (debouncedSearch) {
+    if (filters.debouncedSearch) {
       return 'No words match your search';
     }
-    if (statusFilter !== null) {
+    if (filters.statusFilter !== null) {
       return 'No words with this status';
     }
     return 'Start reading to build your vocabulary';
-  }, [debouncedSearch, statusFilter]);
+  }, [filters.debouncedSearch, filters.statusFilter]);
 
   return (
     <ScreenLayout edges={['top']}>
@@ -189,14 +159,14 @@ export default function VocabScreen() {
 
           {/* Filters */}
           <VocabFilterBar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            sortOrder={sortOrder}
-            onSortOrderChange={setSortOrder}
+            searchQuery={filters.searchQuery}
+            onSearchChange={filters.setSearchQuery}
+            statusFilter={filters.statusFilter}
+            onStatusFilterChange={filters.setStatusFilter}
+            sortBy={filters.sortBy}
+            onSortChange={filters.setSortBy}
+            sortOrder={filters.sortOrder}
+            onSortOrderChange={filters.setSortOrder}
             counts={vocabCounts ?? undefined}
           />
         </View>
@@ -207,11 +177,11 @@ export default function VocabScreen() {
           <View className={isDesktop ? 'w-2/5 border-r border-border/50' : 'flex-1'}>
             <VocabList
               data={vocabList}
-              selectedIds={selectedIds}
+              selectedIds={selection.selectedIds}
               activeId={activeWordId}
               onToggleSelect={handleToggleSelect}
               onSelectWord={handleSelectWord}
-              selectionMode={selectionMode}
+              selectionMode={selection.hasSelection}
               isLoading={isLoading}
               isEmpty={isEmpty}
               hasMore={hasMore}
@@ -240,10 +210,10 @@ export default function VocabScreen() {
 
         {/* Bulk action bar */}
         <BulkActionBar
-          selectedCount={selectedIds.size}
+          selectedCount={selection.selectionCount}
           onSetStatus={handleBulkSetStatus}
-          onDeselectAll={handleDeselectAll}
-          visible={selectionMode}
+          onDeselectAll={selection.deselectAll}
+          visible={selection.hasSelection}
           isBusy={isBulkUpdating}
         />
 
