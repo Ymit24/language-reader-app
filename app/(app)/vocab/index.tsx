@@ -2,12 +2,13 @@ import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
 import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { BulkActionBar } from '@/src/features/vocab/BulkActionBar';
-import { VocabStatus } from '@/src/features/vocab/StatusBadge';
+import type { VocabStatus } from '@/src/lib/vocabStatus';
 import { VocabDetailPanel } from '@/src/features/vocab/VocabDetailPanel';
 import { VocabFilterBar } from '@/src/features/vocab/VocabFilters';
 import { VocabList } from '@/src/features/vocab/VocabList';
 import { VocabItem } from '@/src/features/vocab/VocabRow';
 import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
+import { getStatusGroup } from '@/src/lib/vocabStatus';
 import { useMutation, usePaginatedQuery, useQuery } from 'convex/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -53,6 +54,14 @@ export default function VocabScreen() {
     search: debouncedSearch || undefined,
   });
 
+  const statusFilterValues = useMemo(() => {
+    if (statusFilter === null) return undefined;
+    if (getStatusGroup(statusFilter) === 'learning') {
+      return [1, 2];
+    }
+    return [statusFilter];
+  }, [statusFilter]);
+
   const {
     results: vocabResults,
     status: paginationStatus,
@@ -62,7 +71,7 @@ export default function VocabScreen() {
     {
       language: selectedLanguage,
       search: debouncedSearch || undefined,
-      statusFilter: statusFilter !== null ? [statusFilter] : undefined,
+      statusFilter: statusFilterValues,
       sortBy,
       sortOrder,
     },

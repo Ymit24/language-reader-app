@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, View, Text, Pressable, Animated } from 'react-native';
+import { ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { VocabStatus, getStatusColor } from './StatusBadge';
+import { STATUS_OPTIONS, getStatusColor, type VocabStatus } from '@/src/lib/vocabStatus';
 import { cn } from '../../lib/utils';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
@@ -12,13 +12,6 @@ interface BulkActionBarProps {
   visible: boolean;
   isBusy?: boolean;
 }
-
-const STATUS_OPTIONS: { value: VocabStatus; label: string; icon: string }[] = [
-  { value: 0, label: 'New', icon: 'sparkles' },
-  { value: 1, label: 'Learning', icon: 'book' },
-  { value: 3, label: 'Familiar', icon: 'star' },
-  { value: 4, label: 'Known', icon: 'checkmark-circle' },
-];
 
 export function BulkActionBar({
   selectedCount,
@@ -121,7 +114,11 @@ export function BulkActionBar({
                     isBusy ? 'opacity-50' : ''
                   )}
                 >
-                  <Ionicons name={opt.icon as any} size={16} color={color} />
+                  <Ionicons
+                    name={(opt.activeIcon ?? opt.icon) as any}
+                    size={16}
+                    color={color}
+                  />
                   <Text
                     className="ml-2 text-sm font-sans-semibold"
                     style={{ color }}

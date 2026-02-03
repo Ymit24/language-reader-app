@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { cn } from '../../lib/utils';
-import { VocabStatus } from './StatusBadge';
+import { STATUS_FILTER_OPTIONS, type VocabStatus } from '@/src/lib/vocabStatus';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
 type SortBy = 'dateAdded' | 'alphabetical' | 'status';
@@ -26,13 +26,7 @@ interface VocabFilterBarProps {
   };
 }
 
-const STATUS_FILTERS: { status: VocabStatus | null; label: string; countKey: string }[] = [
-  { status: null, label: 'All', countKey: 'total' },
-  { status: 0, label: 'New', countKey: 'new' },
-  { status: 1, label: 'Learning', countKey: 'learning' },
-  { status: 3, label: 'Familiar', countKey: 'familiar' },
-  { status: 4, label: 'Known', countKey: 'known' },
-];
+const STATUS_FILTERS = STATUS_FILTER_OPTIONS;
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
   { value: 'dateAdded', label: 'Date Added' },
@@ -108,7 +102,10 @@ export function VocabFilterBar({
       >
         {STATUS_FILTERS.map((filter) => {
           const isActive = statusFilter === filter.status;
-          const count = counts?.[filter.countKey as keyof typeof counts] ?? 0;
+          const count =
+            counts && filter.status === 1
+              ? (counts.recognized ?? 0) + (counts.learning ?? 0)
+              : counts?.[filter.countKey as keyof typeof counts] ?? 0;
           return (
             <Pressable
               key={filter.label}

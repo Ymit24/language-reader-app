@@ -1,10 +1,16 @@
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
-import { useAction } from 'convex/react';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { api } from '../../../convex/_generated/api';
+import {
+  STATUS_OPTIONS,
+  getStatusColor,
+  getStatusGroup,
+  getStatusTheme,
+} from '@/src/lib/vocabStatus';
+import { DictionaryEntries } from '@/src/features/dictionary/DictionaryEntries';
+import { useDictionaryLookup } from '@/src/features/dictionary/useDictionaryLookup';
 import { cn } from '../../lib/utils';
 
 interface WordDetailsProps {
@@ -16,26 +22,6 @@ interface WordDetailsProps {
   onClose: () => void;
   mode?: 'popup' | 'sidebar';
   isUpdating?: boolean;
-}
-
-interface DictionaryEntry {
-  partOfSpeech: string;
-  phonetic?: string;
-  tags?: string[];
-  definitions: {
-    definition: string;
-    examples?: string[];
-    synonyms?: string[];
-    antonyms?: string[];
-  }[];
-}
-
-interface LookupResult {
-  success: boolean;
-  entries: DictionaryEntry[];
-  lemma?: string;
-  lemmaEntries: DictionaryEntry[];
-  error?: string;
 }
 
 export function WordDetails({
@@ -51,155 +37,19 @@ export function WordDetails({
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const isSidebar = mode === 'sidebar';
-  const cacheRef = useRef(new Map<string, LookupResult>());
-
-  const lookupAction = useAction(api.dictionaryActions.lookupDefinition);
-
-  const [entries, setEntries] = useState<DictionaryEntry[] | null>(null);
-  const [lemma, setLemma] = useState<string | undefined>();
-  const [lemmaEntries, setLemmaEntries] = useState<DictionaryEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasLookupError, setHasLookupError] = useState(false);
-  const [lookupNonce, setLookupNonce] = useState(0);
-
-  const lookupKey = useMemo(() => `${language}:${normalized.toLowerCase()}`, [language, normalized]);
-
-  useEffect(() => {
-    setEntries(null);
-    setLemma(undefined);
-    setLemmaEntries([]);
-    setIsLoading(false);
-    setHasLookupError(false);
-  }, [lookupKey]);
-
-  useEffect(() => {
-    if (entries !== null) return;
-
-    const cached = cacheRef.current.get(lookupKey);
-    if (cached) {
-      setEntries(cached.entries);
-      setLemma(cached.lemma);
-      setLemmaEntries(cached.lemmaEntries);
-      setHasLookupError(!cached.success);
-      return;
-    }
-
-    const fetchDefinition = async () => {
-      setIsLoading(true);
-      setHasLookupError(false);
-      try {
-        const result = (await lookupAction({ language, term: normalized })) as LookupResult;
-        cacheRef.current.set(lookupKey, result);
-        if (result.success) {
-          setEntries(result.entries);
-          setLemma(result.lemma);
-          setLemmaEntries(result.lemmaEntries);
-        } else {
-          setHasLookupError(true);
-        }
-      } catch (error) {
-        setHasLookupError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDefinition();
-  }, [entries, language, normalized, lookupAction, lookupKey, lookupNonce]);
-
-  const handleRetry = () => {
-    cacheRef.current.delete(lookupKey);
-    setEntries(null);
-    setHasLookupError(false);
-    setLookupNonce((prev) => prev + 1);
-  };
-
-  const statusOptions = [
-    {
-      value: 0,
-      label: 'New',
-      desc: 'Never seen',
-      icon: 'sparkles-outline',
-      activeIcon: 'sparkles',
-      color: colors['--vUnknownLine'],
-      bg: 'bg-vUnknownBg/50', // Subtle background from theme
-      activeBg: 'bg-vUnknownLine/15',
-      border: 'border-vUnknownLine/30',
-    },
-    {
-      value: 1,
-      label: 'Learning',
-      desc: 'Recognize',
-      icon: 'book-outline',
-      activeIcon: 'book',
-      color: colors['--vLearningLine'],
-      bg: 'bg-vLearningBg/50',
-      activeBg: 'bg-vLearningLine/15',
-      border: 'border-vLearningLine/30',
-    },
-    {
-      value: 3,
-      label: 'Familiar',
-      desc: 'Almost known',
-      icon: 'star-outline',
-      activeIcon: 'star',
-      color: colors['--vFamiliarLine'],
-      bg: 'bg-vFamiliarBg/50',
-      activeBg: 'bg-vFamiliarLine/15',
-      border: 'border-vFamiliarLine/30',
-    },
-    {
-      value: 4,
-      label: 'Known',
-      desc: 'Mastered',
-      icon: 'checkmark-circle-outline',
-      activeIcon: 'checkmark-circle',
-      color: colors['--vKnownLine'], // Or customize if we want "Ink" style, but Green is standard for Known
-      bg: 'bg-vKnownBg/50',
-      activeBg: 'bg-vKnownLine/15',
-      border: 'border-vKnownLine/30',
-    },
-  ];
+  const {
+    entries,
+    lemma,
+    lemmaEntries,
+    isLoading,
+    hasError: hasLookupError,
+    hasResults,
+    retry,
+  } = useDictionaryLookup({ language, term: normalized, enabled: Boolean(normalized) });
 
   const containerStyle = isSidebar
     ? "flex-1 bg-panel border-l border-border/70"
     : "w-full min-h-[70%] max-h-[85%] bg-panel shadow-pop border-t border-border/70 overflow-auto rounded-t-3xl";
-
-  const renderEntry = (entry: DictionaryEntry, keyPrefix: string) => (
-    <View key={`${keyPrefix}-${JSON.stringify(entry)}`} className="mb-4 last:mb-0">
-      <View className="flex-row items-center flex-wrap gap-2 mb-2">
-        <Text className="text-xs font-sans-semibold text-brand bg-brandSoft px-2 py-0.5 rounded">
-          {entry.partOfSpeech}
-        </Text>
-        {entry.phonetic && (
-          <Text className="text-xs text-faint font-mono">
-            {entry.phonetic}
-          </Text>
-        )}
-        {entry.tags?.map((tag) => (
-          <Text key={tag} className="text-xs text-faint bg-muted px-2 py-0.5 rounded font-sans-medium">
-            {tag}
-          </Text>
-        ))}
-      </View>
-      {entry.definitions.map((def, defIndex) => (
-        <View key={defIndex} className="mb-3 last:mb-0">
-          <Text className="text-sm text-ink leading-5 font-sans-medium">
-            {defIndex + 1}. {def.definition}
-          </Text>
-          {def.examples && def.examples.length > 0 && (
-            <View className="mt-1 ml-4">
-              {def.examples.map((example, exIndex) => (
-                <Text key={exIndex} className="text-xs text-faint italic leading-5 font-sans-medium">
-                  &quot;{example}&quot;
-                </Text>
-              ))}
-            </View>
-          )}
-        </View>
-      ))}
-    </View>
-  );
 
   const renderDictionaryContent = () => {
     if (isLoading) {
@@ -214,7 +64,7 @@ export function WordDetails({
     if (hasLookupError) {
       return (
         <Pressable
-          onPress={handleRetry}
+          onPress={retry}
           className="px-6 py-4 bg-canvas/60 border-y border-border/40 active:bg-muted/70"
         >
           <View className="flex-row items-center mb-2 opacity-50">
@@ -230,7 +80,7 @@ export function WordDetails({
       );
     }
 
-    if ((!entries || entries.length === 0) && lemmaEntries.length === 0) {
+    if (!hasResults) {
       return (
         <View className="px-6 py-4 bg-canvas/60 border-y border-border/40">
           <View className="flex-row items-center mb-2 opacity-50">
@@ -255,19 +105,14 @@ export function WordDetails({
           </Text>
         </View>
 
-        {entries && entries.length > 0 && renderEntry(entries[0], 'main')}
-
-        {lemma && lemmaEntries.length > 0 && (
-          <View className="mt-4 pt-4 border-t border-border/30">
-            <View className="flex-row items-center gap-2 mb-3">
-              <Ionicons name="git-branch-outline" size={14} color={colors['--brand']} />
-              <Text className="text-xs font-sans-semibold text-brand">
-                Base form: {lemma}
-              </Text>
-            </View>
-            {lemmaEntries.map((entry, idx) => renderEntry(entry, `lemma-${idx}`))}
-          </View>
-        )}
+        <DictionaryEntries
+          entries={entries}
+          lemma={lemma}
+          lemmaEntries={lemmaEntries}
+          maxEntries={1}
+          showExamples
+          showTags
+        />
       </View>
     );
   };
@@ -332,11 +177,12 @@ export function WordDetails({
             isSidebar ? 'flex-col' : 'flex-row'
           )}
         >
-          {statusOptions.map((opt) => {
-            const isActive = currentStatus === opt.value;
-            // Use specialized active background or default muted
-            const bgClass = isActive ? opt.activeBg : 'bg-muted/30';
-            const borderClass = isActive ? opt.border : 'border-transparent';
+          {STATUS_OPTIONS.map((opt) => {
+            const isActive = getStatusGroup(currentStatus) === opt.group;
+            const theme = getStatusTheme(opt.value);
+            const color = getStatusColor(opt.value, colors);
+            const bgClass = isActive ? theme.activeBgClass : 'bg-muted/30';
+            const borderClass = isActive ? theme.borderClass : 'border-transparent';
             const textClass = isActive ? 'text-ink' : 'text-subink';
 
             return (
@@ -362,7 +208,7 @@ export function WordDetails({
                     <Ionicons
                       name={(isActive ? opt.activeIcon : opt.icon) as any}
                       size={18}
-                      color={isActive ? opt.color : colors['--faint']}
+                      color={isActive ? color : colors['--faint']}
                     />
                   </View>
                   <View className="flex-1">
@@ -371,7 +217,7 @@ export function WordDetails({
                         'text-sm font-sans-bold leading-tight',
                         textClass
                       )}
-                      style={isActive ? { color: opt.color } : undefined}
+                      style={isActive ? { color } : undefined}
                     >
                       {opt.label}
                     </Text>
@@ -381,7 +227,7 @@ export function WordDetails({
                   </View>
 
                   {isActive && (
-                    <View className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: opt.color }} />
+                    <View className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
                   )}
                 </View>
               </Pressable>

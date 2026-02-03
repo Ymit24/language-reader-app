@@ -1,8 +1,9 @@
 import React, { memo } from 'react';
 import { Text, View } from 'react-native';
 import { cn } from '../../lib/utils';
+import type { VocabStatusGroup } from '@/src/lib/vocabStatus';
 
-export type TokenStatus = 'new' | 'learning' | 'familiar' | 'known';
+export type TokenStatus = VocabStatusGroup;
 
 interface TokenProps {
   surface: string;

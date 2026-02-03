@@ -2,7 +2,8 @@ import React, { memo } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Id } from '../../../convex/_generated/dataModel';
-import { StatusBadge, VocabStatus } from './StatusBadge';
+import { StatusBadge } from './StatusBadge';
+import type { VocabStatus } from '@/src/lib/vocabStatus';
 import { cn } from '../../lib/utils';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
@@ -54,7 +55,7 @@ export const VocabRow = memo(function VocabRow({
         )}
       >
         {isSelected && (
-          <Ionicons name="checkmark" size={16} color="#fff" />
+          <Ionicons name="checkmark" size={16} color={colors['--panel']} />
         )}
       </Pressable>
 
