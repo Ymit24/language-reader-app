@@ -358,10 +358,10 @@ export function VocabDetailPanel({
       <View className="p-6 border-t border-border/50">
         <Pressable
           onPress={handleDelete}
-          className="flex-row items-center justify-center py-3 rounded-lg border border-error/30 bg-error/5 active:bg-error/10"
+          className="flex-row items-center justify-center py-3 rounded-lg border border-danger/40 bg-dangerSoft active:bg-danger/15"
         >
           <Ionicons name="trash-outline" size={18} color={colors['--danger']} />
-          <Text className="ml-2 text-sm font-sans-semibold text-error">
+          <Text className="ml-2 text-sm font-sans-semibold text-danger">
             Delete Word
           </Text>
         </Pressable>
