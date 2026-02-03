@@ -294,9 +294,22 @@ export function FlashCard({
 
         <Pressable
           onPress={handleFlip}
+          focusable={false}
+          accessibilityRole="button"
+          importantForAccessibility="no"
+          {...({ tabIndex: -1 } as any)}
+          onFocus={(event) => {
+            const target = (event as any)?.target;
+            if (target && typeof target.blur === 'function') {
+              target.blur();
+            }
+          }}
           style={{
             flex: 1,
             perspective: 1000,
+            outlineStyle: 'none',
+            outlineWidth: 0,
+            boxShadow: 'none',
           } as any}
         >
           {/* Front of card */}
