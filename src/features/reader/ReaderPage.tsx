@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, InteractionManager, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
+import { getStatusGroup } from '@/src/lib/vocabStatus';
 import { measureInWindow, Rect } from '../../lib/measureElement';
 import { SelectionPanel } from './SelectionPanel';
 import { Token, TokenStatus } from './Token';
@@ -48,16 +49,9 @@ const ReaderToken = React.memo(({
   if (isWord && token.normalized) {
     const vocabStatus = vocabMap[token.normalized];
     if (vocabStatus !== undefined) {
-      if (vocabStatus === 4) {
-        status = 'known';
-      } else if (vocabStatus === 3) {
-        status = 'familiar';
+      status = getStatusGroup(vocabStatus);
+      if (vocabStatus >= 1 && vocabStatus <= 3) {
         learningLevel = vocabStatus;
-      } else if (vocabStatus >= 1 && vocabStatus <= 2) {
-        status = 'learning';
-        learningLevel = vocabStatus;
-      } else {
-        status = 'new';
       }
     }
   }

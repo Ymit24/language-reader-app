@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Pressable, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAction } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -17,6 +15,8 @@ import {
 } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
+import { useDictionaryLookup } from '@/src/features/dictionary/useDictionaryLookup';
+import { LANGUAGE_LABELS } from '@/src/lib/languages';
 
 interface FlashCardProps {
   word: string;
@@ -27,26 +27,6 @@ interface FlashCardProps {
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
   isInteractive?: boolean;
-}
-
-interface DictionaryEntry {
-  partOfSpeech: string;
-  phonetic?: string;
-  tags?: string[];
-  definitions: {
-    definition: string;
-    examples?: string[];
-    synonyms?: string[];
-    antonyms?: string[];
-  }[];
-}
-
-interface LookupResult {
-  success: boolean;
-  entries: DictionaryEntry[];
-  lemma?: string;
-  lemmaEntries: DictionaryEntry[];
-  error?: string;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -64,63 +44,30 @@ export function FlashCard({
 }: FlashCardProps) {
   const { colors } = useAppTheme();
   const [isFlipped, setIsFlipped] = useState(false);
-  const [lookupResult, setLookupResult] = useState<LookupResult | null>(null);
-  const [isLookingUp, setIsLookingUp] = useState(false);
-  const [hasLookupError, setHasLookupError] = useState(false);
   const flipProgress = useSharedValue(0);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const cardScale = useSharedValue(1);
-  const cacheRef = useRef(new Map<string, LookupResult>());
-  const lookupAction = useAction(api.dictionaryActions.lookupDefinition);
 
   const lookupKey = useMemo(
     () => `${language}:${word.toLowerCase()}`,
     [language, word]
   );
+  const {
+    entries,
+    lemma,
+    lemmaEntries,
+    isLoading: isLookingUp,
+    hasError: hasLookupError,
+  } = useDictionaryLookup({ language, term: word, enabled: isFlipped });
 
   useEffect(() => {
-    setLookupResult(null);
-    setIsLookingUp(false);
-    setHasLookupError(false);
     setIsFlipped(false);
     flipProgress.value = 0;
     translateX.value = 0;
     translateY.value = 0;
     cardScale.value = 1;
   }, [lookupKey]);
-
-  useEffect(() => {
-    if (!isFlipped || lookupResult !== null || isLookingUp || !word) return;
-
-    const cached = cacheRef.current.get(lookupKey);
-    if (cached) {
-      setLookupResult(cached);
-      setHasLookupError(!cached.success);
-      return;
-    }
-
-    const fetchDefinition = async () => {
-      setIsLookingUp(true);
-      setHasLookupError(false);
-      try {
-        const result = (await lookupAction({
-          language,
-          term: word,
-        })) as LookupResult;
-        cacheRef.current.set(lookupKey, result);
-        setLookupResult(result);
-        setHasLookupError(!result.success);
-      } catch (_error) {
-        setLookupResult({ success: false, entries: [], lemmaEntries: [] });
-        setHasLookupError(true);
-      } finally {
-        setIsLookingUp(false);
-      }
-    };
-
-    fetchDefinition();
-  }, [isFlipped, lookupResult, isLookingUp, lookupKey, lookupAction, language, word]);
 
   const handleFlip = () => {
     if (!isInteractive) return;
@@ -222,19 +169,11 @@ export function FlashCard({
     ja: '#d2a39b',
   };
 
-  const languageLabels: Record<string, string> = {
-    de: 'German',
-    fr: 'French',
-    ja: 'Japanese',
-  };
-
   const accentColor = languageColors[language] || languageColors.fr;
-  const languageLabel = languageLabels[language] || 'Language';
-  const primaryDefinition =
-    lookupResult?.entries?.[0]?.definitions?.[0]?.definition;
-  const lemmaDefinition =
-    lookupResult?.lemmaEntries?.[0]?.definitions?.[0]?.definition;
-  const baseForm = lookupResult?.lemma;
+  const languageLabel = LANGUAGE_LABELS[language] || 'Language';
+  const primaryDefinition = entries?.[0]?.definitions?.[0]?.definition;
+  const lemmaDefinition = lemmaEntries?.[0]?.definitions?.[0]?.definition;
+  const baseForm = lemma;
   const showBaseForm = Boolean(
     baseForm && baseForm.toLowerCase() !== word.toLowerCase()
   );
@@ -326,7 +265,7 @@ export function FlashCard({
                 borderColor: colors['--border'],
                 borderTopWidth: 2,
                 borderTopColor: accentColor,
-                shadowColor: '#000',
+                shadowColor: colors['--ink'],
                 shadowOffset: { width: 0, height: 8 },
                 shadowOpacity: 0.1,
                 shadowRadius: 24,
@@ -388,7 +327,7 @@ export function FlashCard({
                 borderColor: colors['--border'],
                 borderTopWidth: 2,
                 borderTopColor: accentColor,
-                shadowColor: '#000',
+                shadowColor: colors['--ink'],
                 shadowOffset: { width: 0, height: 8 },
                 shadowOpacity: 0.1,
                 shadowRadius: 24,
