@@ -49,13 +49,11 @@ export default function ReviewSession() {
   const [newTitle, setNewTitle] = useState<string | undefined>();
   const [currentStreak, setCurrentStreak] = useState(0);
 
-  const progressWidth = useSharedValue(0);
+  const progressValue = useSharedValue(0);
 
   const startSession = useMutation(api.review.startReviewSession);
   const gradeCard = useMutation(api.review.gradeCardWithXp);
   const abandonSession = useMutation(api.review.abandonSession);
-  const progress = useQuery(api.progress.getProgress);
-
   // Start session on mount
   useEffect(() => {
     const initSession = async () => {
@@ -74,14 +72,13 @@ export default function ReviewSession() {
   // Update progress bar
   useEffect(() => {
     if (items.length > 0) {
-      progressWidth.value = withTiming((currentIndex / items.length) * 100, {
-        duration: 300,
-      });
+      const ratio = Math.min(1, (currentIndex + 1) / items.length);
+      progressValue.value = withTiming(ratio, { duration: 300 });
     }
   }, [currentIndex, items.length]);
 
   const progressStyle = useAnimatedStyle(() => ({
-    width: `${progressWidth.value}%`,
+    width: `${Math.max(0, progressValue.value) * 100}%`,
   }));
 
   const handleGrade = useCallback(
@@ -208,10 +205,17 @@ export default function ReviewSession() {
 
         {/* Progress */}
         <View className="flex-1 mx-4">
-          <View className="h-2 rounded-full bg-muted overflow-hidden">
+          <View className="h-2 rounded-full bg-muted overflow-hidden w-full max-w-2xl self-center">
             <Animated.View
-              style={progressStyle}
-              className="h-full rounded-full bg-brand"
+              style={[
+                progressStyle,
+                {
+                  height: '100%',
+                  borderRadius: 999,
+                  backgroundColor: colors['--brand'],
+                  alignSelf: 'flex-start',
+                },
+              ]}
             />
           </View>
           <Text className="text-xs text-center text-faint font-sans-medium mt-1">
