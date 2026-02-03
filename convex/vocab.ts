@@ -40,13 +40,6 @@ export const getVocabCounts = query({
       return { new: 0, recognized: 0, learning: 0, familiar: 0, known: 0, total: 0 };
     }
 
-    const vocab = await ctx.db
-      .query("vocab")
-      .withIndex("by_user_language_term", (q) =>
-        q.eq("userId", userId).eq("language", args.language)
-      )
-      .collect();
-
     let newCount = 0;
     let recognizedCount = 0;
     let learningCount = 0;
@@ -56,11 +49,27 @@ export const getVocabCounts = query({
 
     const searchLower = args.search?.toLowerCase().trim();
 
-    for (const v of vocab) {
-      if (searchLower && !v.term.toLowerCase().includes(searchLower) && !(v.display && v.display.toLowerCase().includes(searchLower))) {
-        continue;
-      }
+    // Align counts with list semantics:
+    // - no search: counts are computed over all vocab for the language
+    // - search: counts are computed over the full-text search result set
+    const vocab = searchLower
+      ? await ctx.db
+          .query("vocab")
+          .withSearchIndex("search_term", (q) =>
+            q
+              .search("term", searchLower)
+              .eq("userId", userId)
+              .eq("language", args.language)
+          )
+          .collect()
+      : await ctx.db
+          .query("vocab")
+          .withIndex("by_user_language_term", (q) =>
+            q.eq("userId", userId).eq("language", args.language)
+          )
+          .collect();
 
+    for (const v of vocab) {
       total++;
 
       if (v.status === STATUS_NEW) newCount++;
@@ -98,6 +107,30 @@ export const listVocab = query({
       return { page: [], continueCursor: "", isDone: true };
     }
 
+    const searchLower = args.search?.toLowerCase().trim();
+    if (searchLower && searchLower.length > 0) {
+      // Full-text search is relevance-ordered, so we intentionally ignore sortBy/sortOrder here.
+      const searchQuery = ctx.db.query("vocab").withSearchIndex("search_term", (q) => {
+        let s = q
+          .search("term", searchLower)
+          .eq("userId", userId)
+          .eq("language", args.language);
+
+        // UI only sends a single status today, but handle defensively.
+        if (args.statusFilter && args.statusFilter.length === 1) {
+          s = s.eq("status", args.statusFilter[0]!);
+        }
+        return s;
+      });
+
+      const paginatedResult = await searchQuery.paginate(args.paginationOpts);
+      return {
+        page: paginatedResult.page,
+        continueCursor: paginatedResult.continueCursor,
+        isDone: paginatedResult.isDone,
+      };
+    }
+
     const sortBy = (args.sortBy as SortBy) || "dateAdded";
     const sortOrder = args.sortOrder || "desc";
 
@@ -122,25 +155,22 @@ export const listVocab = query({
     // Apply sort order
     const orderedQuery = sortOrder === "desc" ? query.order("desc") : query.order("asc");
 
-    const paginatedResult = await orderedQuery.paginate(args.paginationOpts);
+    // Apply status filter BEFORE pagination so pages are consistently filled.
+    const filteredQuery =
+      args.statusFilter && args.statusFilter.length > 0
+        ? orderedQuery.filter((q) => {
+            const statuses = args.statusFilter!;
+            const clauses = statuses.map((status) =>
+              q.eq(q.field("status"), status)
+            );
+            return clauses.length === 1 ? clauses[0]! : q.or(...clauses);
+          })
+        : orderedQuery;
 
-    let vocab = paginatedResult.page;
-
-    if (args.search && args.search.trim().length > 0) {
-      const searchLower = args.search.toLowerCase().trim();
-      vocab = vocab.filter(
-        (v) =>
-          v.term.toLowerCase().includes(searchLower) ||
-          (v.display && v.display.toLowerCase().includes(searchLower))
-      );
-    }
-
-    if (args.statusFilter && args.statusFilter.length > 0) {
-      vocab = vocab.filter((v) => args.statusFilter!.includes(v.status));
-    }
+    const paginatedResult = await filteredQuery.paginate(args.paginationOpts);
 
     return {
-      page: vocab,
+      page: paginatedResult.page,
       continueCursor: paginatedResult.continueCursor,
       isDone: paginatedResult.isDone,
     };

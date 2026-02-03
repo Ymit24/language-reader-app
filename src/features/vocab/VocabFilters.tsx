@@ -16,6 +16,7 @@ interface VocabFilterBarProps {
   onSortChange: (sort: SortBy) => void;
   sortOrder: 'asc' | 'desc';
   onSortOrderChange: (order: 'asc' | 'desc') => void;
+  isSearching?: boolean;
   counts?: {
     total: number;
     new: number;
@@ -29,7 +30,9 @@ interface VocabFilterBarProps {
 const STATUS_FILTERS: { status: VocabStatus | null; label: string; countKey: string }[] = [
   { status: null, label: 'All', countKey: 'total' },
   { status: 0, label: 'New', countKey: 'new' },
-  { status: 1, label: 'Learning', countKey: 'learning' },
+  // Status 1 is "recognized" in counts; this pill is intentionally labeled "Learning" (MVP choice),
+  // but the count should match what the filter will show.
+  { status: 1, label: 'Learning', countKey: 'recognized' },
   { status: 3, label: 'Familiar', countKey: 'familiar' },
   { status: 4, label: 'Known', countKey: 'known' },
 ];
@@ -49,6 +52,7 @@ export function VocabFilterBar({
   onSortChange,
   sortOrder,
   onSortOrderChange,
+  isSearching = false,
   counts,
 }: VocabFilterBarProps) {
   const { colors } = useAppTheme();
@@ -74,23 +78,35 @@ export function VocabFilterBar({
 
         {/* Sort dropdown */}
         <Pressable
+          disabled={isSearching}
           onPress={() => {
+            if (isSearching) return;
             const currentIndex = SORT_OPTIONS.findIndex((o) => o.value === sortBy);
             const nextIndex = (currentIndex + 1) % SORT_OPTIONS.length;
             onSortChange(SORT_OPTIONS[nextIndex].value);
           }}
-          className="flex-row items-center bg-panel border border-border/70 rounded-lg px-3 py-2"
+          className={cn(
+            "flex-row items-center bg-panel border border-border/70 rounded-lg px-3 py-2",
+            isSearching && "opacity-50"
+          )}
         >
           <Ionicons name="swap-vertical" size={18} color={colors['--subink']} />
           <Text className="ml-1 text-sm text-subink font-sans-medium">
-            {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
+            {isSearching ? "Relevance" : SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
           </Text>
         </Pressable>
 
         {/* Sort order toggle */}
         <Pressable
-          onPress={() => onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc')}
-          className="bg-panel border border-border/70 rounded-lg p-2"
+          disabled={isSearching}
+          onPress={() => {
+            if (isSearching) return;
+            onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc');
+          }}
+          className={cn(
+            "bg-panel border border-border/70 rounded-lg p-2",
+            isSearching && "opacity-50"
+          )}
         >
           <Ionicons
             name={sortOrder === 'asc' ? 'arrow-up' : 'arrow-down'}
