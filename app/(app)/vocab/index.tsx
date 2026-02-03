@@ -197,6 +197,7 @@ export default function VocabScreen() {
             onSortChange={setSortBy}
             sortOrder={sortOrder}
             onSortOrderChange={setSortOrder}
+            isSearching={debouncedSearch.trim().length > 0}
             counts={vocabCounts ?? undefined}
           />
         </View>
