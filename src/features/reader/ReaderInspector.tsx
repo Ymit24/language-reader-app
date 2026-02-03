@@ -13,7 +13,7 @@ interface ReaderInspectorProps {
   language: 'de' | 'fr' | 'ja';
   currentStatus: number;
   isUpdating: boolean;
-  onUpdateStatus: (status: number) => Promise<void>;
+  onUpdateStatus: (status: number) => void;
   onClose: () => void;
 }
 

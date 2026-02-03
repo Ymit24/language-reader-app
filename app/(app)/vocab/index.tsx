@@ -126,7 +126,7 @@ export default function VocabScreen() {
   useEffect(() => {
     selection.clearSelection();
     setActiveWordId(null);
-  }, [selectedLanguage, selection]);
+  }, [selectedLanguage, selection.clearSelection]);
 
   const isLoading = paginationStatus === 'LoadingFirstPage';
   const isEmpty = !isLoading && vocabList.length === 0;

@@ -1,26 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-
-export interface DictionaryEntry {
-  partOfSpeech: string;
-  phonetic?: string;
-  tags?: string[];
-  definitions: {
-    definition: string;
-    examples?: string[];
-    synonyms?: string[];
-    antonyms?: string[];
-  }[];
-}
-
-export interface LookupResult {
-  success: boolean;
-  entries: DictionaryEntry[];
-  lemma?: string;
-  lemmaEntries: DictionaryEntry[];
-  error?: string;
-}
+import type { DictionaryEntry, LookupResult } from '../types/dictionary';
 
 interface UseDictionaryLookupOptions {
   term: string;
@@ -102,3 +83,6 @@ export function useDictionaryLookup({
     clearLookup,
   };
 }
+
+// Re-export types for convenience
+export type { DictionaryEntry, LookupResult } from '../types/dictionary';
