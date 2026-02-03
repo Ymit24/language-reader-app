@@ -60,14 +60,14 @@ export function VocabFilterBar({
     <View className="gap-3 pb-3">
       {/* Search bar */}
         <View className="flex-row items-center gap-2">
-          <View className="flex-1 flex-row items-center bg-panel border border-border/70 rounded-lg px-3 py-2">
+          <View className="flex-1 flex-row items-center bg-panel border border-border/70 focus-within:border-brand rounded-lg px-3 py-2">
           <Ionicons name="search" size={18} color={colors['--faint']} />
           <TextInput
             value={searchQuery}
             onChangeText={onSearchChange}
             placeholder="Search words..."
             placeholderTextColor={colors['--faint']}
-            className="flex-1 ml-2 text-sm text-ink font-sans-medium"
+            className="flex-1 ml-2 text-sm text-ink font-sans-medium focus:outline-none"
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => onSearchChange('')} hitSlop={8}>

@@ -286,7 +286,7 @@ export function VocabDetailPanel({
             placeholder="Add your own meaning..."
             placeholderTextColor={colors['--faint']}
             multiline
-            className="text-sm text-ink font-sans-medium bg-canvas/80 border border-border/50 rounded-lg p-3 min-h-[60px]"
+            className="text-sm text-ink font-sans-medium bg-canvas/80 border border-border/50 focus:border-brand focus:outline-none rounded-lg p-3 min-h-[60px]"
           />
         </View>
 
@@ -302,7 +302,7 @@ export function VocabDetailPanel({
             placeholder="Add notes, examples, mnemonics..."
             placeholderTextColor={colors['--faint']}
             multiline
-            className="text-sm text-ink font-sans-medium bg-canvas/80 border border-border/50 rounded-lg p-3 min-h-[80px]"
+            className="text-sm text-ink font-sans-medium bg-canvas/80 border border-border/50 focus:border-brand focus:outline-none rounded-lg p-3 min-h-[80px]"
           />
         </View>
 
