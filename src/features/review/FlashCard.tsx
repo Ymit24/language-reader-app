@@ -222,7 +222,14 @@ export function FlashCard({
     ja: '#d2a39b',
   };
 
+  const languageLabels: Record<string, string> = {
+    de: 'German',
+    fr: 'French',
+    ja: 'Japanese',
+  };
+
   const accentColor = languageColors[language] || languageColors.fr;
+  const languageLabel = languageLabels[language] || 'Language';
   const primaryDefinition =
     lookupResult?.entries?.[0]?.definitions?.[0]?.definition;
   const lemmaDefinition =
@@ -241,8 +248,10 @@ export function FlashCard({
           cardContainerStyle,
           {
             width: '100%',
-            aspectRatio: 0.7,
-            maxHeight: 480,
+            maxWidth: 720,
+            alignSelf: 'center',
+            aspectRatio: 0.68,
+            maxHeight: 520,
           },
         ]}
       >
@@ -252,17 +261,17 @@ export function FlashCard({
             leftOverlayStyle,
             {
               position: 'absolute',
-              top: 20,
-              right: 20,
+              top: 18,
+              right: 18,
               zIndex: 10,
               backgroundColor: colors['--danger'],
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              borderRadius: 8,
+              paddingHorizontal: 14,
+              paddingVertical: 6,
+              borderRadius: 999,
             },
           ]}
         >
-          <Text className="text-white font-sans-bold text-lg">Again</Text>
+          <Text className="text-white font-sans-bold text-base">Again</Text>
         </Animated.View>
 
         <Animated.View
@@ -270,17 +279,17 @@ export function FlashCard({
             rightOverlayStyle,
             {
               position: 'absolute',
-              top: 20,
-              left: 20,
+              top: 18,
+              left: 18,
               zIndex: 10,
               backgroundColor: colors['--success'],
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              borderRadius: 8,
+              paddingHorizontal: 14,
+              paddingVertical: 6,
+              borderRadius: 999,
             },
           ]}
         >
-          <Text className="text-white font-sans-bold text-lg">Good</Text>
+          <Text className="text-white font-sans-bold text-base">Good</Text>
         </Animated.View>
 
         <Pressable
@@ -298,11 +307,11 @@ export function FlashCard({
                 position: 'absolute',
                 width: '100%',
                 height: '100%',
-                borderRadius: 24,
+                borderRadius: 28,
                 backgroundColor: colors['--panel'],
                 borderWidth: 1,
                 borderColor: colors['--border'],
-                borderTopWidth: 4,
+                borderTopWidth: 2,
                 borderTopColor: accentColor,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 8 },
@@ -312,19 +321,41 @@ export function FlashCard({
               },
             ]}
           >
-            <View className="flex-1 items-center justify-center p-8">
-              <Text className="text-3xl font-serif-bold text-ink text-center">
-                {word}
-              </Text>
-                {context && (
-                  <Text className="mt-4 text-base text-subink font-sans-medium text-center italic">
-                    &quot;{context}&quot;
+            <View className="flex-1 p-8">
+              <View className="flex-row items-center justify-between">
+                <View
+                  style={{
+                    backgroundColor: `${accentColor}22`,
+                    borderColor: `${accentColor}55`,
+                  }}
+                  className="px-3 py-1 rounded-full border"
+                >
+                  <Text style={{ color: accentColor }} className="text-xs font-sans-semibold tracking-wide">
+                    {languageLabel}
                   </Text>
+                </View>
+                <Text className="text-xs text-faint font-sans-medium uppercase tracking-[0.25em]">
+                  Front
+                </Text>
+              </View>
+
+              <View className="flex-1 items-center justify-center">
+                <Text className="text-4xl font-serif-bold text-ink text-center tracking-tight">
+                  {word}
+                </Text>
+                {context && (
+                  <View className="mt-6 px-4 py-3 rounded-2xl bg-muted/40 border border-border/40">
+                    <Text className="text-sm text-subink font-sans-medium text-center italic leading-relaxed">
+                      &quot;{context}&quot;
+                    </Text>
+                  </View>
                 )}
-              <View className="absolute bottom-8 flex-row items-center gap-2">
+              </View>
+
+              <View className="flex-row items-center justify-center gap-2">
                 <Ionicons name="hand-left-outline" size={16} color={colors['--faint']} />
                 <Text className="text-sm text-faint font-sans-medium">
-                  Tap to reveal
+                  Tap to reveal meaning
                 </Text>
               </View>
             </View>
@@ -338,11 +369,11 @@ export function FlashCard({
                 position: 'absolute',
                 width: '100%',
                 height: '100%',
-                borderRadius: 24,
-                backgroundColor: colors['--canvas'],
+                borderRadius: 28,
+                backgroundColor: colors['--panel'],
                 borderWidth: 1,
                 borderColor: colors['--border'],
-                borderTopWidth: 4,
+                borderTopWidth: 2,
                 borderTopColor: accentColor,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 8 },
@@ -353,16 +384,32 @@ export function FlashCard({
             ]}
           >
             <View className="flex-1 p-8">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-xs text-faint font-sans-medium uppercase tracking-[0.25em]">
+                  Meaning
+                </Text>
+                {showBaseForm && (
+                  <View
+                    style={{
+                      backgroundColor: `${accentColor}22`,
+                      borderColor: `${accentColor}55`,
+                    }}
+                    className="px-2.5 py-1 rounded-full border"
+                  >
+                    <Text style={{ color: accentColor }} className="text-xs font-sans-semibold">
+                      Base: {baseForm}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
               <View className="flex-1 items-center justify-center gap-6">
-                {/* Word */}
                 <Text className="text-2xl font-serif-bold text-ink text-center">
                   {word}
                 </Text>
 
-                {/* Divider */}
-                <View className="w-16 h-0.5 bg-border" />
+                <View className="w-12 h-0.5 bg-border" />
 
-                {/* Definition */}
                 {isLookingUp ? (
                   <View className="items-center gap-2">
                     <ActivityIndicator size="small" color={colors['--faint']} />
@@ -375,33 +422,24 @@ export function FlashCard({
                     Unable to load definition.
                   </Text>
                 ) : definitionText ? (
-                  <View className="items-center">
-                    {showBaseForm && (
-                      <Text className="text-xs text-brand font-sans-semibold mb-2">
-                        Base form: {baseForm}
-                      </Text>
-                    )}
-                    <Text className="text-lg text-ink font-sans-medium text-center leading-relaxed">
-                      {definitionText}
-                    </Text>
-                  </View>
+                  <Text className="text-lg text-ink font-sans-medium text-center leading-relaxed">
+                    {definitionText}
+                  </Text>
                 ) : (
                   <Text className="text-sm text-subink italic font-sans-medium text-center">
                     No definition found.
                   </Text>
                 )}
 
-                {/* Example */}
                 {example && (
-                  <View className="mt-2 px-4 py-3 rounded-xl bg-muted/50">
-                    <Text className="text-sm text-subink font-sans-medium text-center italic">
+                  <View className="mt-2 px-4 py-3 rounded-2xl bg-muted/40 border border-border/40">
+                    <Text className="text-sm text-subink font-sans-medium text-center italic leading-relaxed">
                       &quot;{example}&quot;
                     </Text>
                   </View>
                 )}
               </View>
 
-              {/* Hint */}
               <View className="flex-row items-center justify-center gap-2">
                 <Ionicons name="swap-horizontal" size={16} color={colors['--faint']} />
                 <Text className="text-sm text-faint font-sans-medium">
