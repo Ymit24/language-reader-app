@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.reader-app"
+      "bundleIdentifier": "com.anonymous.reader-app",
+      "deploymentTarget": "16.0"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,6 +30,13 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow access to your photos to scan book pages into lessons.",
+          "cameraPermission": "Allow access to your camera to scan book pages into lessons."
+        }
+      ],
       [
         "expo-splash-screen",
         {
