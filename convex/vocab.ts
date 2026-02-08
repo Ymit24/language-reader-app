@@ -1,7 +1,7 @@
-import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
-import { paginationOptsValidator } from "convex/server";
+import { v } from 'convex/values';
+import { query, mutation } from './_generated/server';
+import { getAuthUserId } from '@convex-dev/auth/server';
+import { paginationOptsValidator } from 'convex/server';
 
 const STATUS_NEW = 0;
 const STATUS_LEARNING_MIN = 1;
@@ -10,7 +10,7 @@ const STATUS_KNOWN = 4;
 
 export const getVocabProfile = query({
   args: {
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -19,9 +19,9 @@ export const getVocabProfile = query({
     }
 
     const vocab = await ctx.db
-      .query("vocab")
-      .withIndex("by_user_language_term", (q) =>
-        q.eq("userId", userId).eq("language", args.language)
+      .query('vocab')
+      .withIndex('by_user_language_term', (q) =>
+        q.eq('userId', userId).eq('language', args.language),
       )
       .collect();
 
@@ -31,13 +31,20 @@ export const getVocabProfile = query({
 
 export const getVocabCounts = query({
   args: {
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
     search: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      return { new: 0, recognized: 0, learning: 0, familiar: 0, known: 0, total: 0 };
+      return {
+        new: 0,
+        recognized: 0,
+        learning: 0,
+        familiar: 0,
+        known: 0,
+        total: 0,
+      };
     }
 
     let newCount = 0;
@@ -54,18 +61,18 @@ export const getVocabCounts = query({
     // - search: counts are computed over the full-text search result set
     const vocab = searchLower
       ? await ctx.db
-          .query("vocab")
-          .withSearchIndex("search_term", (q) =>
+          .query('vocab')
+          .withSearchIndex('search_term', (q) =>
             q
-              .search("term", searchLower)
-              .eq("userId", userId)
-              .eq("language", args.language)
+              .search('term', searchLower)
+              .eq('userId', userId)
+              .eq('language', args.language),
           )
           .collect()
       : await ctx.db
-          .query("vocab")
-          .withIndex("by_user_language_term", (q) =>
-            q.eq("userId", userId).eq("language", args.language)
+          .query('vocab')
+          .withIndex('by_user_language_term', (q) =>
+            q.eq('userId', userId).eq('language', args.language),
           )
           .collect();
 
@@ -94,34 +101,36 @@ type SortBy = 'dateAdded' | 'alphabetical' | 'status';
 
 export const listVocab = query({
   args: {
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
     search: v.optional(v.string()),
     statusFilter: v.optional(v.array(v.number())),
     sortBy: v.optional(v.string()),
-    sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
+    sortOrder: v.optional(v.union(v.literal('asc'), v.literal('desc'))),
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      return { page: [], continueCursor: "", isDone: true };
+      return { page: [], continueCursor: '', isDone: true };
     }
 
     const searchLower = args.search?.toLowerCase().trim();
     if (searchLower && searchLower.length > 0) {
       // Full-text search is relevance-ordered, so we intentionally ignore sortBy/sortOrder here.
-      const searchQuery = ctx.db.query("vocab").withSearchIndex("search_term", (q) => {
-        let s = q
-          .search("term", searchLower)
-          .eq("userId", userId)
-          .eq("language", args.language);
+      const searchQuery = ctx.db
+        .query('vocab')
+        .withSearchIndex('search_term', (q) => {
+          let s = q
+            .search('term', searchLower)
+            .eq('userId', userId)
+            .eq('language', args.language);
 
-        // UI only sends a single status today, but handle defensively.
-        if (args.statusFilter && args.statusFilter.length === 1) {
-          s = s.eq("status", args.statusFilter[0]!);
-        }
-        return s;
-      });
+          // UI only sends a single status today, but handle defensively.
+          if (args.statusFilter && args.statusFilter.length === 1) {
+            s = s.eq('status', args.statusFilter[0]!);
+          }
+          return s;
+        });
 
       const paginatedResult = await searchQuery.paginate(args.paginationOpts);
       return {
@@ -131,29 +140,36 @@ export const listVocab = query({
       };
     }
 
-    const sortBy = (args.sortBy as SortBy) || "dateAdded";
-    const sortOrder = args.sortOrder || "desc";
+    const sortBy = (args.sortBy as SortBy) || 'dateAdded';
+    const sortOrder = args.sortOrder || 'desc';
 
     let query;
 
     // Select index based on sort
-    if (sortBy === "alphabetical") {
-      query = ctx.db.query("vocab").withIndex("by_user_language_term", (q) =>
-        q.eq("userId", userId).eq("language", args.language)
-      );
-    } else if (sortBy === "status") {
-      query = ctx.db.query("vocab").withIndex("by_user_language_status", (q) =>
-        q.eq("userId", userId).eq("language", args.language)
-      );
+    if (sortBy === 'alphabetical') {
+      query = ctx.db
+        .query('vocab')
+        .withIndex('by_user_language_term', (q) =>
+          q.eq('userId', userId).eq('language', args.language),
+        );
+    } else if (sortBy === 'status') {
+      query = ctx.db
+        .query('vocab')
+        .withIndex('by_user_language_status', (q) =>
+          q.eq('userId', userId).eq('language', args.language),
+        );
     } else {
       // Default to dateAdded
-      query = ctx.db.query("vocab").withIndex("by_user_language_createdAt", (q) =>
-        q.eq("userId", userId).eq("language", args.language)
-      );
+      query = ctx.db
+        .query('vocab')
+        .withIndex('by_user_language_createdAt', (q) =>
+          q.eq('userId', userId).eq('language', args.language),
+        );
     }
 
     // Apply sort order
-    const orderedQuery = sortOrder === "desc" ? query.order("desc") : query.order("asc");
+    const orderedQuery =
+      sortOrder === 'desc' ? query.order('desc') : query.order('asc');
 
     // Apply status filter BEFORE pagination so pages are consistently filled.
     const filteredQuery =
@@ -161,7 +177,7 @@ export const listVocab = query({
         ? orderedQuery.filter((q) => {
             const statuses = args.statusFilter!;
             const clauses = statuses.map((status) =>
-              q.eq(q.field("status"), status)
+              q.eq(q.field('status'), status),
             );
             return clauses.length === 1 ? clauses[0]! : q.or(...clauses);
           })
@@ -179,25 +195,22 @@ export const listVocab = query({
 
 export const updateVocabStatus = mutation({
   args: {
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
     term: v.string(),
     status: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const { language, term, status } = args;
 
     const existing = await ctx.db
-      .query("vocab")
-      .withIndex("by_user_language_term", (q) =>
-        q
-          .eq("userId", userId)
-          .eq("language", language)
-          .eq("term", term)
+      .query('vocab')
+      .withIndex('by_user_language_term', (q) =>
+        q.eq('userId', userId).eq('language', language).eq('term', term),
       )
       .first();
 
@@ -218,7 +231,7 @@ export const updateVocabStatus = mutation({
     if (existing) {
       await ctx.db.patch(existing._id, updateFields);
     } else {
-      await ctx.db.insert("vocab", {
+      await ctx.db.insert('vocab', {
         userId,
         language,
         term,
@@ -238,20 +251,20 @@ export const updateVocabStatus = mutation({
 
 export const markWordsAsKnown = mutation({
   args: {
-    lessonId: v.id("lessons"),
+    lessonId: v.id('lessons'),
     wordTerms: v.array(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const { lessonId, wordTerms } = args;
 
     const lesson = await ctx.db.get(lessonId);
     if (!lesson || lesson.userId !== userId) {
-      throw new Error("Lesson not found or unauthorized");
+      throw new Error('Lesson not found or unauthorized');
     }
 
     const now = Date.now();
@@ -259,12 +272,12 @@ export const markWordsAsKnown = mutation({
 
     for (const term of wordTerms) {
       const existing = await ctx.db
-        .query("vocab")
-        .withIndex("by_user_language_term", (q) =>
+        .query('vocab')
+        .withIndex('by_user_language_term', (q) =>
           q
-            .eq("userId", userId)
-            .eq("language", lesson.language)
-            .eq("term", term)
+            .eq('userId', userId)
+            .eq('language', lesson.language)
+            .eq('term', term),
         )
         .first();
 
@@ -274,7 +287,7 @@ export const markWordsAsKnown = mutation({
           updatedAt: now,
         });
       } else {
-        await ctx.db.insert("vocab", {
+        await ctx.db.insert('vocab', {
           userId,
           language: lesson.language,
           term,
@@ -290,20 +303,20 @@ export const markWordsAsKnown = mutation({
 
 export const markRemainingWordsAsKnown = mutation({
   args: {
-    lessonId: v.id("lessons"),
+    lessonId: v.id('lessons'),
     keepUnknownTerms: v.array(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const { lessonId, keepUnknownTerms } = args;
 
     const lesson = await ctx.db.get(lessonId);
     if (!lesson || lesson.userId !== userId) {
-      throw new Error("Lesson not found or unauthorized");
+      throw new Error('Lesson not found or unauthorized');
     }
 
     const keepSet = new Set(keepUnknownTerms);
@@ -311,8 +324,8 @@ export const markRemainingWordsAsKnown = mutation({
     const knownStatus = STATUS_KNOWN;
 
     const tokens = await ctx.db
-      .query("lessonTokens")
-      .withIndex("by_lesson_index", (q) => q.eq("lessonId", lessonId))
+      .query('lessonTokens')
+      .withIndex('by_lesson_index', (q) => q.eq('lessonId', lessonId))
       .collect();
 
     const uniqueUnknownTerms = new Map<string, string>();
@@ -326,24 +339,28 @@ export const markRemainingWordsAsKnown = mutation({
 
     for (const term of uniqueUnknownTerms.keys()) {
       const existing = await ctx.db
-        .query("vocab")
-        .withIndex("by_user_language_term", (q) =>
+        .query('vocab')
+        .withIndex('by_user_language_term', (q) =>
           q
-            .eq("userId", userId)
-            .eq("language", lesson.language)
-            .eq("term", term)
+            .eq('userId', userId)
+            .eq('language', lesson.language)
+            .eq('term', term),
         )
         .first();
 
       const currentStatus = existing?.status ?? STATUS_NEW;
-      if (currentStatus === STATUS_NEW || (currentStatus >= STATUS_LEARNING_MIN && currentStatus <= STATUS_LEARNING_MAX)) {
+      if (
+        currentStatus === STATUS_NEW ||
+        (currentStatus >= STATUS_LEARNING_MIN &&
+          currentStatus <= STATUS_LEARNING_MAX)
+      ) {
         if (existing) {
           await ctx.db.patch(existing._id, {
             status: knownStatus,
             updatedAt: now,
           });
         } else {
-          await ctx.db.insert("vocab", {
+          await ctx.db.insert('vocab', {
             userId,
             language: lesson.language,
             term,
@@ -360,27 +377,25 @@ export const markRemainingWordsAsKnown = mutation({
 
 export const bulkUpdateStatus = mutation({
   args: {
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
     terms: v.array(v.string()),
     status: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const now = Date.now();
-    const isLearningStatus = args.status >= STATUS_LEARNING_MIN && args.status <= STATUS_LEARNING_MAX;
+    const isLearningStatus =
+      args.status >= STATUS_LEARNING_MIN && args.status <= STATUS_LEARNING_MAX;
 
     for (const term of args.terms) {
       const existing = await ctx.db
-        .query("vocab")
-        .withIndex("by_user_language_term", (q) =>
-          q
-            .eq("userId", userId)
-            .eq("language", args.language)
-            .eq("term", term)
+        .query('vocab')
+        .withIndex('by_user_language_term', (q) =>
+          q.eq('userId', userId).eq('language', args.language).eq('term', term),
         )
         .first();
 
@@ -398,7 +413,7 @@ export const bulkUpdateStatus = mutation({
 
         await ctx.db.patch(existing._id, updateFields);
       } else {
-        await ctx.db.insert("vocab", {
+        await ctx.db.insert('vocab', {
           userId,
           language: args.language,
           term,
@@ -419,19 +434,19 @@ export const bulkUpdateStatus = mutation({
 
 export const updateVocabMeta = mutation({
   args: {
-    termId: v.id("vocab"),
+    termId: v.id('vocab'),
     meaning: v.optional(v.string()),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const existing = await ctx.db.get(args.termId);
     if (!existing || existing.userId !== userId) {
-      throw new Error("Vocab entry not found or unauthorized");
+      throw new Error('Vocab entry not found or unauthorized');
     }
 
     const updateFields: Record<string, any> = {
@@ -451,16 +466,16 @@ export const updateVocabMeta = mutation({
 });
 
 export const deleteVocab = mutation({
-  args: { termId: v.id("vocab") },
+  args: { termId: v.id('vocab') },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const existing = await ctx.db.get(args.termId);
     if (!existing || existing.userId !== userId) {
-      throw new Error("Vocab entry not found or unauthorized");
+      throw new Error('Vocab entry not found or unauthorized');
     }
 
     await ctx.db.delete(args.termId);
@@ -469,12 +484,12 @@ export const deleteVocab = mutation({
 
 export const bulkDelete = mutation({
   args: {
-    termIds: v.array(v.id("vocab")),
+    termIds: v.array(v.id('vocab')),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     for (const termId of args.termIds) {
@@ -488,17 +503,18 @@ export const bulkDelete = mutation({
 
 export const bulkUpdateStatusById = mutation({
   args: {
-    termIds: v.array(v.id("vocab")),
+    termIds: v.array(v.id('vocab')),
     status: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const now = Date.now();
-    const isLearningStatus = args.status >= STATUS_LEARNING_MIN && args.status <= STATUS_LEARNING_MAX;
+    const isLearningStatus =
+      args.status >= STATUS_LEARNING_MIN && args.status <= STATUS_LEARNING_MAX;
 
     for (const termId of args.termIds) {
       const existing = await ctx.db.get(termId);
@@ -529,13 +545,13 @@ export const migrateIgnoredToNew = mutation({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const ignoredWords = await ctx.db
-      .query("vocab")
-      .withIndex("by_user_language_status", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("status"), 99))
+      .query('vocab')
+      .withIndex('by_user_language_status', (q) => q.eq('userId', userId))
+      .filter((q) => q.eq(q.field('status'), 99))
       .collect();
 
     for (const word of ignoredWords) {

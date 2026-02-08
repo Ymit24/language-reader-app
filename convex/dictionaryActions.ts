@@ -1,5 +1,5 @@
-import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { v } from 'convex/values';
+import { action } from './_generated/server';
 
 export type DictionaryEntry = {
   partOfSpeech: string;
@@ -23,7 +23,7 @@ type LookupResult = {
 
 export const lookupDefinition = action({
   args: {
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
     term: v.string(),
   },
   handler: async (_ctx, args): Promise<LookupResult> => {
@@ -43,32 +43,41 @@ export const lookupDefinition = action({
 
       const data = await response.json();
 
-      const entries: DictionaryEntry[] = (data.entries || []).map((entry: any) => ({
-        partOfSpeech: entry.pos || "unknown",
-        phonetic: entry.ipa?.[0],
-        tags: entry.tags,
-        definitions: (entry.senses || []).map((sense: any) => ({
-          definition: (sense.glosses || []).join(" - ") || "",
-          examples: sense.examples,
-        })),
-      }));
+      const entries: DictionaryEntry[] = (data.entries || []).map(
+        (entry: any) => ({
+          partOfSpeech: entry.pos || 'unknown',
+          phonetic: entry.ipa?.[0],
+          tags: entry.tags,
+          definitions: (entry.senses || []).map((sense: any) => ({
+            definition: (sense.glosses || []).join(' - ') || '',
+            examples: sense.examples,
+          })),
+        }),
+      );
 
-      const lemmaEntries: DictionaryEntry[] = (data.lemmaEntries || []).map((entry: any) => ({
-        partOfSpeech: entry.pos || "unknown",
-        phonetic: entry.ipa?.[0],
-        tags: entry.tags,
-        definitions: (entry.senses || []).map((sense: any) => ({
-          definition: (sense.glosses || []).join(" - ") || "",
-          examples: sense.examples,
-        })),
-      }));
+      const lemmaEntries: DictionaryEntry[] = (data.lemmaEntries || []).map(
+        (entry: any) => ({
+          partOfSpeech: entry.pos || 'unknown',
+          phonetic: entry.ipa?.[0],
+          tags: entry.tags,
+          definitions: (entry.senses || []).map((sense: any) => ({
+            definition: (sense.glosses || []).join(' - ') || '',
+            examples: sense.examples,
+          })),
+        }),
+      );
 
       const lemma = data.lemmas?.[0];
 
       return { success: true, entries, lemma, lemmaEntries };
     } catch (error) {
-      console.error("Dictionary lookup failed:", error);
-      return { success: false, entries: [], lemmaEntries: [], error: String(error) };
+      console.error('Dictionary lookup failed:', error);
+      return {
+        success: false,
+        entries: [],
+        lemmaEntries: [],
+        error: String(error),
+      };
     }
   },
 });

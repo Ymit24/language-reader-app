@@ -27,7 +27,11 @@ interface VocabFilterBarProps {
   };
 }
 
-const STATUS_FILTERS: { status: VocabStatus | null; label: string; countKey: string }[] = [
+const STATUS_FILTERS: {
+  status: VocabStatus | null;
+  label: string;
+  countKey: string;
+}[] = [
   { status: null, label: 'All', countKey: 'total' },
   { status: 0, label: 'New', countKey: 'new' },
   // Status 1 is "recognized" in counts; this pill is intentionally labeled "Learning" (MVP choice),
@@ -59,19 +63,23 @@ export function VocabFilterBar({
   return (
     <View className="gap-3 pb-3">
       {/* Search bar */}
-        <View className="flex-row items-center gap-2">
-          <View className="flex-1 flex-row items-center bg-panel border border-border/70 rounded-lg px-3 py-2">
+      <View className="flex-row items-center gap-2">
+        <View className="flex-1 flex-row items-center rounded-lg border border-border/70 bg-panel px-3 py-2">
           <Ionicons name="search" size={18} color={colors['--faint']} />
           <TextInput
             value={searchQuery}
             onChangeText={onSearchChange}
             placeholder="Search words..."
             placeholderTextColor={colors['--faint']}
-            className="flex-1 ml-2 text-sm text-ink font-sans-medium"
+            className="ml-2 flex-1 font-sans-medium text-sm text-ink"
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => onSearchChange('')} hitSlop={8}>
-              <Ionicons name="close-circle" size={18} color={colors['--faint']} />
+              <Ionicons
+                name="close-circle"
+                size={18}
+                color={colors['--faint']}
+              />
             </Pressable>
           )}
         </View>
@@ -81,18 +89,22 @@ export function VocabFilterBar({
           disabled={isSearching}
           onPress={() => {
             if (isSearching) return;
-            const currentIndex = SORT_OPTIONS.findIndex((o) => o.value === sortBy);
+            const currentIndex = SORT_OPTIONS.findIndex(
+              (o) => o.value === sortBy,
+            );
             const nextIndex = (currentIndex + 1) % SORT_OPTIONS.length;
             onSortChange(SORT_OPTIONS[nextIndex].value);
           }}
           className={cn(
-            "flex-row items-center bg-panel border border-border/70 rounded-lg px-3 py-2",
-            isSearching && "opacity-50"
+            'flex-row items-center rounded-lg border border-border/70 bg-panel px-3 py-2',
+            isSearching && 'opacity-50',
           )}
         >
           <Ionicons name="swap-vertical" size={18} color={colors['--subink']} />
-          <Text className="ml-1 text-sm text-subink font-sans-medium">
-            {isSearching ? "Relevance" : SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
+          <Text className="ml-1 font-sans-medium text-sm text-subink">
+            {isSearching
+              ? 'Relevance'
+              : SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
           </Text>
         </Pressable>
 
@@ -104,8 +116,8 @@ export function VocabFilterBar({
             onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc');
           }}
           className={cn(
-            "bg-panel border border-border/70 rounded-lg p-2",
-            isSearching && "opacity-50"
+            'rounded-lg border border-border/70 bg-panel p-2',
+            isSearching && 'opacity-50',
           )}
         >
           <Ionicons
@@ -130,24 +142,24 @@ export function VocabFilterBar({
               key={filter.label}
               onPress={() => onStatusFilterChange(filter.status)}
               className={cn(
-                'flex-row items-center px-3 py-1.5 rounded-full border',
+                'flex-row items-center rounded-full border px-3 py-1.5',
                 isActive
-                  ? 'bg-brand border-brand'
-                  : 'bg-panel border-border/70'
+                  ? 'border-brand bg-brand'
+                  : 'border-border/70 bg-panel',
               )}
             >
               <Text
                 className={cn(
-                  'text-sm font-sans-semibold',
-                  isActive ? 'text-white' : 'text-subink'
+                  'font-sans-semibold text-sm',
+                  isActive ? 'text-white' : 'text-subink',
                 )}
               >
                 {filter.label}
               </Text>
               <Text
                 className={cn(
-                  'ml-1.5 text-xs font-sans-medium',
-                  isActive ? 'text-white/80' : 'text-faint'
+                  'ml-1.5 font-sans-medium text-xs',
+                  isActive ? 'text-white/80' : 'text-faint',
                 )}
               >
                 {count}

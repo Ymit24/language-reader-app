@@ -18,13 +18,11 @@ export function ScreenLayout({
     <SafeAreaView className={`flex-1 bg-canvas ${className}`} edges={edges}>
       {showBackground && (
         <View className="absolute inset-0" pointerEvents="none">
-          <View className="absolute -top-24 -right-20 h-56 w-56 rounded-full bg-brandSoft/60" />
+          <View className="absolute -right-20 -top-24 h-56 w-56 rounded-full bg-brandSoft/60" />
           <View className="absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-muted/70" />
         </View>
       )}
-      <View className="flex-1">
-        {children}
-      </View>
+      <View className="flex-1">{children}</View>
     </SafeAreaView>
   );
 }

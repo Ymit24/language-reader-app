@@ -37,9 +37,9 @@ export const VocabRow = memo(function VocabRow({
       onPress={onPress}
       onLongPress={selectionMode ? undefined : onToggleSelect}
       className={cn(
-        'flex-row items-center px-4 py-3 border-b border-border/40',
+        'flex-row items-center border-b border-border/40 px-4 py-3',
         isActive && 'bg-brandSoft/50',
-        isSelected && 'bg-muted/60'
+        isSelected && 'bg-muted/60',
       )}
     >
       {/* Checkbox - always visible in selection mode, otherwise on hover for desktop */}
@@ -48,27 +48,20 @@ export const VocabRow = memo(function VocabRow({
         hitSlop={8}
         className={cn(
           'mr-3 h-6 w-6 items-center justify-center rounded border',
-          isSelected
-            ? 'bg-brand border-brand'
-            : 'border-border bg-panel'
+          isSelected ? 'border-brand bg-brand' : 'border-border bg-panel',
         )}
       >
-        {isSelected && (
-          <Ionicons name="checkmark" size={16} color="#fff" />
-        )}
+        {isSelected && <Ionicons name="checkmark" size={16} color="#fff" />}
       </Pressable>
 
       {/* Word info */}
-      <View className="flex-1 mr-3">
-        <Text
-          className="text-base font-serif-bold text-ink"
-          numberOfLines={1}
-        >
+      <View className="mr-3 flex-1">
+        <Text className="font-serif-bold text-base text-ink" numberOfLines={1}>
           {vocab.display || vocab.term}
         </Text>
         {vocab.meaning && (
           <Text
-            className="text-sm text-subink font-sans-medium mt-0.5"
+            className="mt-0.5 font-sans-medium text-sm text-subink"
             numberOfLines={1}
           >
             {vocab.meaning}
@@ -82,7 +75,11 @@ export const VocabRow = memo(function VocabRow({
       {/* Active indicator */}
       {isActive && (
         <View className="ml-3">
-          <Ionicons name="chevron-forward" size={16} color={colors['--brand']} />
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={colors['--brand']}
+          />
         </View>
       )}
     </Pressable>

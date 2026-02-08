@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack } from 'expo-router';
 
 export default function LibraryLayout() {
   return (
@@ -11,14 +11,14 @@ export default function LibraryLayout() {
       <Stack.Screen
         name="new/index"
         options={{
-          presentation: "modal",
+          presentation: 'modal',
         }}
       />
       <Stack.Screen name="[lessonId]/index" />
       <Stack.Screen
         name="[lessonId]/edit"
         options={{
-          presentation: "modal",
+          presentation: 'modal',
         }}
       />
     </Stack>

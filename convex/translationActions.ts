@@ -1,5 +1,5 @@
-import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { v } from 'convex/values';
+import { action } from './_generated/server';
 
 type TranslateResult = {
   success: boolean;
@@ -17,7 +17,7 @@ const truncateToBytes = (value: string, maxBytes: number) => {
     return { text: value, truncated: false };
   }
 
-  let output = "";
+  let output = '';
   let size = 0;
   for (const char of value) {
     const bytes = encoder.encode(char);
@@ -31,14 +31,14 @@ const truncateToBytes = (value: string, maxBytes: number) => {
 
 export const translate = action({
   args: {
-    sourceLanguage: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
-    targetLanguage: v.union(v.literal("en")),
+    sourceLanguage: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
+    targetLanguage: v.union(v.literal('en')),
     text: v.string(),
   },
   handler: async (_ctx, args): Promise<TranslateResult> => {
     const trimmed = args.text.trim();
     if (!trimmed) {
-      return { success: false, error: "Empty text." };
+      return { success: false, error: 'Empty text.' };
     }
 
     const { text, truncated } = truncateToBytes(trimmed, MAX_QUERY_BYTES);
@@ -55,20 +55,21 @@ export const translate = action({
       if (data?.responseStatus && data.responseStatus !== 200) {
         return {
           success: false,
-          error: data?.responseDetails || "Translation failed.",
+          error: data?.responseDetails || 'Translation failed.',
           truncated,
         };
       }
 
       const translatedText = data?.responseData?.translatedText;
-      const match = typeof data?.responseData?.match === "number"
-        ? data.responseData.match
-        : undefined;
+      const match =
+        typeof data?.responseData?.match === 'number'
+          ? data.responseData.match
+          : undefined;
 
       if (!translatedText) {
         return {
           success: false,
-          error: "No translation found.",
+          error: 'No translation found.',
           truncated,
         };
       }
@@ -80,7 +81,7 @@ export const translate = action({
         truncated,
       };
     } catch (error) {
-      console.error("Translation lookup failed:", error);
+      console.error('Translation lookup failed:', error);
       return {
         success: false,
         error: String(error),

@@ -18,7 +18,12 @@ export function getStatusLabel(status: VocabStatus): string {
   return STATUS_OPTIONS.find((s) => s.value === status)?.label ?? 'Unknown';
 }
 
-export type StatusColor = 'blue' | 'amber-light' | 'amber-medium' | 'amber-dark' | 'emerald';
+export type StatusColor =
+  | 'blue'
+  | 'amber-light'
+  | 'amber-medium'
+  | 'amber-dark'
+  | 'emerald';
 
 export function getStatusColor(status: VocabStatus): StatusColor {
   const option = STATUS_OPTIONS.find((s) => s.value === status);

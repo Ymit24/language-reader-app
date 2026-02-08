@@ -1,5 +1,14 @@
 import { useState } from 'react';
-import { View, Text, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  Pressable,
+} from 'react-native';
 import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { useRouter } from 'expo-router';
 import { useMutation } from 'convex/react';
@@ -50,15 +59,19 @@ export default function NewLessonScreen() {
 
   return (
     <ScreenLayout edges={['top']}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        <View className="flex-row items-center justify-between px-5 py-3 border-b border-border/70 bg-canvas/95 z-10">
-          <Button variant="ghost" onPress={handleCancel}>Cancel</Button>
-          <Text className="text-lg font-sans-semibold text-ink">New Lesson</Text>
-          <Button 
-            variant="primary" 
+        <View className="z-10 flex-row items-center justify-between border-b border-border/70 bg-canvas/95 px-5 py-3">
+          <Button variant="ghost" onPress={handleCancel}>
+            Cancel
+          </Button>
+          <Text className="font-sans-semibold text-lg text-ink">
+            New Lesson
+          </Text>
+          <Button
+            variant="primary"
             onPress={handleCreate}
             disabled={isSubmitting || !title || !text}
             isLoading={isSubmitting}
@@ -78,39 +91,47 @@ export default function NewLessonScreen() {
             />
 
             <View className="gap-2">
-              <Text className="text-xs font-sans-semibold uppercase tracking-widest text-faint">Language</Text>
-              <View className="flex-row gap-3 rounded-full bg-panel border border-border/80 p-1">
+              <Text className="font-sans-semibold text-xs uppercase tracking-widest text-faint">
+                Language
+              </Text>
+              <View className="flex-row gap-3 rounded-full border border-border/80 bg-panel p-1">
                 <Pressable
                   onPress={() => setLanguage('fr')}
                   className={`flex-1 items-center justify-center rounded-full py-2 ${
-                    language === 'fr' 
-                      ? 'bg-brandSoft border border-brand/20' 
+                    language === 'fr'
+                      ? 'border border-brand/20 bg-brandSoft'
                       : 'bg-transparent'
                   }`}
                 >
-                  <Text className={`font-sans-semibold ${language === 'fr' ? 'text-ink' : 'text-subink'}`}>
+                  <Text
+                    className={`font-sans-semibold ${language === 'fr' ? 'text-ink' : 'text-subink'}`}
+                  >
                     French
                   </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setLanguage('de')}
                   className={`flex-1 items-center justify-center rounded-full py-2 ${
-                    language === 'de' 
-                      ? 'bg-brandSoft border border-brand/20' 
+                    language === 'de'
+                      ? 'border border-brand/20 bg-brandSoft'
                       : 'bg-transparent'
                   }`}
                 >
-                  <Text className={`font-sans-semibold ${language === 'de' ? 'text-ink' : 'text-subink'}`}>
+                  <Text
+                    className={`font-sans-semibold ${language === 'de' ? 'text-ink' : 'text-subink'}`}
+                  >
                     German
                   </Text>
                 </Pressable>
               </View>
             </View>
 
-            <View className="gap-2 flex-1 min-h-[200px]">
-              <Text className="text-xs font-sans-semibold uppercase tracking-widest text-faint">Content</Text>
+            <View className="min-h-[200px] flex-1 gap-2">
+              <Text className="font-sans-semibold text-xs uppercase tracking-widest text-faint">
+                Content
+              </Text>
               <TextInput
-                className="flex-1 rounded-xl border border-border/80 bg-panel p-4 text-base text-ink leading-relaxed font-serif"
+                className="flex-1 rounded-xl border border-border/80 bg-panel p-4 font-serif text-base leading-relaxed text-ink"
                 placeholder="Paste your text here..."
                 placeholderTextColor={colors['--faint']}
                 multiline

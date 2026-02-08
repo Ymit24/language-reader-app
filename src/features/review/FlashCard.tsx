@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, Text, Pressable, Dimensions, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  Dimensions,
+  ActivityIndicator,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -11,10 +17,7 @@ import Animated, {
   Extrapolation,
   runOnJS,
 } from 'react-native-reanimated';
-import {
-  Gesture,
-  GestureDetector,
-} from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
@@ -76,7 +79,7 @@ export function FlashCard({
 
   const lookupKey = useMemo(
     () => `${language}:${word.toLowerCase()}`,
-    [language, word]
+    [language, word],
   );
 
   useEffect(() => {
@@ -120,13 +123,21 @@ export function FlashCard({
     };
 
     fetchDefinition();
-  }, [isFlipped, lookupResult, isLookingUp, lookupKey, lookupAction, language, word]);
+  }, [
+    isFlipped,
+    lookupResult,
+    isLookingUp,
+    lookupKey,
+    lookupAction,
+    language,
+    word,
+  ]);
 
   const handleFlip = () => {
     if (!isInteractive) return;
-    
+
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    
+
     const newIsFlipped = !isFlipped;
     setIsFlipped(newIsFlipped);
     flipProgress.value = withTiming(newIsFlipped ? 1 : 0, { duration: 400 });
@@ -134,9 +145,9 @@ export function FlashCard({
 
   const triggerHaptic = (type: 'left' | 'right') => {
     Haptics.impactAsync(
-      type === 'left' 
-        ? Haptics.ImpactFeedbackStyle.Medium 
-        : Haptics.ImpactFeedbackStyle.Heavy
+      type === 'left'
+        ? Haptics.ImpactFeedbackStyle.Medium
+        : Haptics.ImpactFeedbackStyle.Heavy,
     );
   };
 
@@ -185,7 +196,7 @@ export function FlashCard({
       translateX.value,
       [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
       [-15, 0, 15],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
 
     return {
@@ -203,7 +214,7 @@ export function FlashCard({
       translateX.value,
       [-SWIPE_THRESHOLD, 0],
       [1, 0],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     ),
   }));
 
@@ -212,7 +223,7 @@ export function FlashCard({
       translateX.value,
       [0, SWIPE_THRESHOLD],
       [0, 1],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     ),
   }));
 
@@ -236,7 +247,7 @@ export function FlashCard({
     lookupResult?.lemmaEntries?.[0]?.definitions?.[0]?.definition;
   const baseForm = lookupResult?.lemma;
   const showBaseForm = Boolean(
-    baseForm && baseForm.toLowerCase() !== word.toLowerCase()
+    baseForm && baseForm.toLowerCase() !== word.toLowerCase(),
   );
   const definitionText =
     lemmaDefinition || primaryDefinition || definition?.trim();
@@ -271,7 +282,7 @@ export function FlashCard({
             },
           ]}
         >
-          <Text className="text-white font-sans-bold text-base">Again</Text>
+          <Text className="font-sans-bold text-base text-white">Again</Text>
         </Animated.View>
 
         <Animated.View
@@ -289,7 +300,7 @@ export function FlashCard({
             },
           ]}
         >
-          <Text className="text-white font-sans-bold text-base">Good</Text>
+          <Text className="font-sans-bold text-base text-white">Good</Text>
         </Animated.View>
 
         <Pressable
@@ -304,13 +315,15 @@ export function FlashCard({
               target.blur();
             }
           }}
-          style={{
-            flex: 1,
-            perspective: 1000,
-            outlineStyle: 'none',
-            outlineWidth: 0,
-            boxShadow: 'none',
-          } as any}
+          style={
+            {
+              flex: 1,
+              perspective: 1000,
+              outlineStyle: 'none',
+              outlineWidth: 0,
+              boxShadow: 'none',
+            } as any
+          }
         >
           {/* Front of card */}
           <Animated.View
@@ -341,24 +354,27 @@ export function FlashCard({
                     backgroundColor: `${accentColor}22`,
                     borderColor: `${accentColor}55`,
                   }}
-                  className="px-3 py-1 rounded-full border"
+                  className="rounded-full border px-3 py-1"
                 >
-                  <Text style={{ color: accentColor }} className="text-xs font-sans-semibold tracking-wide">
+                  <Text
+                    style={{ color: accentColor }}
+                    className="font-sans-semibold text-xs tracking-wide"
+                  >
                     {languageLabel}
                   </Text>
                 </View>
-                <Text className="text-xs text-faint font-sans-medium uppercase tracking-[0.25em]">
+                <Text className="font-sans-medium text-xs uppercase tracking-[0.25em] text-faint">
                   Front
                 </Text>
               </View>
 
               <View className="flex-1 items-center justify-center">
-                <Text className="text-4xl font-serif-bold text-ink text-center tracking-tight">
+                <Text className="text-center font-serif-bold text-4xl tracking-tight text-ink">
                   {word}
                 </Text>
                 {context && (
-                  <View className="mt-6 px-4 py-3 rounded-2xl bg-muted/40 border border-border/40">
-                    <Text className="text-sm text-subink font-sans-medium text-center italic leading-relaxed">
+                  <View className="mt-6 rounded-2xl border border-border/40 bg-muted/40 px-4 py-3">
+                    <Text className="text-center font-sans-medium text-sm italic leading-relaxed text-subink">
                       &quot;{context}&quot;
                     </Text>
                   </View>
@@ -366,8 +382,12 @@ export function FlashCard({
               </View>
 
               <View className="flex-row items-center justify-center gap-2">
-                <Ionicons name="hand-left-outline" size={16} color={colors['--faint']} />
-                <Text className="text-sm text-faint font-sans-medium">
+                <Ionicons
+                  name="hand-left-outline"
+                  size={16}
+                  color={colors['--faint']}
+                />
+                <Text className="font-sans-medium text-sm text-faint">
                   Tap to reveal meaning
                 </Text>
               </View>
@@ -398,7 +418,7 @@ export function FlashCard({
           >
             <View className="flex-1 p-8">
               <View className="flex-row items-center justify-between">
-                <Text className="text-xs text-faint font-sans-medium uppercase tracking-[0.25em]">
+                <Text className="font-sans-medium text-xs uppercase tracking-[0.25em] text-faint">
                   Meaning
                 </Text>
                 {showBaseForm && (
@@ -407,9 +427,12 @@ export function FlashCard({
                       backgroundColor: `${accentColor}22`,
                       borderColor: `${accentColor}55`,
                     }}
-                    className="px-2.5 py-1 rounded-full border"
+                    className="rounded-full border px-2.5 py-1"
                   >
-                    <Text style={{ color: accentColor }} className="text-xs font-sans-semibold">
+                    <Text
+                      style={{ color: accentColor }}
+                      className="font-sans-semibold text-xs"
+                    >
                       Base: {baseForm}
                     </Text>
                   </View>
@@ -417,36 +440,36 @@ export function FlashCard({
               </View>
 
               <View className="flex-1 items-center justify-center gap-6">
-                <Text className="text-2xl font-serif-bold text-ink text-center">
+                <Text className="text-center font-serif-bold text-2xl text-ink">
                   {word}
                 </Text>
 
-                <View className="w-12 h-0.5 bg-border" />
+                <View className="h-0.5 w-12 bg-border" />
 
                 {isLookingUp ? (
                   <View className="items-center gap-2">
                     <ActivityIndicator size="small" color={colors['--faint']} />
-                    <Text className="text-sm text-faint font-sans-medium">
+                    <Text className="font-sans-medium text-sm text-faint">
                       Looking up definition...
                     </Text>
                   </View>
                 ) : hasLookupError ? (
-                  <Text className="text-sm text-subink italic font-sans-medium text-center">
+                  <Text className="text-center font-sans-medium text-sm italic text-subink">
                     Unable to load definition.
                   </Text>
                 ) : definitionText ? (
-                  <Text className="text-lg text-ink font-sans-medium text-center leading-relaxed">
+                  <Text className="text-center font-sans-medium text-lg leading-relaxed text-ink">
                     {definitionText}
                   </Text>
                 ) : (
-                  <Text className="text-sm text-subink italic font-sans-medium text-center">
+                  <Text className="text-center font-sans-medium text-sm italic text-subink">
                     No definition found.
                   </Text>
                 )}
 
                 {example && (
-                  <View className="mt-2 px-4 py-3 rounded-2xl bg-muted/40 border border-border/40">
-                    <Text className="text-sm text-subink font-sans-medium text-center italic leading-relaxed">
+                  <View className="mt-2 rounded-2xl border border-border/40 bg-muted/40 px-4 py-3">
+                    <Text className="text-center font-sans-medium text-sm italic leading-relaxed text-subink">
                       &quot;{example}&quot;
                     </Text>
                   </View>
@@ -454,8 +477,12 @@ export function FlashCard({
               </View>
 
               <View className="flex-row items-center justify-center gap-2">
-                <Ionicons name="swap-horizontal" size={16} color={colors['--faint']} />
-                <Text className="text-sm text-faint font-sans-medium">
+                <Ionicons
+                  name="swap-horizontal"
+                  size={16}
+                  color={colors['--faint']}
+                />
+                <Text className="font-sans-medium text-sm text-faint">
                   Swipe to grade
                 </Text>
               </View>

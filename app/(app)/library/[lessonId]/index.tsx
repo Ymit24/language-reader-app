@@ -10,7 +10,7 @@ import { Reader } from '../../../../src/features/reader/Reader';
 
 function LoadingScreen() {
   return (
-    <View className="flex-1 justify-center items-center bg-canvas">
+    <View className="flex-1 items-center justify-center bg-canvas">
       <ActivityIndicator size="large" />
     </View>
   );
@@ -18,7 +18,7 @@ function LoadingScreen() {
 
 function NotFoundScreen() {
   return (
-    <View className="flex-1 justify-center items-center bg-canvas">
+    <View className="flex-1 items-center justify-center bg-canvas">
       <Text>Lesson not found</Text>
     </View>
   );
@@ -32,7 +32,7 @@ export default function LessonReaderScreen() {
 
   const lessonQuery = useQuery(
     api.lessons.getLesson,
-    safeLessonId ? { lessonId: safeLessonId as Id<"lessons"> } : "skip"
+    safeLessonId ? { lessonId: safeLessonId as Id<'lessons'> } : 'skip',
   );
 
   if (!safeLessonId) {

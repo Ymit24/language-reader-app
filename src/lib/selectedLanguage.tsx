@@ -1,5 +1,11 @@
 import * as SecureStore from 'expo-secure-store';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Platform } from 'react-native';
 import { LANGUAGES, type LanguageCode } from './languages';
 
@@ -9,7 +15,8 @@ type SelectedLanguageContextValue = {
   availableLanguages: LanguageCode[];
 };
 
-const SelectedLanguageContext = createContext<SelectedLanguageContextValue | null>(null);
+const SelectedLanguageContext =
+  createContext<SelectedLanguageContextValue | null>(null);
 
 const STORAGE_KEY = 'reader.language.selected';
 const DEFAULT_LANGUAGE: LanguageCode = 'fr';
@@ -44,8 +51,13 @@ const storeLanguage = async (value: LanguageCode) => {
   }
 };
 
-export function SelectedLanguageProvider({ children }: { children: React.ReactNode }) {
-  const [selectedLanguage, setSelectedLanguageState] = useState<LanguageCode>(DEFAULT_LANGUAGE);
+export function SelectedLanguageProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [selectedLanguage, setSelectedLanguageState] =
+    useState<LanguageCode>(DEFAULT_LANGUAGE);
   const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
@@ -73,7 +85,7 @@ export function SelectedLanguageProvider({ children }: { children: React.ReactNo
       setSelectedLanguage: setSelectedLanguageState,
       availableLanguages: LANGUAGES,
     }),
-    [selectedLanguage]
+    [selectedLanguage],
   );
 
   return (
@@ -86,7 +98,9 @@ export function SelectedLanguageProvider({ children }: { children: React.ReactNo
 export function useSelectedLanguage() {
   const context = useContext(SelectedLanguageContext);
   if (!context) {
-    throw new Error('useSelectedLanguage must be used within SelectedLanguageProvider');
+    throw new Error(
+      'useSelectedLanguage must be used within SelectedLanguageProvider',
+    );
   }
   return context;
 }

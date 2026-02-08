@@ -23,24 +23,26 @@ Create `convex/review.ts` with:
 function calculateNextReview(item, quality) {
   if (quality < 3) {
     // Failed: reset interval
-    return { intervalDays: 1, ease: Math.max(1.3, item.ease - 0.2) }
+    return { intervalDays: 1, ease: Math.max(1.3, item.ease - 0.2) };
   }
 
   // Successful review
-  const newEase = item.ease + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
-  let intervalDays
+  const newEase =
+    item.ease + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  let intervalDays;
 
-  if (item.reviews === 0) intervalDays = 1
-  else if (item.reviews === 1) intervalDays = 6
-  else intervalDays = Math.round(item.intervalDays * newEase)
+  if (item.reviews === 0) intervalDays = 1;
+  else if (item.reviews === 1) intervalDays = 6;
+  else intervalDays = Math.round(item.intervalDays * newEase);
 
-  return { intervalDays, ease: newEase }
+  return { intervalDays, ease: newEase };
 }
 ```
 
 ### 1.3 Schema Notes
 
 The vocab table already has the required fields:
+
 - `nextReviewAt`: optional number (timestamp)
 - `intervalDays`: optional number
 - `ease`: optional number
@@ -51,12 +53,12 @@ Index `by_user_language_nextReviewAt` already exists.
 
 ### 1.4 Grading Scale
 
-| Button | Quality | Meaning |
-|--------|---------|---------|
-| Again | 0-1 | Complete failure, reset |
-| Hard | 2-3 | Correct but difficult |
-| Good | 4 | Normal success |
-| Easy | 5 | Perfect recall |
+| Button | Quality | Meaning                 |
+| ------ | ------- | ----------------------- |
+| Again  | 0-1     | Complete failure, reset |
+| Hard   | 2-3     | Correct but difficult   |
+| Good   | 4       | Normal success          |
+| Easy   | 5       | Perfect recall          |
 
 ---
 
@@ -72,8 +74,8 @@ Index `by_user_language_nextReviewAt` already exists.
 ### 2.2 Data Fetching
 
 ```typescript
-const frenchDue = useQuery(api.review.getDueCount, { language: 'fr' })
-const germanDue = useQuery(api.review.getDueCount, { language: 'de' })
+const frenchDue = useQuery(api.review.getDueCount, { language: 'fr' });
+const germanDue = useQuery(api.review.getDueCount, { language: 'de' });
 ```
 
 ### 2.3 Layout
@@ -114,11 +116,13 @@ Create `app/(app)/review/session/index.tsx`
 Create `src/features/review/Flashcard.tsx`:
 
 **Front State:**
+
 - Large word display (surface form)
 - Optional: show reading if available
 - Hint: "Tap to reveal"
 
 **Back State:**
+
 - Word (large)
 - Reading / pronunciation
 - Part of speech
@@ -131,22 +135,32 @@ Create `src/features/review/Flashcard.tsx`:
 Create `src/features/review/GradingButtons.tsx`:
 
 ```tsx
-<View className="flex-row gap-2 justify-center">
-  <Button variant="fail" onPress={() => grade(1)}>Again</Button>
-  <Button variant="hard" onPress={() => grade(2)}>Hard</Button>
-  <Button variant="good" onPress={() => grade(3)}>Good</Button>
-  <Button variant="easy" onPress={() => grade(4)}>Easy</Button>
+<View className="flex-row justify-center gap-2">
+  <Button variant="fail" onPress={() => grade(1)}>
+    Again
+  </Button>
+  <Button variant="hard" onPress={() => grade(2)}>
+    Hard
+  </Button>
+  <Button variant="good" onPress={() => grade(3)}>
+    Good
+  </Button>
+  <Button variant="easy" onPress={() => grade(4)}>
+    Easy
+  </Button>
 </View>
 ```
 
 ### 3.5 Interactions
 
 **Mobile (iPad/touch):**
+
 - Tap card to flip
 - Tap grading buttons
 - Swipe gestures (future enhancement)
 
 **Desktop (web):**
+
 - Tap to flip
 - Keyboard shortcuts: 1, 2, 3, 4, 5
 
@@ -179,6 +193,7 @@ Create `src/features/review/GradingButtons.tsx`:
 ### 4.1 Reader Integration
 
 When user changes word status in Reader (WordDetails), if status is 1-3:
+
 - Set `nextReviewAt` to now (due immediately)
 - Set `intervalDays` to 0
 - Set `reviews` to 0
@@ -188,12 +203,14 @@ When user changes word status in Reader (WordDetails), if status is 1-3:
 Update `lessons.knownTokenCount` when vocab status changes to 4.
 
 This requires a mutation that:
+
 1. Patches the vocab item
 2. Increments the lesson's knownTokenCount for that lesson's tokens
 
 ### 4.3 Settings
 
 Add "Review Settings" section to settings page:
+
 - Daily new card limit (default: 20)
 - Daily review card limit (default: 100)
 - Auto-advance cards (on/off)
@@ -227,34 +244,34 @@ Add "Review Settings" section to settings page:
 
 ### New Files
 
-| File | Purpose |
-|------|---------|
-| `convex/review.ts` | Backend queries and mutations |
-| `app/(app)/review/session/index.tsx` | Session UI route |
-| `src/features/review/Flashcard.tsx` | Card component |
-| `src/features/review/GradingButtons.tsx` | Grade buttons component |
-| `src/features/review/SessionSummary.tsx` | End-of-session summary |
+| File                                     | Purpose                       |
+| ---------------------------------------- | ----------------------------- |
+| `convex/review.ts`                       | Backend queries and mutations |
+| `app/(app)/review/session/index.tsx`     | Session UI route              |
+| `src/features/review/Flashcard.tsx`      | Card component                |
+| `src/features/review/GradingButtons.tsx` | Grade buttons component       |
+| `src/features/review/SessionSummary.tsx` | End-of-session summary        |
 
 ### Modified Files
 
-| File | Change |
-|------|--------|
-| `app/(app)/review/index.tsx` | Add due counts, start session buttons |
-| `app/(app)/review/_layout.tsx` | Add session route |
-| `convex/vocab.ts` | May need to add helper for setting nextReviewAt |
-| `app/(app)/settings/index.tsx` | Add review settings section (optional) |
+| File                           | Change                                          |
+| ------------------------------ | ----------------------------------------------- |
+| `app/(app)/review/index.tsx`   | Add due counts, start session buttons           |
+| `app/(app)/review/_layout.tsx` | Add session route                               |
+| `convex/vocab.ts`              | May need to add helper for setting nextReviewAt |
+| `app/(app)/settings/index.tsx` | Add review settings section (optional)          |
 
 ---
 
 ## Estimated Effort
 
-| Phase | Time |
-|-------|------|
-| Phase 1: Backend | 2-3 hours |
-| Phase 2: Index page | 1 hour |
-| Phase 3: Session UI | 4-5 hours |
+| Phase                | Time      |
+| -------------------- | --------- |
+| Phase 1: Backend     | 2-3 hours |
+| Phase 2: Index page  | 1 hour    |
+| Phase 3: Session UI  | 4-5 hours |
 | Phase 4: Integration | 1-2 hours |
-| Phase 5: Testing | 2 hours |
+| Phase 5: Testing     | 2 hours   |
 
 **Total: 10-13 hours**
 

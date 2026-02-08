@@ -1,11 +1,11 @@
-import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
-import { calculateXpForReview, getLevelFromXp } from "./progress";
+import { v } from 'convex/values';
+import { query, mutation } from './_generated/server';
+import { getAuthUserId } from '@convex-dev/auth/server';
+import { calculateXpForReview, getLevelFromXp } from './progress';
 
 export const getDueCount = query({
   args: {
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -16,12 +16,12 @@ export const getDueCount = query({
     const now = Date.now();
 
     const items = await ctx.db
-      .query("vocab")
-      .withIndex("by_user_language_nextReviewAt", (q) =>
+      .query('vocab')
+      .withIndex('by_user_language_nextReviewAt', (q) =>
         q
-          .eq("userId", userId)
-          .eq("language", args.language)
-          .lte("nextReviewAt", now)
+          .eq('userId', userId)
+          .eq('language', args.language)
+          .lte('nextReviewAt', now),
       )
       .collect();
 
@@ -31,7 +31,7 @@ export const getDueCount = query({
 
 export const getKnownCount = query({
   args: {
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -40,9 +40,9 @@ export const getKnownCount = query({
     }
 
     const items = await ctx.db
-      .query("vocab")
-      .withIndex("by_user_language_status", (q) =>
-        q.eq("userId", userId).eq("language", args.language).eq("status", 4)
+      .query('vocab')
+      .withIndex('by_user_language_status', (q) =>
+        q.eq('userId', userId).eq('language', args.language).eq('status', 4),
       )
       .collect();
 
@@ -64,9 +64,12 @@ export const getTodayReviewCount = query({
 
     for (const language of languages) {
       const items = await ctx.db
-        .query("vocab")
-        .withIndex("by_user_language_nextReviewAt", (q) =>
-          q.eq("userId", userId).eq("language", language).lte("nextReviewAt", now)
+        .query('vocab')
+        .withIndex('by_user_language_nextReviewAt', (q) =>
+          q
+            .eq('userId', userId)
+            .eq('language', language)
+            .lte('nextReviewAt', now),
         )
         .collect();
       totalDue += items.length;
@@ -89,9 +92,12 @@ export const getLearningCount = query({
     for (const language of languages) {
       for (let status = 1; status <= 3; status++) {
         const items = await ctx.db
-          .query("vocab")
-          .withIndex("by_user_language_status", (q) =>
-            q.eq("userId", userId).eq("language", language).eq("status", status)
+          .query('vocab')
+          .withIndex('by_user_language_status', (q) =>
+            q
+              .eq('userId', userId)
+              .eq('language', language)
+              .eq('status', status),
           )
           .collect();
         totalLearning += items.length;
@@ -110,13 +116,14 @@ interface Sm2Result {
 
 function calculateSm2(
   current: { intervalDays?: number; ease?: number; reviews?: number } | null,
-  quality: number
+  quality: number,
 ): Sm2Result {
   const previousReviews = current?.reviews ?? 0;
   const previousInterval = current?.intervalDays ?? 0;
   const previousEase = current?.ease ?? 2.5;
 
-  let newEase = previousEase + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  let newEase =
+    previousEase + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
   newEase = Math.max(1.3, newEase);
 
   let newInterval: number;
@@ -143,25 +150,25 @@ function calculateSm2(
 
 export const startReviewSession = mutation({
   args: {
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const limit = args.limit ?? 20;
     const now = Date.now();
 
     const dueVocab = await ctx.db
-      .query("vocab")
-      .withIndex("by_user_language_nextReviewAt", (q) =>
+      .query('vocab')
+      .withIndex('by_user_language_nextReviewAt', (q) =>
         q
-          .eq("userId", userId)
-          .eq("language", args.language)
-          .lte("nextReviewAt", now)
+          .eq('userId', userId)
+          .eq('language', args.language)
+          .lte('nextReviewAt', now),
       )
       .take(limit);
 
@@ -169,10 +176,10 @@ export const startReviewSession = mutation({
       return { sessionId: null, items: [] };
     }
 
-    const sessionId = await ctx.db.insert("reviewSessions", {
+    const sessionId = await ctx.db.insert('reviewSessions', {
       userId,
       language: args.language,
-      status: "in_progress",
+      status: 'in_progress',
       cardCount: dueVocab.length,
       reviewedCount: 0,
       easeSum: 0,
@@ -181,11 +188,11 @@ export const startReviewSession = mutation({
 
     const sessionItems = await Promise.all(
       dueVocab.map((vocab) =>
-        ctx.db.insert("reviewSessionItems", {
+        ctx.db.insert('reviewSessionItems', {
           sessionId,
           vocabId: vocab._id,
-        })
-      )
+        }),
+      ),
     );
 
     const itemsWithVocab = dueVocab.map((vocab, i) => ({
@@ -203,22 +210,22 @@ export const startReviewSession = mutation({
 
 export const getSession = query({
   args: {
-    sessionId: v.id("reviewSessions"),
+    sessionId: v.id('reviewSessions'),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const session = await ctx.db.get(args.sessionId);
     if (!session || session.userId !== userId) {
-      throw new Error("Session not found");
+      throw new Error('Session not found');
     }
 
     const items = await ctx.db
-      .query("reviewSessionItems")
-      .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
+      .query('reviewSessionItems')
+      .withIndex('by_session', (q) => q.eq('sessionId', args.sessionId))
       .collect();
 
     const itemsWithVocab = await Promise.all(
@@ -228,7 +235,7 @@ export const getSession = query({
           ...item,
           vocab: vocab!,
         };
-      })
+      }),
     );
 
     return {
@@ -240,28 +247,28 @@ export const getSession = query({
 
 export const gradeCard = mutation({
   args: {
-    sessionItemId: v.id("reviewSessionItems"),
+    sessionItemId: v.id('reviewSessionItems'),
     quality: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const sessionItem = await ctx.db.get(args.sessionItemId);
     if (!sessionItem) {
-      throw new Error("Session item not found");
+      throw new Error('Session item not found');
     }
 
     const session = await ctx.db.get(sessionItem.sessionId);
     if (!session || session.userId !== userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const vocab = await ctx.db.get(sessionItem.vocabId);
     if (!vocab || vocab.userId !== userId) {
-      throw new Error("Vocab not found");
+      throw new Error('Vocab not found');
     }
 
     const now = Date.now();
@@ -289,7 +296,7 @@ export const gradeCard = mutation({
 
     if (newReviewedCount >= session.cardCount) {
       await ctx.db.patch(session._id, {
-        status: "completed",
+        status: 'completed',
         reviewedCount: newReviewedCount,
         easeSum: newEaseSum,
         completedAt: now,
@@ -310,25 +317,25 @@ export const gradeCard = mutation({
 
 export const abandonSession = mutation({
   args: {
-    sessionId: v.id("reviewSessions"),
+    sessionId: v.id('reviewSessions'),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const session = await ctx.db.get(args.sessionId);
     if (!session || session.userId !== userId) {
-      throw new Error("Session not found");
+      throw new Error('Session not found');
     }
 
-    if (session.status !== "in_progress") {
+    if (session.status !== 'in_progress') {
       return;
     }
 
     await ctx.db.patch(args.sessionId, {
-      status: "abandoned",
+      status: 'abandoned',
     });
   },
 });
@@ -353,12 +360,12 @@ export const getAllLanguageStats = query({
       languages.map(async (language) => {
         // Get due count
         const dueItems = await ctx.db
-          .query("vocab")
-          .withIndex("by_user_language_nextReviewAt", (q) =>
+          .query('vocab')
+          .withIndex('by_user_language_nextReviewAt', (q) =>
             q
-              .eq("userId", userId)
-              .eq("language", language)
-              .lte("nextReviewAt", now)
+              .eq('userId', userId)
+              .eq('language', language)
+              .lte('nextReviewAt', now),
           )
           .collect();
 
@@ -366,9 +373,12 @@ export const getAllLanguageStats = query({
         let learningCount = 0;
         for (let status = 1; status <= 3; status++) {
           const items = await ctx.db
-            .query("vocab")
-            .withIndex("by_user_language_status", (q) =>
-              q.eq("userId", userId).eq("language", language).eq("status", status)
+            .query('vocab')
+            .withIndex('by_user_language_status', (q) =>
+              q
+                .eq('userId', userId)
+                .eq('language', language)
+                .eq('status', status),
             )
             .collect();
           learningCount += items.length;
@@ -376,9 +386,9 @@ export const getAllLanguageStats = query({
 
         // Get known count (status 4)
         const knownItems = await ctx.db
-          .query("vocab")
-          .withIndex("by_user_language_status", (q) =>
-            q.eq("userId", userId).eq("language", language).eq("status", 4)
+          .query('vocab')
+          .withIndex('by_user_language_status', (q) =>
+            q.eq('userId', userId).eq('language', language).eq('status', 4),
           )
           .collect();
 
@@ -390,7 +400,7 @@ export const getAllLanguageStats = query({
           knownCount: knownItems.length,
           totalCount: learningCount + knownItems.length,
         };
-      })
+      }),
     );
 
     // Only return languages with some vocab
@@ -401,33 +411,33 @@ export const getAllLanguageStats = query({
 // Enhanced gradeCard that also handles XP
 export const gradeCardWithXp = mutation({
   args: {
-    sessionItemId: v.id("reviewSessionItems"),
+    sessionItemId: v.id('reviewSessionItems'),
     quality: v.number(),
     sessionStartTime: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const sessionItem = await ctx.db.get(args.sessionItemId);
     if (!sessionItem) {
-      throw new Error("Session item not found");
+      throw new Error('Session item not found');
     }
 
     const session = await ctx.db.get(sessionItem.sessionId);
     if (!session || session.userId !== userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const vocab = await ctx.db.get(sessionItem.vocabId);
     if (!vocab || vocab.userId !== userId) {
-      throw new Error("Vocab not found");
+      throw new Error('Vocab not found');
     }
 
     const now = Date.now();
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split('T')[0];
     const sm2Result = calculateSm2(vocab, args.quality);
 
     const msPerDay = 24 * 60 * 60 * 1000;
@@ -451,8 +461,8 @@ export const gradeCardWithXp = mutation({
 
     // Get or create user progress for XP calculation
     let progress = await ctx.db
-      .query("userProgress")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .query('userProgress')
+      .withIndex('by_userId', (q) => q.eq('userId', userId))
       .first();
 
     const isFirstReviewOfDay = progress?.lastReviewDate !== today;
@@ -462,7 +472,7 @@ export const gradeCardWithXp = mutation({
     if (isFirstReviewOfDay && progress) {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split("T")[0];
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
 
       if (progress.lastReviewDate === yesterdayStr) {
         currentStreak = progress.currentStreak + 1;
@@ -483,7 +493,7 @@ export const gradeCardWithXp = mutation({
     const xpResult = calculateXpForReview(
       args.quality,
       currentStreak,
-      isFirstReviewOfDay
+      isFirstReviewOfDay,
     );
 
     const isCorrect = args.quality >= 3;
@@ -509,7 +519,7 @@ export const gradeCardWithXp = mutation({
         updatedAt: now,
       });
     } else {
-      await ctx.db.insert("userProgress", {
+      await ctx.db.insert('userProgress', {
         userId,
         totalXp: xpResult.totalXp,
         level: 1,
@@ -526,9 +536,9 @@ export const gradeCardWithXp = mutation({
 
     // Update daily stats
     let dailyStats = await ctx.db
-      .query("dailyStats")
-      .withIndex("by_user_date", (q) =>
-        q.eq("userId", userId).eq("date", today)
+      .query('dailyStats')
+      .withIndex('by_user_date', (q) =>
+        q.eq('userId', userId).eq('date', today),
       )
       .first();
 
@@ -539,7 +549,7 @@ export const gradeCardWithXp = mutation({
         xpEarned: dailyStats.xpEarned + xpResult.totalXp,
       });
     } else {
-      await ctx.db.insert("dailyStats", {
+      await ctx.db.insert('dailyStats', {
         userId,
         date: today,
         reviewCount: 1,
@@ -555,7 +565,7 @@ export const gradeCardWithXp = mutation({
 
     if (newReviewedCount >= session.cardCount) {
       await ctx.db.patch(session._id, {
-        status: "completed",
+        status: 'completed',
         reviewedCount: newReviewedCount,
         easeSum: newEaseSum,
         completedAt: now,

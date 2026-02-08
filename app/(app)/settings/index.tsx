@@ -7,7 +7,15 @@ import { useAuthActions } from '@convex-dev/auth/react';
 import { useConvexAuth } from 'convex/react';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 
 export default function SettingsScreen() {
   const { signOut } = useAuthActions();
@@ -17,22 +25,23 @@ export default function SettingsScreen() {
   const { preference, setPreference, themes, resolvedThemeId } = useAppTheme();
 
   const handleSignOut = async () => {
-    const confirmed = Platform.OS === 'web'
-      ? window.confirm('Are you sure you want to sign out?')
-      : await new Promise<boolean>((resolve) => {
-          Alert.alert(
-            'Sign Out',
-            'Are you sure you want to sign out?',
-            [
-              { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+    const confirmed =
+      Platform.OS === 'web'
+        ? window.confirm('Are you sure you want to sign out?')
+        : await new Promise<boolean>((resolve) => {
+            Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+              {
+                text: 'Cancel',
+                style: 'cancel',
+                onPress: () => resolve(false),
+              },
               {
                 text: 'Sign Out',
                 style: 'destructive',
                 onPress: () => resolve(true),
               },
-            ]
-          );
-        });
+            ]);
+          });
 
     if (!confirmed) return;
 
@@ -52,7 +61,11 @@ export default function SettingsScreen() {
   };
 
   const userEmail = isAuthenticated ? 'Signed in' : 'Not signed in';
-  const themeOptions: { id: ThemePreference; label: string; description: string }[] = [
+  const themeOptions: {
+    id: ThemePreference;
+    label: string;
+    description: string;
+  }[] = [
     {
       id: 'system',
       label: 'System',
@@ -67,25 +80,35 @@ export default function SettingsScreen() {
 
   return (
     <ScreenLayout edges={['top']}>
-      <ScrollView className="flex-1 px-5 py-6"
-            showsVerticalScrollIndicator={false}>
-        <Text className="mb-2 text-2xl font-sans-semibold tracking-tight text-ink">Settings</Text>
-        <Text className="mb-6 text-sm text-subink font-sans-medium">
+      <ScrollView
+        className="flex-1 px-5 py-6"
+        showsVerticalScrollIndicator={false}
+      >
+        <Text className="mb-2 font-sans-semibold text-2xl tracking-tight text-ink">
+          Settings
+        </Text>
+        <Text className="mb-6 font-sans-medium text-sm text-subink">
           Account details and app preferences.
         </Text>
 
         <View className="gap-2 rounded-2xl border border-border/80 bg-panel/90 p-5 shadow-card">
-          <Text className="text-xs font-sans-semibold text-faint uppercase tracking-widest">Account</Text>
+          <Text className="font-sans-semibold text-xs uppercase tracking-widest text-faint">
+            Account
+          </Text>
           <View className="flex-row items-center justify-between py-2">
-            <Text className="text-sm text-subink font-sans-medium">Email</Text>
-            <Text className="text-sm font-sans-semibold text-ink">{userEmail}</Text>
+            <Text className="font-sans-medium text-sm text-subink">Email</Text>
+            <Text className="font-sans-semibold text-sm text-ink">
+              {userEmail}
+            </Text>
           </View>
         </View>
 
         <View className="mt-6 gap-3 rounded-2xl border border-border/80 bg-panel/90 p-5 shadow-card">
           <View className="gap-1">
-            <Text className="text-xs font-sans-semibold text-faint uppercase tracking-widest">Appearance</Text>
-            <Text className="text-sm text-subink font-sans-medium">
+            <Text className="font-sans-semibold text-xs uppercase tracking-widest text-faint">
+              Appearance
+            </Text>
+            <Text className="font-sans-medium text-sm text-subink">
               Choose a theme for this device.
             </Text>
           </View>
@@ -100,21 +123,26 @@ export default function SettingsScreen() {
                     'flex-row items-center justify-between rounded-xl border px-4 py-3',
                     isSelected
                       ? 'border-brand/60 bg-brandSoft/40'
-                      : 'border-border/70 bg-panel/70'
+                      : 'border-border/70 bg-panel/70',
                   )}
                 >
                   <View className="flex-1">
-                    <Text className={cn('text-sm font-sans-semibold', isSelected ? 'text-ink' : 'text-subink')}>
+                    <Text
+                      className={cn(
+                        'font-sans-semibold text-sm',
+                        isSelected ? 'text-ink' : 'text-subink',
+                      )}
+                    >
                       {option.label}
                     </Text>
-                    <Text className="text-xs text-faint font-sans-medium mt-1">
+                    <Text className="mt-1 font-sans-medium text-xs text-faint">
                       {option.description}
                     </Text>
                   </View>
                   <View
                     className={cn(
                       'h-4 w-4 rounded-full border',
-                      isSelected ? 'bg-brand border-brand' : 'border-border/60'
+                      isSelected ? 'border-brand bg-brand' : 'border-border/60',
                     )}
                   />
                 </Pressable>
@@ -124,24 +152,24 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mt-6 gap-2 rounded-2xl border border-border/80 bg-panel/90 p-5 shadow-card">
-          <Text className="text-xs font-sans-semibold text-faint uppercase tracking-widest">About</Text>
+          <Text className="font-sans-semibold text-xs uppercase tracking-widest text-faint">
+            About
+          </Text>
           <View className="flex-row items-center justify-between py-2">
-            <Text className="text-sm text-subink font-sans-medium">Version</Text>
-            <Text className="text-sm font-sans-semibold text-ink">1.0.0</Text>
+            <Text className="font-sans-medium text-sm text-subink">
+              Version
+            </Text>
+            <Text className="font-sans-semibold text-sm text-ink">1.0.0</Text>
           </View>
         </View>
 
         <View className="mt-8">
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             onPress={handleSignOut}
             disabled={loading}
           >
-            {loading ? (
-              <ActivityIndicator color="#b42318" />
-            ) : (
-              'Sign Out'
-            )}
+            {loading ? <ActivityIndicator color="#b42318" /> : 'Sign Out'}
           </Button>
         </View>
       </ScrollView>

@@ -37,13 +37,13 @@ const intensityColors: Record<number, string> = {
 function generateDateRange(days: number): string[] {
   const dates: string[] = [];
   const today = new Date();
-  
+
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
     dates.push(date.toISOString().split('T')[0]);
   }
-  
+
   return dates;
 }
 
@@ -65,45 +65,45 @@ export function ActivityHeatmap({
 }: ActivityHeatmapProps) {
   const { grid, monthLabels, totalReviews, activeDays } = useMemo(() => {
     const dates = generateDateRange(days);
-    const statsMap = new Map(dailyStats.map(s => [s.date, s]));
-    
+    const statsMap = new Map(dailyStats.map((s) => [s.date, s]));
+
     // Build grid (7 rows for days of week, columns for weeks)
     const weeks: { date: string; count: number }[][] = [];
     let currentWeek: { date: string; count: number }[] = [];
-    
+
     // Add empty cells for days before the first date's day of week
     const firstDayOfWeek = getDayOfWeek(dates[0]);
     for (let i = 0; i < firstDayOfWeek; i++) {
       currentWeek.push({ date: '', count: -1 }); // -1 = empty placeholder
     }
-    
-    dates.forEach(date => {
+
+    dates.forEach((date) => {
       const dayOfWeek = getDayOfWeek(date);
-      
+
       // Start new week on Sunday
       if (dayOfWeek === 0 && currentWeek.length > 0) {
         weeks.push(currentWeek);
         currentWeek = [];
       }
-      
+
       const stats = statsMap.get(date);
       currentWeek.push({
         date,
         count: stats?.reviewCount ?? 0,
       });
     });
-    
+
     // Push the last partial week
     if (currentWeek.length > 0) {
       weeks.push(currentWeek);
     }
-    
+
     // Calculate month labels (show month when it changes)
     const labels: { weekIndex: number; label: string }[] = [];
     let lastMonth = '';
-    
+
     weeks.forEach((week, weekIndex) => {
-      const firstValidDay = week.find(d => d.date);
+      const firstValidDay = week.find((d) => d.date);
       if (firstValidDay) {
         const month = getMonthLabel(firstValidDay.date);
         if (month !== lastMonth) {
@@ -112,18 +112,18 @@ export function ActivityHeatmap({
         }
       }
     });
-    
+
     // Calculate totals
     let total = 0;
     let active = 0;
-    dates.forEach(date => {
+    dates.forEach((date) => {
       const stats = statsMap.get(date);
       if (stats) {
         total += stats.reviewCount;
         if (stats.reviewCount > 0) active++;
       }
     });
-    
+
     return {
       grid: weeks,
       monthLabels: labels,
@@ -135,8 +135,8 @@ export function ActivityHeatmap({
   if (isLoading) {
     return (
       <View className="rounded-2xl border border-border/80 bg-panel p-5">
-        <View className="h-4 w-32 rounded bg-muted mb-4" />
-        <View className="h-24 rounded bg-muted animate-pulse" />
+        <View className="mb-4 h-4 w-32 rounded bg-muted" />
+        <View className="h-24 animate-pulse rounded bg-muted" />
       </View>
     );
   }
@@ -144,21 +144,21 @@ export function ActivityHeatmap({
   return (
     <View className="rounded-2xl border border-border/80 bg-panel p-5">
       {/* Header */}
-      <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-base font-sans-bold text-ink">Activity</Text>
-        <Text className="text-xs text-faint font-sans-medium">
+      <View className="mb-4 flex-row items-center justify-between">
+        <Text className="font-sans-bold text-base text-ink">Activity</Text>
+        <Text className="font-sans-medium text-xs text-faint">
           {activeDays} active days
         </Text>
       </View>
 
       {/* Month labels */}
-      <View className="flex-row mb-1 ml-6">
+      <View className="mb-1 ml-6 flex-row">
         {grid.map((_, weekIndex) => {
-          const label = monthLabels.find(l => l.weekIndex === weekIndex);
+          const label = monthLabels.find((l) => l.weekIndex === weekIndex);
           return (
-            <View key={weekIndex} className="w-3 mx-0.5">
+            <View key={weekIndex} className="mx-0.5 w-3">
               {label && (
-                <Text className="text-[9px] text-faint font-sans-medium">
+                <Text className="font-sans-medium text-[9px] text-faint">
                   {label.label}
                 </Text>
               )}
@@ -170,28 +170,34 @@ export function ActivityHeatmap({
       {/* Heatmap grid */}
       <View className="flex-row">
         {/* Day labels */}
-        <View className="w-6 mr-1">
-          <View className="h-3 mb-0.5" />
-          <Text className="h-3 text-[9px] text-faint font-sans-medium">Mon</Text>
-          <View className="h-3 mb-0.5" />
-          <Text className="h-3 text-[9px] text-faint font-sans-medium">Wed</Text>
-          <View className="h-3 mb-0.5" />
-          <Text className="h-3 text-[9px] text-faint font-sans-medium">Fri</Text>
-          <View className="h-3 mb-0.5" />
+        <View className="mr-1 w-6">
+          <View className="mb-0.5 h-3" />
+          <Text className="h-3 font-sans-medium text-[9px] text-faint">
+            Mon
+          </Text>
+          <View className="mb-0.5 h-3" />
+          <Text className="h-3 font-sans-medium text-[9px] text-faint">
+            Wed
+          </Text>
+          <View className="mb-0.5 h-3" />
+          <Text className="h-3 font-sans-medium text-[9px] text-faint">
+            Fri
+          </Text>
+          <View className="mb-0.5 h-3" />
         </View>
 
         {/* Grid */}
-        <View className="flex-row flex-1">
+        <View className="flex-1 flex-row">
           {grid.map((week, weekIndex) => (
             <View key={weekIndex} className="mx-0.5">
-              {[0, 1, 2, 3, 4, 5, 6].map(dayIndex => {
+              {[0, 1, 2, 3, 4, 5, 6].map((dayIndex) => {
                 const day = week[dayIndex];
-                
+
                 if (!day || day.count === -1) {
                   return (
-                    <View 
-                      key={dayIndex} 
-                      className="w-3 h-3 mb-0.5 rounded-sm"
+                    <View
+                      key={dayIndex}
+                      className="mb-0.5 h-3 w-3 rounded-sm"
                     />
                   );
                 }
@@ -202,7 +208,7 @@ export function ActivityHeatmap({
                 return (
                   <View
                     key={dayIndex}
-                    className={`w-3 h-3 mb-0.5 rounded-sm ${colorClass}`}
+                    className={`mb-0.5 h-3 w-3 rounded-sm ${colorClass}`}
                   />
                 );
               })}
@@ -212,22 +218,26 @@ export function ActivityHeatmap({
       </View>
 
       {/* Legend */}
-      <View className="flex-row items-center justify-end mt-3 gap-1">
-        <Text className="text-[9px] text-faint font-sans-medium mr-1">Less</Text>
-        {[0, 1, 2, 3, 4].map(level => (
+      <View className="mt-3 flex-row items-center justify-end gap-1">
+        <Text className="mr-1 font-sans-medium text-[9px] text-faint">
+          Less
+        </Text>
+        {[0, 1, 2, 3, 4].map((level) => (
           <View
             key={level}
-            className={`w-3 h-3 rounded-sm ${intensityColors[level]}`}
+            className={`h-3 w-3 rounded-sm ${intensityColors[level]}`}
           />
         ))}
-        <Text className="text-[9px] text-faint font-sans-medium ml-1">More</Text>
+        <Text className="ml-1 font-sans-medium text-[9px] text-faint">
+          More
+        </Text>
       </View>
 
       {/* Summary */}
-      <View className="flex-row items-center justify-center mt-4 pt-3 border-t border-border/50">
-        <Text className="text-sm text-subink font-sans-medium">
-          <Text className="font-sans-bold text-ink">{totalReviews}</Text>
-          {' '}reviews in the last {days} days
+      <View className="mt-4 flex-row items-center justify-center border-t border-border/50 pt-3">
+        <Text className="font-sans-medium text-sm text-subink">
+          <Text className="font-sans-bold text-ink">{totalReviews}</Text>{' '}
+          reviews in the last {days} days
         </Text>
       </View>
     </View>

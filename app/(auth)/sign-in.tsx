@@ -4,7 +4,17 @@ import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 
 type AuthStep = 'signIn' | 'signUp';
 
@@ -18,7 +28,7 @@ export default function SignInScreen() {
 
   const handleSubmit = async () => {
     setError('');
-    
+
     if (!email) {
       setError('Email is required');
       return;
@@ -63,66 +73,74 @@ export default function SignInScreen() {
       >
         <TouchableWithoutFeedback onPress={dismissKeyboard}>
           <ScrollView
-            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 }}
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: 'center',
+              paddingHorizontal: 24,
+            }}
             keyboardShouldPersistTaps="handled"
           >
-            <View className="w-full max-w-sm mx-auto bg-panel/90 border border-border/80 rounded-2xl p-6 shadow-card">
-          <View className="mb-8 items-center">
-            <Text className="text-3xl font-sans-bold text-ink">Reader</Text>
-            <Text className="mt-2 text-sm text-subink font-sans-medium text-center">
-              Learn with a calm, focused reading flow.
-            </Text>
-          </View>
+            <View className="mx-auto w-full max-w-sm rounded-2xl border border-border/80 bg-panel/90 p-6 shadow-card">
+              <View className="mb-8 items-center">
+                <Text className="font-sans-bold text-3xl text-ink">Reader</Text>
+                <Text className="mt-2 text-center font-sans-medium text-sm text-subink">
+                  Learn with a calm, focused reading flow.
+                </Text>
+              </View>
 
-          <View className="gap-4">
-            <Input
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              placeholder="you@example.com"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
-              textContentType="emailAddress"
-              editable={!loading}
-            />
+              <View className="gap-4">
+                <Input
+                  label="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="you@example.com"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  autoComplete="email"
+                  textContentType="emailAddress"
+                  editable={!loading}
+                />
 
-            <Input
-              label="Password"
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter password"
-              secureTextEntry
-              textContentType={step === 'signIn' ? 'password' : 'newPassword'}
-              error={error}
-              editable={!loading}
-            />
+                <Input
+                  label="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter password"
+                  secureTextEntry
+                  textContentType={
+                    step === 'signIn' ? 'password' : 'newPassword'
+                  }
+                  error={error}
+                  editable={!loading}
+                />
 
-            <Button 
-              variant="primary" 
-              onPress={handleSubmit} 
-              disabled={loading}
-              className="mt-2"
-            >
-              {loading ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                step === 'signIn' ? 'Sign In' : 'Create Account'
-              )}
-            </Button>
+                <Button
+                  variant="primary"
+                  onPress={handleSubmit}
+                  disabled={loading}
+                  className="mt-2"
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#ffffff" />
+                  ) : step === 'signIn' ? (
+                    'Sign In'
+                  ) : (
+                    'Create Account'
+                  )}
+                </Button>
 
-            <Pressable 
-              onPress={toggleStep}
-              className="items-center py-2"
-              disabled={loading}
-            >
-              <Text className="text-sm text-subink font-sans-medium">
-                {step === 'signIn' 
-                  ? "Don't have an account? Sign up" 
-                  : 'Already have an account? Sign in'}
-              </Text>
-            </Pressable>
-          </View>
+                <Pressable
+                  onPress={toggleStep}
+                  className="items-center py-2"
+                  disabled={loading}
+                >
+                  <Text className="font-sans-medium text-sm text-subink">
+                    {step === 'signIn'
+                      ? "Don't have an account? Sign up"
+                      : 'Already have an account? Sign in'}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
           </ScrollView>
         </TouchableWithoutFeedback>

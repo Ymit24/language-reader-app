@@ -14,13 +14,19 @@ interface PageHeaderProps {
   };
 }
 
-export function PageHeader({ title, leftAction, rightAction }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  leftAction,
+  rightAction,
+}: PageHeaderProps) {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const { colors } = useAppTheme();
 
   return (
-    <View className={`h-16 flex-row items-center justify-between bg-canvas/95 border-b border-border/70 ${isLargeScreen ? 'px-[28px]' : 'px-4'}`}>
+    <View
+      className={`h-16 flex-row items-center justify-between border-b border-border/70 bg-canvas/95 ${isLargeScreen ? 'px-[28px]' : 'px-4'}`}
+    >
       <Pressable
         onPress={leftAction?.onPress ?? (() => {})}
         className={`h-10 w-10 items-center justify-center rounded-full active:bg-muted/80 ${!leftAction ? 'opacity-0' : ''}`}
@@ -33,7 +39,10 @@ export function PageHeader({ title, leftAction, rightAction }: PageHeaderProps) 
         />
       </Pressable>
 
-      <Text className="flex-1 text-center text-lg font-sans-semibold text-ink mx-4" numberOfLines={1}>
+      <Text
+        className="mx-4 flex-1 text-center font-sans-semibold text-lg text-ink"
+        numberOfLines={1}
+      >
         {title}
       </Text>
 

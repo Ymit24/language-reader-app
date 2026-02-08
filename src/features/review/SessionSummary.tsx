@@ -35,7 +35,7 @@ export function SessionSummary({
 }: SessionSummaryProps) {
   const { colors } = useAppTheme();
   const accuracy = Math.round((correctCount / totalCards) * 100);
-  
+
   const cardScale = useSharedValue(0);
   const xpScale = useSharedValue(0);
   const statsOpacity = useSharedValue(0);
@@ -45,21 +45,27 @@ export function SessionSummary({
   useEffect(() => {
     // Staggered animations
     cardScale.value = withSpring(1, { damping: 12 });
-    
-    xpScale.value = withDelay(200, withSequence(
-      withSpring(1.2, { damping: 8 }),
-      withSpring(1, { damping: 12 })
-    ));
-    
+
+    xpScale.value = withDelay(
+      200,
+      withSequence(
+        withSpring(1.2, { damping: 8 }),
+        withSpring(1, { damping: 12 }),
+      ),
+    );
+
     statsOpacity.value = withDelay(400, withTiming(1, { duration: 300 }));
-    
+
     if (leveledUp) {
-      levelUpScale.value = withDelay(600, withSequence(
-        withSpring(1.3, { damping: 8 }),
-        withSpring(1, { damping: 12 })
-      ));
+      levelUpScale.value = withDelay(
+        600,
+        withSequence(
+          withSpring(1.3, { damping: 8 }),
+          withSpring(1, { damping: 12 }),
+        ),
+      );
     }
-    
+
     buttonOpacity.value = withDelay(800, withTiming(1, { duration: 300 }));
   }, []);
 
@@ -98,23 +104,23 @@ export function SessionSummary({
   };
 
   return (
-    <View className="flex-1 bg-canvas items-center justify-center px-6">
+    <View className="flex-1 items-center justify-center bg-canvas px-6">
       <Animated.View
         style={cardAnimStyle}
-        className="w-full max-w-md rounded-3xl bg-panel border border-border/80 shadow-card p-8"
+        className="w-full max-w-md rounded-3xl border border-border/80 bg-panel p-8 shadow-card"
       >
         {/* Header */}
-        <View className="items-center mb-6">
-          <Text className="text-4xl mb-2">{getAccuracyEmoji()}</Text>
-          <Text className="text-2xl font-serif-bold text-ink">
+        <View className="mb-6 items-center">
+          <Text className="mb-2 text-4xl">{getAccuracyEmoji()}</Text>
+          <Text className="font-serif-bold text-2xl text-ink">
             Session Complete!
           </Text>
         </View>
 
         {/* XP Earned */}
-        <Animated.View style={xpAnimStyle} className="items-center mb-6">
-          <View className="bg-brandSoft px-6 py-3 rounded-2xl">
-            <Text className="text-3xl font-sans-bold text-brand">
+        <Animated.View style={xpAnimStyle} className="mb-6 items-center">
+          <View className="rounded-2xl bg-brandSoft px-6 py-3">
+            <Text className="font-sans-bold text-3xl text-brand">
               +{xpEarned} XP
             </Text>
           </View>
@@ -122,13 +128,13 @@ export function SessionSummary({
 
         {/* Level Up Celebration */}
         {leveledUp && newLevel && newTitle && (
-          <Animated.View 
-            style={levelUpAnimStyle} 
-            className="items-center mb-6 py-4 px-6 rounded-2xl bg-gradient-to-r from-brandSoft to-successSoft"
+          <Animated.View
+            style={levelUpAnimStyle}
+            className="mb-6 items-center rounded-2xl bg-gradient-to-r from-brandSoft to-successSoft px-6 py-4"
           >
-            <View className="flex-row items-center gap-2 mb-2">
+            <View className="mb-2 flex-row items-center gap-2">
               <Ionicons name="trophy" size={24} color={colors['--accent']} />
-              <Text className="text-lg font-sans-bold text-accent">
+              <Text className="font-sans-bold text-lg text-accent">
                 Level Up!
               </Text>
             </View>
@@ -137,24 +143,24 @@ export function SessionSummary({
         )}
 
         {/* Stats Grid */}
-        <Animated.View style={statsAnimStyle} className="gap-4 mb-8">
+        <Animated.View style={statsAnimStyle} className="mb-8 gap-4">
           <View className="flex-row gap-4">
             {/* Accuracy */}
-            <View className="flex-1 bg-muted/50 rounded-xl p-4 items-center">
-              <Text className={`text-2xl font-sans-bold ${getAccuracyColor()}`}>
+            <View className="flex-1 items-center rounded-xl bg-muted/50 p-4">
+              <Text className={`font-sans-bold text-2xl ${getAccuracyColor()}`}>
                 {accuracy}%
               </Text>
-              <Text className="text-xs text-faint font-sans-medium mt-1">
+              <Text className="mt-1 font-sans-medium text-xs text-faint">
                 Accuracy
               </Text>
             </View>
 
             {/* Cards Reviewed */}
-            <View className="flex-1 bg-muted/50 rounded-xl p-4 items-center">
-              <Text className="text-2xl font-sans-bold text-ink">
+            <View className="flex-1 items-center rounded-xl bg-muted/50 p-4">
+              <Text className="font-sans-bold text-2xl text-ink">
                 {totalCards}
               </Text>
-              <Text className="text-xs text-faint font-sans-medium mt-1">
+              <Text className="mt-1 font-sans-medium text-xs text-faint">
                 Cards
               </Text>
             </View>
@@ -163,7 +169,7 @@ export function SessionSummary({
           {/* Streak */}
           <View className="flex-row items-center justify-center gap-2 py-3">
             <Ionicons name="flame" size={20} color={colors['--accent']} />
-            <Text className="text-lg font-sans-bold text-accent">
+            <Text className="font-sans-bold text-lg text-accent">
               {currentStreak} day streak
             </Text>
           </View>
@@ -173,11 +179,9 @@ export function SessionSummary({
         <Animated.View style={buttonAnimStyle}>
           <Pressable
             onPress={onDone}
-            className="w-full py-4 rounded-xl bg-brand items-center active:bg-brand/90"
+            className="w-full items-center rounded-xl bg-brand py-4 active:bg-brand/90"
           >
-            <Text className="text-base font-sans-bold text-white">
-              Done
-            </Text>
+            <Text className="font-sans-bold text-base text-white">Done</Text>
           </Pressable>
         </Animated.View>
       </Animated.View>

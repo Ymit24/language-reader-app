@@ -1,5 +1,11 @@
 import React, { useCallback, useRef } from 'react';
-import { View, Text, FlatList, ActivityIndicator, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  Pressable,
+} from 'react-native';
 import { Id } from '../../../convex/_generated/dataModel';
 import { VocabRow, VocabItem } from './VocabRow';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
@@ -45,18 +51,18 @@ export function VocabList({
         selectionMode={selectionMode}
       />
     ),
-    [selectedIds, activeId, onToggleSelect, onSelectWord, selectionMode]
+    [selectedIds, activeId, onToggleSelect, onSelectWord, selectionMode],
   );
 
   const renderFooter = useCallback(() => {
     if (!hasMore) return null;
     return (
-      <View className="py-4 items-center">
+      <View className="items-center py-4">
         <Pressable
           onPress={onLoadMore}
-          className="bg-muted px-4 py-2 rounded-lg"
+          className="rounded-lg bg-muted px-4 py-2"
         >
-          <Text className="text-sm text-subink font-sans-medium">
+          <Text className="font-sans-medium text-sm text-subink">
             Load more
           </Text>
         </Pressable>
@@ -68,7 +74,7 @@ export function VocabList({
     return (
       <View className="flex-1 items-center justify-center py-12">
         <ActivityIndicator size="large" color={colors['--brand']} />
-        <Text className="text-sm text-subink font-sans-medium mt-3">
+        <Text className="mt-3 font-sans-medium text-sm text-subink">
           Loading vocabulary...
         </Text>
       </View>
@@ -77,14 +83,14 @@ export function VocabList({
 
   if (isEmpty) {
     return (
-      <View className="flex-1 items-center justify-center py-12 px-6">
-        <View className="w-16 h-16 rounded-full bg-muted items-center justify-center mb-4">
+      <View className="flex-1 items-center justify-center px-6 py-12">
+        <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-muted">
           <Text className="text-3xl">📚</Text>
         </View>
-        <Text className="text-lg font-sans-semibold text-ink text-center">
+        <Text className="text-center font-sans-semibold text-lg text-ink">
           {emptyMessage}
         </Text>
-        <Text className="text-sm text-subink font-sans-medium text-center mt-2">
+        <Text className="mt-2 text-center font-sans-medium text-sm text-subink">
           Start reading lessons to build your vocabulary
         </Text>
       </View>

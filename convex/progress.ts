@@ -1,24 +1,24 @@
-import { v } from "convex/values";
-import { query, mutation, internalMutation } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from 'convex/values';
+import { query, mutation, internalMutation } from './_generated/server';
+import { getAuthUserId } from '@convex-dev/auth/server';
 
 // Level thresholds and titles
 const LEVELS = [
-  { level: 1, xpRequired: 0, title: "Beginner" },
-  { level: 2, xpRequired: 100, title: "Novice" },
-  { level: 3, xpRequired: 300, title: "Learner" },
-  { level: 4, xpRequired: 600, title: "Student" },
-  { level: 5, xpRequired: 1000, title: "Scholar" },
-  { level: 6, xpRequired: 1500, title: "Expert" },
-  { level: 7, xpRequired: 2200, title: "Master" },
-  { level: 8, xpRequired: 3000, title: "Sage" },
-  { level: 9, xpRequired: 4000, title: "Virtuoso" },
-  { level: 10, xpRequired: 5500, title: "Polyglot" },
-  { level: 11, xpRequired: 7500, title: "Linguist" },
-  { level: 12, xpRequired: 10000, title: "Wordsmith" },
-  { level: 13, xpRequired: 13000, title: "Eloquent" },
-  { level: 14, xpRequired: 17000, title: "Grandmaster" },
-  { level: 15, xpRequired: 22000, title: "Legend" },
+  { level: 1, xpRequired: 0, title: 'Beginner' },
+  { level: 2, xpRequired: 100, title: 'Novice' },
+  { level: 3, xpRequired: 300, title: 'Learner' },
+  { level: 4, xpRequired: 600, title: 'Student' },
+  { level: 5, xpRequired: 1000, title: 'Scholar' },
+  { level: 6, xpRequired: 1500, title: 'Expert' },
+  { level: 7, xpRequired: 2200, title: 'Master' },
+  { level: 8, xpRequired: 3000, title: 'Sage' },
+  { level: 9, xpRequired: 4000, title: 'Virtuoso' },
+  { level: 10, xpRequired: 5500, title: 'Polyglot' },
+  { level: 11, xpRequired: 7500, title: 'Linguist' },
+  { level: 12, xpRequired: 10000, title: 'Wordsmith' },
+  { level: 13, xpRequired: 13000, title: 'Eloquent' },
+  { level: 14, xpRequired: 17000, title: 'Grandmaster' },
+  { level: 15, xpRequired: 22000, title: 'Legend' },
 ];
 
 // XP rewards
@@ -68,7 +68,7 @@ export function getLevelFromXp(totalXp: number): {
 export function calculateXpForReview(
   quality: number,
   currentStreak: number,
-  isFirstReviewOfDay: boolean
+  isFirstReviewOfDay: boolean,
 ): { baseXp: number; bonusXp: number; totalXp: number } {
   let baseXp = 0;
 
@@ -97,7 +97,7 @@ export function calculateXpForReview(
 }
 
 function getTodayDateString(): string {
-  return new Date().toISOString().split("T")[0];
+  return new Date().toISOString().split('T')[0];
 }
 
 export const getProgress = query({
@@ -108,8 +108,8 @@ export const getProgress = query({
     }
 
     const progress = await ctx.db
-      .query("userProgress")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .query('userProgress')
+      .withIndex('by_userId', (q) => q.eq('userId', userId))
       .first();
 
     if (!progress) {
@@ -117,7 +117,7 @@ export const getProgress = query({
       return {
         totalXp: 0,
         level: 1,
-        title: "Beginner",
+        title: 'Beginner',
         currentStreak: 0,
         longestStreak: 0,
         streakShields: 0,
@@ -159,9 +159,9 @@ export const getDailyStats = query({
 
     const days = args.days ?? 90;
     const stats = await ctx.db
-      .query("dailyStats")
-      .withIndex("by_user_date", (q) => q.eq("userId", userId))
-      .order("desc")
+      .query('dailyStats')
+      .withIndex('by_user_date', (q) => q.eq('userId', userId))
+      .order('desc')
       .take(days);
 
     return stats.reverse();
@@ -177,9 +177,9 @@ export const getTodayStats = query({
 
     const today = getTodayDateString();
     const stats = await ctx.db
-      .query("dailyStats")
-      .withIndex("by_user_date", (q) =>
-        q.eq("userId", userId).eq("date", today)
+      .query('dailyStats')
+      .withIndex('by_user_date', (q) =>
+        q.eq('userId', userId).eq('date', today),
       )
       .first();
 
@@ -205,9 +205,9 @@ export const getWeeklyStats = query({
 
     // Get last 7 days of stats
     const stats = await ctx.db
-      .query("dailyStats")
-      .withIndex("by_user_date", (q) => q.eq("userId", userId))
-      .order("desc")
+      .query('dailyStats')
+      .withIndex('by_user_date', (q) => q.eq('userId', userId))
+      .order('desc')
       .take(7);
 
     const totals = stats.reduce(
@@ -216,7 +216,7 @@ export const getWeeklyStats = query({
         correctCount: acc.correctCount + day.correctCount,
         xpEarned: acc.xpEarned + day.xpEarned,
       }),
-      { reviewCount: 0, correctCount: 0, xpEarned: 0 }
+      { reviewCount: 0, correctCount: 0, xpEarned: 0 },
     );
 
     return {
@@ -237,7 +237,7 @@ export const recordReviewResult = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const now = Date.now();
@@ -245,8 +245,8 @@ export const recordReviewResult = mutation({
 
     // Get or create user progress
     let progress = await ctx.db
-      .query("userProgress")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .query('userProgress')
+      .withIndex('by_userId', (q) => q.eq('userId', userId))
       .first();
 
     const isFirstReviewOfDay = progress?.lastReviewDate !== today;
@@ -256,7 +256,7 @@ export const recordReviewResult = mutation({
     if (isFirstReviewOfDay && progress) {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split("T")[0];
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
 
       if (progress.lastReviewDate === yesterdayStr) {
         // Continuing streak
@@ -281,7 +281,7 @@ export const recordReviewResult = mutation({
     const xpResult = calculateXpForReview(
       args.quality,
       currentStreak,
-      isFirstReviewOfDay
+      isFirstReviewOfDay,
     );
 
     const isCorrect = args.quality >= 3;
@@ -308,7 +308,7 @@ export const recordReviewResult = mutation({
         updatedAt: now,
       });
     } else {
-      await ctx.db.insert("userProgress", {
+      await ctx.db.insert('userProgress', {
         userId,
         totalXp: xpResult.totalXp,
         level: 1,
@@ -325,9 +325,9 @@ export const recordReviewResult = mutation({
 
     // Update daily stats
     let dailyStats = await ctx.db
-      .query("dailyStats")
-      .withIndex("by_user_date", (q) =>
-        q.eq("userId", userId).eq("date", today)
+      .query('dailyStats')
+      .withIndex('by_user_date', (q) =>
+        q.eq('userId', userId).eq('date', today),
       )
       .first();
 
@@ -341,7 +341,7 @@ export const recordReviewResult = mutation({
         minutesSpent: dailyStats.minutesSpent + sessionMinutes,
       });
     } else {
-      await ctx.db.insert("dailyStats", {
+      await ctx.db.insert('dailyStats', {
         userId,
         date: today,
         reviewCount: 1,

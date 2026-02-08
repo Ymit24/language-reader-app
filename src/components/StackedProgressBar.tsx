@@ -26,18 +26,31 @@ export function StackedProgressBar({
   }
 
   const segments = [
-    { key: 'known', label: 'Known', count: counts.known, color: 'bg-vKnownLine' },
-    { key: 'learning', label: 'Learning', count: counts.learning, color: 'bg-vLearningLine' },
+    {
+      key: 'known',
+      label: 'Known',
+      count: counts.known,
+      color: 'bg-vKnownLine',
+    },
+    {
+      key: 'learning',
+      label: 'Learning',
+      count: counts.learning,
+      color: 'bg-vLearningLine',
+    },
     { key: 'new', label: 'New', count: counts.new, color: 'bg-vUnknownLine' },
-  ].filter(seg => seg.count > 0);
+  ].filter((seg) => seg.count > 0);
 
-  const formatPercent = (count: number) => Math.round((count / actualTotal) * 100);
+  const formatPercent = (count: number) =>
+    Math.round((count / actualTotal) * 100);
 
   const heightClass = height === 4 ? 'h-1' : height === 6 ? 'h-1.5' : 'h-0.75';
 
   return (
     <View className="w-full">
-      <View className={`w-full rounded-full flex-row overflow-hidden bg-border/70 ${heightClass}`}>
+      <View
+        className={`w-full flex-row overflow-hidden rounded-full bg-border/70 ${heightClass}`}
+      >
         {segments.map((segment) => {
           const width = (segment.count / actualTotal) * 100;
           return (
@@ -50,11 +63,11 @@ export function StackedProgressBar({
         })}
       </View>
       {showLegend && (
-        <View className="flex-row flex-wrap mt-2 gap-x-4 gap-y-1">
+        <View className="mt-2 flex-row flex-wrap gap-x-4 gap-y-1">
           {segments.map((segment) => (
             <View key={segment.key} className="flex-row items-center gap-1.5">
-              <View className={`w-2.5 h-2.5 rounded-full ${segment.color}`} />
-              <Text className="text-xs text-subink font-sans-medium">
+              <View className={`h-2.5 w-2.5 rounded-full ${segment.color}`} />
+              <Text className="font-sans-medium text-xs text-subink">
                 {segment.label}: {formatPercent(segment.count)}%
               </Text>
             </View>

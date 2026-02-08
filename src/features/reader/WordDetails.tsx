@@ -2,7 +2,13 @@ import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useAction } from 'convex/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../../convex/_generated/api';
 import { cn } from '../../lib/utils';
@@ -62,7 +68,10 @@ export function WordDetails({
   const [hasLookupError, setHasLookupError] = useState(false);
   const [lookupNonce, setLookupNonce] = useState(0);
 
-  const lookupKey = useMemo(() => `${language}:${normalized.toLowerCase()}`, [language, normalized]);
+  const lookupKey = useMemo(
+    () => `${language}:${normalized.toLowerCase()}`,
+    [language, normalized],
+  );
 
   useEffect(() => {
     setEntries(null);
@@ -88,7 +97,10 @@ export function WordDetails({
       setIsLoading(true);
       setHasLookupError(false);
       try {
-        const result = (await lookupAction({ language, term: normalized })) as LookupResult;
+        const result = (await lookupAction({
+          language,
+          term: normalized,
+        })) as LookupResult;
         cacheRef.current.set(lookupKey, result);
         if (result.success) {
           setEntries(result.entries);
@@ -162,35 +174,42 @@ export function WordDetails({
   ];
 
   const containerStyle = isSidebar
-    ? "flex-1 bg-panel border-l border-border/70"
-    : "w-full min-h-[70%] max-h-[85%] bg-panel shadow-pop border-t border-border/70 overflow-auto rounded-t-3xl";
+    ? 'flex-1 bg-panel border-l border-border/70'
+    : 'w-full min-h-[70%] max-h-[85%] bg-panel shadow-pop border-t border-border/70 overflow-auto rounded-t-3xl';
 
   const renderEntry = (entry: DictionaryEntry, keyPrefix: string) => (
-    <View key={`${keyPrefix}-${JSON.stringify(entry)}`} className="mb-4 last:mb-0">
-      <View className="flex-row items-center flex-wrap gap-2 mb-2">
-        <Text className="text-xs font-sans-semibold text-brand bg-brandSoft px-2 py-0.5 rounded">
+    <View
+      key={`${keyPrefix}-${JSON.stringify(entry)}`}
+      className="mb-4 last:mb-0"
+    >
+      <View className="mb-2 flex-row flex-wrap items-center gap-2">
+        <Text className="rounded bg-brandSoft px-2 py-0.5 font-sans-semibold text-xs text-brand">
           {entry.partOfSpeech}
         </Text>
         {entry.phonetic && (
-          <Text className="text-xs text-faint font-mono">
-            {entry.phonetic}
-          </Text>
+          <Text className="font-mono text-xs text-faint">{entry.phonetic}</Text>
         )}
         {entry.tags?.map((tag) => (
-          <Text key={tag} className="text-xs text-faint bg-muted px-2 py-0.5 rounded font-sans-medium">
+          <Text
+            key={tag}
+            className="rounded bg-muted px-2 py-0.5 font-sans-medium text-xs text-faint"
+          >
             {tag}
           </Text>
         ))}
       </View>
       {entry.definitions.map((def, defIndex) => (
         <View key={defIndex} className="mb-3 last:mb-0">
-          <Text className="text-sm text-ink leading-5 font-sans-medium">
+          <Text className="font-sans-medium text-sm leading-5 text-ink">
             {defIndex + 1}. {def.definition}
           </Text>
           {def.examples && def.examples.length > 0 && (
-            <View className="mt-1 ml-4">
+            <View className="ml-4 mt-1">
               {def.examples.map((example, exIndex) => (
-                <Text key={exIndex} className="text-xs text-faint italic leading-5 font-sans-medium">
+                <Text
+                  key={exIndex}
+                  className="font-sans-medium text-xs italic leading-5 text-faint"
+                >
                   &quot;{example}&quot;
                 </Text>
               ))}
@@ -204,9 +223,11 @@ export function WordDetails({
   const renderDictionaryContent = () => {
     if (isLoading) {
       return (
-        <View className="px-6 py-8 items-center">
+        <View className="items-center px-6 py-8">
           <ActivityIndicator size="small" color={colors['--faint']} />
-          <Text className="text-sm text-faint mt-2">Looking up definition...</Text>
+          <Text className="mt-2 text-sm text-faint">
+            Looking up definition...
+          </Text>
         </View>
       );
     }
@@ -215,15 +236,19 @@ export function WordDetails({
       return (
         <Pressable
           onPress={handleRetry}
-          className="px-6 py-4 bg-canvas/60 border-y border-border/40 active:bg-muted/70"
+          className="border-y border-border/40 bg-canvas/60 px-6 py-4 active:bg-muted/70"
         >
-          <View className="flex-row items-center mb-2 opacity-50">
-            <Ionicons name="search-outline" size={14} color={colors['--subink']} />
-            <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink ml-1.5">
+          <View className="mb-2 flex-row items-center opacity-50">
+            <Ionicons
+              name="search-outline"
+              size={14}
+              color={colors['--subink']}
+            />
+            <Text className="ml-1.5 font-sans-semibold text-[10px] uppercase tracking-widest text-subink">
               Definition
             </Text>
           </View>
-          <Text className="text-sm text-subink leading-5 italic font-sans-medium">
+          <Text className="font-sans-medium text-sm italic leading-5 text-subink">
             Unable to load definition. Tap to retry.
           </Text>
         </Pressable>
@@ -232,14 +257,18 @@ export function WordDetails({
 
     if ((!entries || entries.length === 0) && lemmaEntries.length === 0) {
       return (
-        <View className="px-6 py-4 bg-canvas/60 border-y border-border/40">
-          <View className="flex-row items-center mb-2 opacity-50">
-            <Ionicons name="search-outline" size={14} color={colors['--subink']} />
-            <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink ml-1.5">
+        <View className="border-y border-border/40 bg-canvas/60 px-6 py-4">
+          <View className="mb-2 flex-row items-center opacity-50">
+            <Ionicons
+              name="search-outline"
+              size={14}
+              color={colors['--subink']}
+            />
+            <Text className="ml-1.5 font-sans-semibold text-[10px] uppercase tracking-widest text-subink">
               Definition
             </Text>
           </View>
-          <Text className="text-sm text-subink leading-5 italic font-sans-medium">
+          <Text className="font-sans-medium text-sm italic leading-5 text-subink">
             No definition found for this word.
           </Text>
         </View>
@@ -247,10 +276,14 @@ export function WordDetails({
     }
 
     return (
-      <View className="px-6 py-4 bg-canvas/60 border-y border-border/40">
-        <View className="flex-row items-center mb-3 opacity-50">
-          <Ionicons name="search-outline" size={14} color={colors['--subink']} />
-          <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink ml-1.5">
+      <View className="border-y border-border/40 bg-canvas/60 px-6 py-4">
+        <View className="mb-3 flex-row items-center opacity-50">
+          <Ionicons
+            name="search-outline"
+            size={14}
+            color={colors['--subink']}
+          />
+          <Text className="ml-1.5 font-sans-semibold text-[10px] uppercase tracking-widest text-subink">
             Definition
           </Text>
         </View>
@@ -258,14 +291,20 @@ export function WordDetails({
         {entries && entries.length > 0 && renderEntry(entries[0], 'main')}
 
         {lemma && lemmaEntries.length > 0 && (
-          <View className="mt-4 pt-4 border-t border-border/30">
-            <View className="flex-row items-center gap-2 mb-3">
-              <Ionicons name="git-branch-outline" size={14} color={colors['--brand']} />
-              <Text className="text-xs font-sans-semibold text-brand">
+          <View className="mt-4 border-t border-border/30 pt-4">
+            <View className="mb-3 flex-row items-center gap-2">
+              <Ionicons
+                name="git-branch-outline"
+                size={14}
+                color={colors['--brand']}
+              />
+              <Text className="font-sans-semibold text-xs text-brand">
                 Base form: {lemma}
               </Text>
             </View>
-            {lemmaEntries.map((entry, idx) => renderEntry(entry, `lemma-${idx}`))}
+            {lemmaEntries.map((entry, idx) =>
+              renderEntry(entry, `lemma-${idx}`),
+            )}
           </View>
         )}
       </View>
@@ -275,20 +314,22 @@ export function WordDetails({
   return (
     <View className={containerStyle}>
       <View className="p-6 pb-4">
-        <View className="flex-row justify-between items-start">
+        <View className="flex-row items-start justify-between">
           <View className="flex-1 pr-4">
-            <Text className="text-3xl font-serif-bold text-ink tracking-tight">
+            <Text className="font-serif-bold text-3xl tracking-tight text-ink">
               {surface}
             </Text>
             {surface.toLowerCase() !== normalized.toLowerCase() && (
-              <Text className="text-sm text-faint mt-0.5 font-sans-medium italic">
+              <Text className="mt-0.5 font-sans-medium text-sm italic text-faint">
                 {normalized}
               </Text>
             )}
             {isUpdating && (
-              <View className="flex-row items-center gap-2 mt-3">
+              <View className="mt-3 flex-row items-center gap-2">
                 <ActivityIndicator size="small" color={colors['--faint']} />
-                <Text className="text-xs text-faint font-sans-medium">Updating status…</Text>
+                <Text className="font-sans-medium text-xs text-faint">
+                  Updating status…
+                </Text>
               </View>
             )}
           </View>
@@ -297,12 +338,18 @@ export function WordDetails({
             onPress={() => {
               // TODO: open Ask modal / prompt to query LLM about this word
             }}
-            className="h-8 px-3 flex-row items-center justify-center rounded-full bg-muted active:bg-border mr-2"
+            className="mr-2 h-8 flex-row items-center justify-center rounded-full bg-muted px-3 active:bg-border"
             hitSlop={20}
             accessibilityLabel="Ask about word"
           >
-            <Ionicons name="chatbubble-ellipses-outline" size={16} color={colors['--brand']} />
-            <Text className="text-sm text-brand font-sans-medium ml-2">Ask</Text>
+            <Ionicons
+              name="chatbubble-ellipses-outline"
+              size={16}
+              color={colors['--brand']}
+            />
+            <Text className="ml-2 font-sans-medium text-sm text-brand">
+              Ask
+            </Text>
           </Pressable>
 
           <Pressable
@@ -320,16 +367,20 @@ export function WordDetails({
       </ScrollView>
 
       <View
-        className="p-5 pt-4 border-t border-border/40 bg-panel"
-        style={!isSidebar ? { paddingBottom: Math.max(insets.bottom, 24) } : undefined}
+        className="border-t border-border/40 bg-panel p-5 pt-4"
+        style={
+          !isSidebar
+            ? { paddingBottom: Math.max(insets.bottom, 24) }
+            : undefined
+        }
       >
-        <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink/70 mb-3.5 pl-1">
+        <Text className="mb-3.5 pl-1 font-sans-semibold text-[10px] uppercase tracking-widest text-subink/70">
           Set Word Status
         </Text>
         <View
           className={cn(
             'flex-row flex-wrap gap-2.5',
-            isSidebar ? 'flex-col' : 'flex-row'
+            isSidebar ? 'flex-col' : 'flex-row',
           )}
         >
           {statusOptions.map((opt) => {
@@ -345,18 +396,18 @@ export function WordDetails({
                 onPress={() => onUpdateStatus(opt.value)}
                 disabled={isUpdating}
                 className={cn(
-                  'p-3 rounded-xl border transition-all',
-                  isSidebar ? 'w-full' : 'flex-1 min-w-[140px]',
+                  'rounded-xl border p-3 transition-all',
+                  isSidebar ? 'w-full' : 'min-w-[140px] flex-1',
                   bgClass,
                   borderClass,
-                  isUpdating ? 'opacity-50' : ''
+                  isUpdating ? 'opacity-50' : '',
                 )}
               >
                 <View className="flex-row items-center">
                   <View
                     className={cn(
-                      'w-8 h-8 rounded-lg items-center justify-center mr-3',
-                      isActive ? 'bg-panel/80 shadow-sm' : 'bg-panel/40' // Inner icon container
+                      'mr-3 h-8 w-8 items-center justify-center rounded-lg',
+                      isActive ? 'bg-panel/80 shadow-sm' : 'bg-panel/40', // Inner icon container
                     )}
                   >
                     <Ionicons
@@ -368,20 +419,23 @@ export function WordDetails({
                   <View className="flex-1">
                     <Text
                       className={cn(
-                        'text-sm font-sans-bold leading-tight',
-                        textClass
+                        'font-sans-bold text-sm leading-tight',
+                        textClass,
                       )}
                       style={isActive ? { color: opt.color } : undefined}
                     >
                       {opt.label}
                     </Text>
-                    <Text className="text-[10px] text-faint font-sans-medium leading-tight mt-0.5">
+                    <Text className="mt-0.5 font-sans-medium text-[10px] leading-tight text-faint">
                       {opt.desc}
                     </Text>
                   </View>
 
                   {isActive && (
-                    <View className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: opt.color }} />
+                    <View
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: opt.color }}
+                    />
                   )}
                 </View>
               </Pressable>

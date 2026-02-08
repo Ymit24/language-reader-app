@@ -1,7 +1,7 @@
-import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
-import { tokenize } from "./lib/tokenize";
+import { v } from 'convex/values';
+import { query, mutation } from './_generated/server';
+import { getAuthUserId } from '@convex-dev/auth/server';
+import { tokenize } from './lib/tokenize';
 
 export const listLessons = query({
   args: {},
@@ -15,12 +15,12 @@ export const listLessons = query({
     // Ordered by lastOpenedAt desc (most recent), then createdAt desc
     // Convex doesn't support multi-field sort easily in one go unless indexed that way.
     // Index: "by_user_lastOpenedAt" ["userId", "lastOpenedAt"]
-    
+
     // We'll prioritize the "Recently Opened" view
     const lessons = await ctx.db
-      .query("lessons")
-      .withIndex("by_user_lastOpenedAt", (q) => q.eq("userId", userId))
-      .order("desc")
+      .query('lessons')
+      .withIndex('by_user_lastOpenedAt', (q) => q.eq('userId', userId))
+      .order('desc')
       .collect();
 
     return lessons;
@@ -30,13 +30,13 @@ export const listLessons = query({
 export const createLesson = mutation({
   args: {
     title: v.string(),
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
     rawText: v.string(),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const { title, language, rawText } = args;
@@ -54,11 +54,11 @@ export const createLesson = mutation({
     const now = Date.now();
 
     // 3. Create Lesson
-    const lessonId = await ctx.db.insert("lessons", {
+    const lessonId = await ctx.db.insert('lessons', {
       userId,
       language,
       title,
-      source: "paste",
+      source: 'paste',
       rawText,
       lastOpenedAt: now,
       tokenCount,
@@ -71,7 +71,7 @@ export const createLesson = mutation({
     // We'll use Promise.all for speed, though Convex handles them sequentially in the transaction.
     await Promise.all(
       tokens.map((token, index) =>
-        ctx.db.insert("lessonTokens", {
+        ctx.db.insert('lessonTokens', {
           userId,
           lessonId,
           language,
@@ -80,8 +80,8 @@ export const createLesson = mutation({
           normalized: token.normalized,
           isWord: token.isWord,
           createdAt: now,
-        })
-      )
+        }),
+      ),
     );
 
     return lessonId;
@@ -90,12 +90,12 @@ export const createLesson = mutation({
 
 export const deleteLesson = mutation({
   args: {
-    lessonId: v.id("lessons"),
+    lessonId: v.id('lessons'),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const { lessonId } = args;
@@ -103,13 +103,13 @@ export const deleteLesson = mutation({
     // Verify ownership
     const lesson = await ctx.db.get(lessonId);
     if (!lesson || lesson.userId !== userId) {
-      throw new Error("Lesson not found or unauthorized");
+      throw new Error('Lesson not found or unauthorized');
     }
 
     // Delete lesson tokens
     const tokens = await ctx.db
-      .query("lessonTokens")
-      .withIndex("by_lesson_index", (q) => q.eq("lessonId", lessonId))
+      .query('lessonTokens')
+      .withIndex('by_lesson_index', (q) => q.eq('lessonId', lessonId))
       .collect();
 
     await Promise.all(tokens.map((t) => ctx.db.delete(t._id)));
@@ -121,15 +121,15 @@ export const deleteLesson = mutation({
 
 export const updateLesson = mutation({
   args: {
-    lessonId: v.id("lessons"),
+    lessonId: v.id('lessons'),
     title: v.string(),
-    language: v.union(v.literal("de"), v.literal("fr"), v.literal("ja")),
+    language: v.union(v.literal('de'), v.literal('fr'), v.literal('ja')),
     rawText: v.string(),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const { lessonId, title, language, rawText } = args;
@@ -137,7 +137,7 @@ export const updateLesson = mutation({
     // Verify ownership
     const lesson = await ctx.db.get(lessonId);
     if (!lesson || lesson.userId !== userId) {
-      throw new Error("Lesson not found or unauthorized");
+      throw new Error('Lesson not found or unauthorized');
     }
 
     // Tokenize new text
@@ -153,8 +153,8 @@ export const updateLesson = mutation({
 
     // Delete existing tokens
     const existingTokens = await ctx.db
-      .query("lessonTokens")
-      .withIndex("by_lesson_index", (q) => q.eq("lessonId", lessonId))
+      .query('lessonTokens')
+      .withIndex('by_lesson_index', (q) => q.eq('lessonId', lessonId))
       .collect();
 
     await Promise.all(existingTokens.map((t) => ctx.db.delete(t._id)));
@@ -162,7 +162,7 @@ export const updateLesson = mutation({
     // Batch insert new tokens
     await Promise.all(
       tokens.map((token, index) =>
-        ctx.db.insert("lessonTokens", {
+        ctx.db.insert('lessonTokens', {
           userId,
           lessonId,
           language,
@@ -171,8 +171,8 @@ export const updateLesson = mutation({
           normalized: token.normalized,
           isWord: token.isWord,
           createdAt: now,
-        })
-      )
+        }),
+      ),
     );
 
     // Update lesson
@@ -189,21 +189,21 @@ export const updateLesson = mutation({
 
 export const updateLessonProgress = mutation({
   args: {
-    lessonId: v.id("lessons"),
+    lessonId: v.id('lessons'),
     currentPage: v.optional(v.number()),
     lastTokenIndex: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const { lessonId } = args;
 
     const lesson = await ctx.db.get(lessonId);
     if (!lesson || lesson.userId !== userId) {
-      throw new Error("Lesson not found or unauthorized");
+      throw new Error('Lesson not found or unauthorized');
     }
 
     const now = Date.now();
@@ -225,7 +225,7 @@ export const updateLessonProgress = mutation({
 
 export const getLesson = query({
   args: {
-    lessonId: v.id("lessons"),
+    lessonId: v.id('lessons'),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -244,8 +244,8 @@ export const getLesson = query({
     // Optimization: In a real app with huge texts, we might paginate tokens.
     // For MVP, we fetch all.
     const tokens = await ctx.db
-      .query("lessonTokens")
-      .withIndex("by_lesson_index", (q) => q.eq("lessonId", lessonId))
+      .query('lessonTokens')
+      .withIndex('by_lesson_index', (q) => q.eq('lessonId', lessonId))
       .collect();
 
     return {
@@ -264,16 +264,16 @@ export const listLessonsWithVocab = query({
     }
 
     const lessons = await ctx.db
-      .query("lessons")
-      .withIndex("by_user_lastOpenedAt", (q) => q.eq("userId", userId))
-      .order("desc")
+      .query('lessons')
+      .withIndex('by_user_lastOpenedAt', (q) => q.eq('userId', userId))
+      .order('desc')
       .collect();
 
     const result = await Promise.all(
       lessons.map(async (lesson) => {
         const tokens = await ctx.db
-          .query("lessonTokens")
-          .withIndex("by_lesson_index", (q) => q.eq("lessonId", lesson._id))
+          .query('lessonTokens')
+          .withIndex('by_lesson_index', (q) => q.eq('lessonId', lesson._id))
           .collect();
 
         const uniqueTerms = new Set<string>();
@@ -287,7 +287,7 @@ export const listLessonsWithVocab = query({
           ...lesson,
           uniqueTerms: Array.from(uniqueTerms),
         };
-      })
+      }),
     );
 
     return result;
@@ -296,19 +296,19 @@ export const listLessonsWithVocab = query({
 
 export const completeLesson = mutation({
   args: {
-    lessonId: v.id("lessons"),
+    lessonId: v.id('lessons'),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     const { lessonId } = args;
 
     const lesson = await ctx.db.get(lessonId);
     if (!lesson || lesson.userId !== userId) {
-      throw new Error("Lesson not found or unauthorized");
+      throw new Error('Lesson not found or unauthorized');
     }
 
     await ctx.db.patch(lessonId, {

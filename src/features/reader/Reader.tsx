@@ -2,8 +2,20 @@ import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery } from 'convex/react';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { api } from '../../../convex/_generated/api';
 import { Doc, Id } from '../../../convex/_generated/dataModel';
@@ -12,7 +24,7 @@ import { ReaderPage } from './ReaderPage';
 import { WordDetails } from './WordDetails';
 
 interface ReaderProps {
-  lesson: Doc<"lessons"> & { tokens: Doc<"lessonTokens">[] };
+  lesson: Doc<'lessons'> & { tokens: Doc<'lessonTokens'>[] };
   isScreenFocused?: boolean;
 }
 
@@ -38,7 +50,9 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
   const carouselRef = useRef<ICarouselInstance>(null);
   const hasSetInitialPage = useRef(false);
   const layoutUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const progressUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const progressUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const fallbackCarouselHeight = useMemo(() => {
     // Leave room for the app header + reader card padding + the in-card footer.
     // Keep a sane minimum so the carousel mounts on first layout.
@@ -47,7 +61,10 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
   const readerFrameWidth = useMemo(() => {
     const horizontalPadding = 32;
     const reservedSidebar = isLargeScreen ? SIDEBAR_EXPANDED_WIDTH : 0;
-    const availableWidth = Math.max(width - reservedSidebar - horizontalPadding, 0);
+    const availableWidth = Math.max(
+      width - reservedSidebar - horizontalPadding,
+      0,
+    );
     if (!isLargeScreen) {
       return availableWidth;
     }
@@ -58,17 +75,27 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
     height: fallbackCarouselHeight,
   });
   const carouselWidth = readerFrameWidth;
-  const carouselHeight = carouselLayout.height > 0 ? carouselLayout.height : fallbackCarouselHeight;
+  const carouselHeight =
+    carouselLayout.height > 0 ? carouselLayout.height : fallbackCarouselHeight;
 
   const language = lesson.language;
-  const vocabData = useQuery(api.vocab.getVocabProfile, language ? { language } : "skip");
+  const vocabData = useQuery(
+    api.vocab.getVocabProfile,
+    language ? { language } : 'skip',
+  );
   const isVocabLoading = vocabData === undefined;
 
   const [selectedToken, setSelectedToken] = useState<ReaderToken | null>(null);
-  const [selectedNormalized, setSelectedNormalized] = useState<string | null>(null);
+  const [selectedNormalized, setSelectedNormalized] = useState<string | null>(
+    null,
+  );
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(() => Math.max(0, lesson.currentPage ?? 0));
-  const [localStatusOverrides, setLocalStatusOverrides] = useState<Record<string, number>>({});
+  const [currentPage, setCurrentPage] = useState(() =>
+    Math.max(0, lesson.currentPage ?? 0),
+  );
+  const [localStatusOverrides, setLocalStatusOverrides] = useState<
+    Record<string, number>
+  >({});
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const WORDS_PER_PAGE = 200;
@@ -102,9 +129,10 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
       if (token.isWord) {
         wordCount++;
       }
-      
+
       if (wordCount >= WORDS_PER_PAGE) {
-        const isParagraphBreak = !token.isWord && token.surface.includes('\n\n');
+        const isParagraphBreak =
+          !token.isWord && token.surface.includes('\n\n');
         const isSentenceEnd = !token.isWord && /[.!?]/.test(token.surface);
         const isForced = wordCount >= WORDS_PER_PAGE * 1.5;
 
@@ -115,12 +143,12 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
             const next = allTokens[j];
             if (next.isWord) break;
             if (next.surface.includes('\n\n')) break;
-            
+
             currentChunk.push(next);
             i = j;
             j++;
           }
-          
+
           pagesArray.push(currentChunk);
           currentChunk = [];
           wordCount = 0;
@@ -132,7 +160,6 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
     }
     return pagesArray;
   }, [lesson.tokens]);
-
 
   const totalPages = pages.length;
 
@@ -152,13 +179,13 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
       }
       progressUpdateTimer.current = setTimeout(() => {
         updateProgressMutation({
-          lessonId: lesson._id as Id<"lessons">,
+          lessonId: lesson._id as Id<'lessons'>,
           currentPage: newPage,
           lastTokenIndex: newPage * WORDS_PER_PAGE,
         });
       }, 240);
     },
-    [lesson._id, updateProgressMutation]
+    [lesson._id, updateProgressMutation],
   );
 
   const handleUpdateStatus = async (newStatus: number) => {
@@ -206,7 +233,7 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
 
     const initialPage = Math.min(
       Math.max(lesson.currentPage ?? 0, 0),
-      pages.length - 1
+      pages.length - 1,
     );
 
     hasSetInitialPage.current = true;
@@ -235,16 +262,15 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
   const hasPages = totalPages > 0;
   const canGoPrev = currentPage > 0;
   const isLastPage = currentPage === totalPages - 1;
-  const showInspector = Boolean(selectedToken && language && (isLargeScreen || isInspectorOpen));
+  const showInspector = Boolean(
+    selectedToken && language && (isLargeScreen || isInspectorOpen),
+  );
 
   return (
     <View className="flex-1 bg-canvas">
       <View className="flex-1" style={{ minHeight: 1 }}>
         <View className="flex-1 items-center">
-          <View
-            className="flex-1"
-            style={{ width: readerFrameWidth }}
-          >
+          <View className="flex-1" style={{ width: readerFrameWidth }}>
             <View
               className="flex-1"
               style={{ minHeight: 1 }}
@@ -257,19 +283,22 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
                     clearTimeout(layoutUpdateTimer.current);
                   }
                   layoutUpdateTimer.current = setTimeout(() => {
-                    setCarouselLayout({ width: readerFrameWidth, height: layoutHeight });
+                    setCarouselLayout({
+                      width: readerFrameWidth,
+                      height: layoutHeight,
+                    });
                   }, 80);
                 }
               }}
             >
               {hasPages ? (
-                 <Carousel
-                   ref={carouselRef}
-                   width={carouselWidth}
-                   height={carouselHeight}
-                   style={{ flex: 1, height: carouselHeight, width: '100%' }}
-                   data={pages}
-                   loop={false}
+                <Carousel
+                  ref={carouselRef}
+                  width={carouselWidth}
+                  height={carouselHeight}
+                  style={{ flex: 1, height: carouselHeight, width: '100%' }}
+                  data={pages}
+                  loop={false}
                   snapEnabled
                   pagingEnabled
                   scrollAnimationDuration={320}
@@ -295,27 +324,36 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
                 />
               ) : (
                 <View className="flex-1 items-center justify-center">
-                  <Text className="text-base text-subink font-sans-medium">No text available for this lesson.</Text>
+                  <Text className="font-sans-medium text-base text-subink">
+                    No text available for this lesson.
+                  </Text>
                 </View>
               )}
             </View>
-            
+
             {/* Pagination Controls */}
-            <View className="flex-row items-center justify-between px-5 -mx-5 py-3">
+            <View className="-mx-5 flex-row items-center justify-between px-5 py-3">
               <Pressable
                 onPress={handlePrevPage}
                 disabled={!canGoPrev}
-                className={cn('h-10 w-10 items-center justify-center rounded-full', !canGoPrev ? 'opacity-0' : 'active:bg-muted/70')}
+                className={cn(
+                  'h-10 w-10 items-center justify-center rounded-full',
+                  !canGoPrev ? 'opacity-0' : 'active:bg-muted/70',
+                )}
               >
-                <Ionicons name="chevron-back" size={24} color={colors['--ink']} />
+                <Ionicons
+                  name="chevron-back"
+                  size={24}
+                  color={colors['--ink']}
+                />
               </Pressable>
 
               <View className="items-center">
-                <Text className="text-xs font-sans-medium text-faint tracking-[0.2em] uppercase">
+                <Text className="font-sans-medium text-xs uppercase tracking-[0.2em] text-faint">
                   {currentPage + 1} / {totalPages || 1}
                 </Text>
                 {isVocabLoading && (
-                  <View className="flex-row items-center gap-1 mt-1">
+                  <View className="mt-1 flex-row items-center gap-1">
                     <ActivityIndicator size="small" color={colors['--faint']} />
                   </View>
                 )}
@@ -326,7 +364,11 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
                 disabled={!hasPages}
                 className={cn(
                   'h-10 w-10 items-center justify-center rounded-full',
-                  !hasPages ? 'opacity-0' : isLastPage ? 'active:bg-successSoft' : 'active:bg-muted/70'
+                  !hasPages
+                    ? 'opacity-0'
+                    : isLastPage
+                      ? 'active:bg-successSoft'
+                      : 'active:bg-muted/70',
                 )}
               >
                 <Ionicons
@@ -341,7 +383,12 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
       </View>
 
       {showInspector && selectedToken && selectedToken.normalized && (
-        <View className={cn('absolute inset-0', isLargeScreen ? 'items-end' : 'justify-end')}>
+        <View
+          className={cn(
+            'absolute inset-0',
+            isLargeScreen ? 'items-end' : 'justify-end',
+          )}
+        >
           <Pressable
             className="absolute inset-0"
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.35)' }}
@@ -353,7 +400,7 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
           />
           {isLargeScreen ? (
             <View
-              className="bg-panel h-full border-l border-border/70"
+              className="h-full border-l border-border/70 bg-panel"
               style={{ width: INSPECTOR_WIDTH }}
             >
               <WordDetails
