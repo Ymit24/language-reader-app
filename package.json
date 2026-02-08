@@ -14,8 +14,8 @@
     "typecheck:convex": "tsc -p convex/tsconfig.json --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm run test:unit",
-    "test:unit": "jest --passWithNoTests",
+    "test": "npm run test:all",
+    "test:unit": "jest",
     "test:convex": "vitest run",
     "test:all": "npm run test:unit && npm run test:convex"
   },
