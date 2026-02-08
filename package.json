@@ -10,6 +10,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "lint:fix": "expo lint --fix",
     "typecheck": "tsc --noEmit",
     "typecheck:convex": "tsc -p convex/tsconfig.json --noEmit",
     "format": "prettier --write .",
@@ -17,7 +18,8 @@
     "test": "npm run test:all",
     "test:unit": "jest",
     "test:convex": "vitest run",
-    "test:all": "npm run test:unit && npm run test:convex"
+    "test:all": "npm run test:unit && npm run test:convex",
+    "ci": "npm run lint && npm run typecheck && npm run typecheck:convex && npm run format:check && npm test"
   },
   "dependencies": {
     "@auth/core": "^0.37.0",
