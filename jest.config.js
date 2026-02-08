@@ -5,5 +5,6 @@ module.exports = {
     '/.expo/',
     '/dist/',
     '/convex/_generated/',
+    '/convex/.*\\.integration\\.test\\.(ts|tsx|js|jsx)$',
   ],
 };
