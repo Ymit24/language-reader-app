@@ -110,7 +110,7 @@ export default function LibraryScreen() {
   const handleDelete = async (lessonId: Id<'lessons'>) => {
     try {
       await deleteLesson({ lessonId });
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to delete lesson');
     }
   };

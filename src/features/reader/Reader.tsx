@@ -203,7 +203,7 @@ export function Reader({ lesson, isScreenFocused = true }: ReaderProps) {
         term,
         status: newStatus,
       });
-    } catch (error) {
+    } catch {
       setLocalStatusOverrides((prev) => ({ ...prev, [term]: previousStatus }));
     } finally {
       setIsUpdatingStatus(false);

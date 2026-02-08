@@ -91,7 +91,7 @@ export function FlashCard({
     translateX.value = 0;
     translateY.value = 0;
     cardScale.value = 1;
-  }, [lookupKey]);
+  }, [cardScale, flipProgress, lookupKey, translateX, translateY]);
 
   useEffect(() => {
     if (!isFlipped || lookupResult !== null || isLookingUp || !word) return;
@@ -114,7 +114,7 @@ export function FlashCard({
         cacheRef.current.set(lookupKey, result);
         setLookupResult(result);
         setHasLookupError(!result.success);
-      } catch (_error) {
+      } catch {
         setLookupResult({ success: false, entries: [], lemmaEntries: [] });
         setHasLookupError(true);
       } finally {
