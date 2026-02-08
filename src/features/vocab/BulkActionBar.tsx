@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, View, Text, Pressable, Animated } from 'react-native';
+import {
+  ActivityIndicator,
+  View,
+  Text,
+  Pressable,
+  Animated,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { VocabStatus, getStatusColor } from './StatusBadge';
 import { cn } from '../../lib/utils';
@@ -33,14 +39,16 @@ export function BulkActionBar({
   if (!visible) return null;
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 bg-panel border-t border-border/70 shadow-lg">
-      <View className="px-4 py-3 flex-row items-center justify-between">
+    <View className="absolute bottom-0 left-0 right-0 border-t border-border/70 bg-panel shadow-lg">
+      <View className="flex-row items-center justify-between px-4 py-3">
         {/* Left: Selection count */}
         <View className="flex-row items-center">
-          <View className="w-8 h-8 rounded-full bg-brand items-center justify-center mr-2">
-            <Text className="text-sm font-sans-bold text-white">{selectedCount}</Text>
+          <View className="mr-2 h-8 w-8 items-center justify-center rounded-full bg-brand">
+            <Text className="font-sans-bold text-sm text-white">
+              {selectedCount}
+            </Text>
           </View>
-          <Text className="text-sm font-sans-semibold text-ink">
+          <Text className="font-sans-semibold text-sm text-ink">
             {selectedCount === 1 ? 'word selected' : 'words selected'}
           </Text>
         </View>
@@ -48,9 +56,11 @@ export function BulkActionBar({
         {/* Right: Actions */}
         <View className="flex-row items-center gap-2">
           {isBusy && (
-            <View className="flex-row items-center gap-2 mr-1">
+            <View className="mr-1 flex-row items-center gap-2">
               <ActivityIndicator size="small" color={colors['--brand']} />
-              <Text className="text-xs text-faint font-sans-medium">Updating...</Text>
+              <Text className="font-sans-medium text-xs text-faint">
+                Updating...
+              </Text>
             </View>
           )}
           {/* Status picker button */}
@@ -58,10 +68,10 @@ export function BulkActionBar({
             onPress={() => setShowStatusPicker(!showStatusPicker)}
             disabled={isBusy}
             className={cn(
-              'flex-row items-center px-3 py-2 rounded-lg border',
+              'flex-row items-center rounded-lg border px-3 py-2',
               showStatusPicker
-                ? 'bg-brandSoft border-brand/30'
-                : 'bg-muted border-border/70'
+                ? 'border-brand/30 bg-brandSoft'
+                : 'border-border/70 bg-muted',
             )}
           >
             <Ionicons
@@ -71,8 +81,8 @@ export function BulkActionBar({
             />
             <Text
               className={cn(
-                'ml-2 text-sm font-sans-semibold',
-                showStatusPicker ? 'text-brand' : 'text-subink'
+                'ml-2 font-sans-semibold text-sm',
+                showStatusPicker ? 'text-brand' : 'text-subink',
               )}
             >
               Set Status
@@ -90,12 +100,12 @@ export function BulkActionBar({
             onPress={onDeselectAll}
             disabled={isBusy}
             className={cn(
-              'flex-row items-center px-3 py-2 rounded-lg bg-muted border border-border/70',
-              isBusy ? 'opacity-50' : ''
+              'flex-row items-center rounded-lg border border-border/70 bg-muted px-3 py-2',
+              isBusy ? 'opacity-50' : '',
             )}
           >
             <Ionicons name="close" size={16} color={colors['--subink']} />
-            <Text className="ml-1 text-sm font-sans-semibold text-subink">
+            <Text className="ml-1 font-sans-semibold text-sm text-subink">
               Deselect
             </Text>
           </Pressable>
@@ -117,13 +127,13 @@ export function BulkActionBar({
                   }}
                   disabled={isBusy}
                   className={cn(
-                    'flex-row items-center px-3 py-2 rounded-lg border border-border/70 bg-canvas active:bg-muted',
-                    isBusy ? 'opacity-50' : ''
+                    'flex-row items-center rounded-lg border border-border/70 bg-canvas px-3 py-2 active:bg-muted',
+                    isBusy ? 'opacity-50' : '',
                   )}
                 >
                   <Ionicons name={opt.icon as any} size={16} color={color} />
                   <Text
-                    className="ml-2 text-sm font-sans-semibold"
+                    className="ml-2 font-sans-semibold text-sm"
                     style={{ color }}
                   >
                     {opt.label}

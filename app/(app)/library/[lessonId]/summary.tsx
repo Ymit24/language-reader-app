@@ -1,5 +1,11 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { PageHeader } from '@/src/components/PageHeader';
 import { ProgressBar } from '@/src/components/ProgressBar';
@@ -23,37 +29,50 @@ interface WordCardProps {
   onToggle: () => void;
 }
 
-function WordCard({ surface, normalized, keepUnknown, onToggle }: WordCardProps) {
+function WordCard({
+  surface,
+  normalized,
+  keepUnknown,
+  onToggle,
+}: WordCardProps) {
   return (
     <Pressable
       onPress={onToggle}
-      className={`w-full p-4 rounded-xl border mb-3 active:opacity-80 ${
+      className={`mb-3 w-full rounded-xl border p-4 active:opacity-80 ${
         keepUnknown
-          ? 'bg-panel border-border/80'
-          : 'bg-successSoft border-success/30'
+          ? 'border-border/80 bg-panel'
+          : 'border-success/30 bg-successSoft'
       }`}
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-3">
-          <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-            keepUnknown
-              ? 'border-border2 bg-transparent'
-              : 'bg-success border-success'
-          }`}>
+          <View
+            className={`h-6 w-6 items-center justify-center rounded-full border-2 ${
+              keepUnknown
+                ? 'border-border2 bg-transparent'
+                : 'border-success bg-success'
+            }`}
+          >
             {!keepUnknown && (
-              <Text className="text-white text-xs font-sans-bold">✓</Text>
+              <Text className="font-sans-bold text-xs text-white">✓</Text>
             )}
           </View>
           <View>
-            <Text className={`text-xl font-serif-semibold ${keepUnknown ? 'text-ink' : 'text-success'}`}>
+            <Text
+              className={`font-serif-semibold text-xl ${keepUnknown ? 'text-ink' : 'text-success'}`}
+            >
               {surface}
             </Text>
-            <Text className={`text-sm ${keepUnknown ? 'text-faint' : 'text-success'} font-sans-medium`}>
+            <Text
+              className={`text-sm ${keepUnknown ? 'text-faint' : 'text-success'} font-sans-medium`}
+            >
               {normalized}
             </Text>
           </View>
         </View>
-        <Text className={`text-xs font-sans-semibold ${keepUnknown ? 'text-faint' : 'text-success'}`}>
+        <Text
+          className={`font-sans-semibold text-xs ${keepUnknown ? 'text-faint' : 'text-success'}`}
+        >
           {keepUnknown ? 'Keeping unknown' : 'Will be marked known'}
         </Text>
       </View>
@@ -63,7 +82,7 @@ function WordCard({ surface, normalized, keepUnknown, onToggle }: WordCardProps)
 
 function LoadingScreen() {
   return (
-    <View className="flex-1 justify-center items-center bg-canvas">
+    <View className="flex-1 items-center justify-center bg-canvas">
       <ActivityIndicator size="large" />
     </View>
   );
@@ -71,7 +90,7 @@ function LoadingScreen() {
 
 function NotFoundScreen() {
   return (
-    <View className="flex-1 justify-center items-center bg-canvas">
+    <View className="flex-1 items-center justify-center bg-canvas">
       <Text>Lesson not found</Text>
     </View>
   );
@@ -83,17 +102,24 @@ export default function LessonSummaryScreen() {
 
   const lessonQuery = useQuery(
     api.lessons.getLesson,
-    safeLessonId ? { lessonId: safeLessonId as Id<"lessons"> } : "skip"
+    safeLessonId ? { lessonId: safeLessonId as Id<'lessons'> } : 'skip',
   );
 
   const language = lessonQuery?.language;
-  const vocabData = useQuery(api.vocab.getVocabProfile, language ? { language } : "skip");
+  const vocabData = useQuery(
+    api.vocab.getVocabProfile,
+    language ? { language } : 'skip',
+  );
 
   const completeLessonMutation = useMutation(api.lessons.completeLesson);
-  const markRemainingMutation = useMutation(api.vocab.markRemainingWordsAsKnown);
+  const markRemainingMutation = useMutation(
+    api.vocab.markRemainingWordsAsKnown,
+  );
 
   const [isCompleting, setIsCompleting] = useState(false);
-  const [keepUnknownTerms, setKeepUnknownTerms] = useState<Set<string>>(new Set());
+  const [keepUnknownTerms, setKeepUnknownTerms] = useState<Set<string>>(
+    new Set(),
+  );
 
   const vocabMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -125,12 +151,12 @@ export default function LessonSummaryScreen() {
     }
 
     return Array.from(uniqueTerms.values()).sort((a, b) =>
-      a.normalized.localeCompare(b.normalized)
+      a.normalized.localeCompare(b.normalized),
     );
   }, [lessonQuery?.tokens, vocabMap]);
 
   const handleToggleWord = useCallback((normalized: string) => {
-    setKeepUnknownTerms(prev => {
+    setKeepUnknownTerms((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(normalized)) {
         newSet.delete(normalized);
@@ -142,7 +168,7 @@ export default function LessonSummaryScreen() {
   }, []);
 
   const handleKeepAllUnknown = useCallback(() => {
-    const allTerms = new Set(unknownWords.map(w => w.normalized));
+    const allTerms = new Set(unknownWords.map((w) => w.normalized));
     setKeepUnknownTerms(allTerms);
   }, [unknownWords]);
 
@@ -151,18 +177,21 @@ export default function LessonSummaryScreen() {
     setIsCompleting(true);
 
     await markRemainingMutation({
-      lessonId: safeLessonId as Id<"lessons">,
+      lessonId: safeLessonId as Id<'lessons'>,
       keepUnknownTerms: Array.from(keepUnknownTerms),
     });
 
-    await completeLessonMutation({ lessonId: safeLessonId as Id<"lessons"> });
+    await completeLessonMutation({ lessonId: safeLessonId as Id<'lessons'> });
     router.push('/library');
   };
 
   const totalUnknown = unknownWords.length;
   const keepUnknownCount = keepUnknownTerms.size;
   const willBeMarkedKnown = totalUnknown - keepUnknownCount;
-  const percentKnown = totalUnknown > 0 ? Math.round((willBeMarkedKnown / totalUnknown) * 100) : 100;
+  const percentKnown =
+    totalUnknown > 0
+      ? Math.round((willBeMarkedKnown / totalUnknown) * 100)
+      : 100;
 
   if (!safeLessonId) {
     return (
@@ -202,30 +231,36 @@ export default function LessonSummaryScreen() {
       />
 
       <View className="flex-1">
-        <View className="px-5 py-4 border-b border-border/60 bg-panel/90">
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-xs text-faint uppercase tracking-widest font-sans-semibold">Review words</Text>
-            <Text className="text-sm font-sans-semibold text-ink">
+        <View className="border-b border-border/60 bg-panel/90 px-5 py-4">
+          <View className="mb-3 flex-row items-center justify-between">
+            <Text className="font-sans-semibold text-xs uppercase tracking-widest text-faint">
+              Review words
+            </Text>
+            <Text className="font-sans-semibold text-sm text-ink">
               {willBeMarkedKnown} will be marked known
             </Text>
           </View>
-          <ProgressBar
-            progress={percentKnown}
-            color="success"
-            height={6}
-          />
+          <ProgressBar progress={percentKnown} color="success" height={6} />
           {keepUnknownCount > 0 && (
-            <Text className="text-xs text-faint mt-2 font-sans-medium">
-              {keepUnknownCount} word{keepUnknownCount !== 1 ? 's' : ''} you will keep learning
+            <Text className="mt-2 font-sans-medium text-xs text-faint">
+              {keepUnknownCount} word{keepUnknownCount !== 1 ? 's' : ''} you
+              will keep learning
             </Text>
           )}
         </View>
 
-        <ScrollView className="flex-1 px-5 py-4" showsVerticalScrollIndicator={false}>
+        <ScrollView
+          className="flex-1 px-5 py-4"
+          showsVerticalScrollIndicator={false}
+        >
           {unknownWords.length === 0 ? (
-            <View className="py-12 items-center">
-              <Text className="text-lg text-ink font-sans-semibold">All words known!</Text>
-              <Text className="text-sm text-faint mt-1 font-sans-medium">Tap Complete Lesson to finish</Text>
+            <View className="items-center py-12">
+              <Text className="font-sans-semibold text-lg text-ink">
+                All words known!
+              </Text>
+              <Text className="mt-1 font-sans-medium text-sm text-faint">
+                Tap Complete Lesson to finish
+              </Text>
             </View>
           ) : (
             <>
@@ -245,9 +280,9 @@ export default function LessonSummaryScreen() {
               {keepUnknownCount === 0 && (
                 <Pressable
                   onPress={handleKeepAllUnknown}
-                  className="mt-4 py-3 rounded-lg bg-muted active:bg-muted/80 items-center"
+                  className="mt-4 items-center rounded-lg bg-muted py-3 active:bg-muted/80"
                 >
-                  <Text className="text-sm font-sans-semibold text-ink">
+                  <Text className="font-sans-semibold text-sm text-ink">
                     Keep all {totalUnknown} words as unknown
                   </Text>
                 </Pressable>
@@ -258,7 +293,7 @@ export default function LessonSummaryScreen() {
           <View className="h-6" />
         </ScrollView>
 
-        <View className="p-5 border-t border-border/60 bg-panel/90 gap-3">
+        <View className="gap-3 border-t border-border/60 bg-panel/90 p-5">
           <Button
             variant="primary"
             onPress={handleCompleteLesson}

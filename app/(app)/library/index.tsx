@@ -11,7 +11,16 @@ import { useMutation, useQuery } from 'convex/react';
 import { useRouter } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { ActionSheetIOS, Alert, Platform, Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import {
+  ActionSheetIOS,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 // Estimated reading speed (words per minute)
 const WORDS_PER_MINUTE = 200;
@@ -34,9 +43,11 @@ function FilterPill({ label, isActive, onPress }: FilterPillProps) {
   return (
     <Pressable
       onPress={onPress}
-      className={`px-3 py-1.5 rounded-full border ${isActive ? 'bg-brand border-brand' : 'bg-panel border-border/80'} active:opacity-80`}
+      className={`rounded-full border px-3 py-1.5 ${isActive ? 'border-brand bg-brand' : 'border-border/80 bg-panel'} active:opacity-80`}
     >
-      <Text className={`text-xs font-sans-semibold ${isActive ? 'text-white' : 'text-subink'}`}>
+      <Text
+        className={`font-sans-semibold text-xs ${isActive ? 'text-white' : 'text-subink'}`}
+      >
         {label}
       </Text>
     </Pressable>
@@ -72,7 +83,9 @@ export default function LibraryScreen() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const { selectedLanguage, setSelectedLanguage } = useSelectedLanguage();
 
-  const vocabProfile = useQuery(api.vocab.getVocabProfile, { language: selectedLanguage });
+  const vocabProfile = useQuery(api.vocab.getVocabProfile, {
+    language: selectedLanguage,
+  });
 
   const vocabMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -94,15 +107,15 @@ export default function LibraryScreen() {
     router.push('/(app)/library/new');
   };
 
-  const handleDelete = async (lessonId: Id<"lessons">) => {
+  const handleDelete = async (lessonId: Id<'lessons'>) => {
     try {
       await deleteLesson({ lessonId });
     } catch (error) {
-      Alert.alert("Error", "Failed to delete lesson");
+      Alert.alert('Error', 'Failed to delete lesson');
     }
   };
 
-  const handleLongPress = (lessonId: Id<"lessons">, title: string) => {
+  const handleLongPress = (lessonId: Id<'lessons'>, title: string) => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
@@ -115,21 +128,17 @@ export default function LibraryScreen() {
           if (buttonIndex === 1) {
             handleDelete(lessonId);
           }
-        }
+        },
       );
     } else {
-      Alert.alert(
-        `Manage "${title}"`,
-        'Choose an action',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'Delete', 
-            style: 'destructive', 
-            onPress: () => handleDelete(lessonId) 
-          },
-        ]
-      );
+      Alert.alert(`Manage "${title}"`, 'Choose an action', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => handleDelete(lessonId),
+        },
+      ]);
     }
   };
 
@@ -151,7 +160,8 @@ export default function LibraryScreen() {
     for (const term of uniqueTerms) {
       const status = vocabMap[term] ?? STATUS_NEW;
       if (status === STATUS_NEW) counts.new++;
-      else if (status >= STATUS_LEARNING_MIN && status <= STATUS_LEARNING_MAX) counts.learning++;
+      else if (status >= STATUS_LEARNING_MIN && status <= STATUS_LEARNING_MAX)
+        counts.learning++;
       else if (status === STATUS_KNOWN) counts.known++;
     }
 
@@ -176,7 +186,8 @@ export default function LibraryScreen() {
     const searchLower = searchQuery.trim().toLowerCase();
 
     return lessons.filter((lesson) => {
-      const matchesSearch = !searchLower || lesson.title.toLowerCase().includes(searchLower);
+      const matchesSearch =
+        !searchLower || lesson.title.toLowerCase().includes(searchLower);
       const matchesLanguage = lesson.language === selectedLanguage;
       const isCompleted = !!lesson.completedAt;
       const matchesStatus =
@@ -197,17 +208,25 @@ export default function LibraryScreen() {
 
   const allLessons = useMemo(() => {
     if (!continueLesson) return filteredLessons;
-    return filteredLessons.filter((lesson) => lesson._id !== continueLesson._id);
+    return filteredLessons.filter(
+      (lesson) => lesson._id !== continueLesson._id,
+    );
   }, [filteredLessons, continueLesson]);
 
   return (
     <ScreenLayout edges={['top']}>
       <View className="flex-1 px-5 pt-6 md:px-8">
         <View className="mb-6 flex-row items-center justify-between">
-          <Text className="text-3xl font-sans-bold tracking-tight text-ink">Library</Text>
-          <Button variant="primary" onPress={handleCreateLesson} className="shadow-sm">
+          <Text className="font-sans-bold text-3xl tracking-tight text-ink">
+            Library
+          </Text>
+          <Button
+            variant="primary"
+            onPress={handleCreateLesson}
+            className="shadow-sm"
+          >
             <Plus color="#FFF" size={20} strokeWidth={2.5} />
-            <Text className="text-white font-sans-semibold">New Lesson</Text>
+            <Text className="font-sans-semibold text-white">New Lesson</Text>
           </Button>
         </View>
 
@@ -232,7 +251,11 @@ export default function LibraryScreen() {
               {Array.from({ length: numColumns * 2 }).map((_, index) => (
                 <View
                   key={`lesson-skeleton-${index}`}
-                  className={variant === 'grid' ? 'w-full md:w-[48%] lg:w-[31%]' : 'w-full'}
+                  className={
+                    variant === 'grid'
+                      ? 'w-full md:w-[48%] lg:w-[31%]'
+                      : 'w-full'
+                  }
                 >
                   <LessonCardSkeleton variant={variant} />
                 </View>
@@ -243,16 +266,17 @@ export default function LibraryScreen() {
           <EmptyState
             title="No lessons yet"
             description="Create your first lesson by pasting text"
-            action={<Button variant="primary" onPress={handleCreateLesson}>Create Lesson</Button>}
+            action={
+              <Button variant="primary" onPress={handleCreateLesson}>
+                Create Lesson
+              </Button>
+            }
           />
         ) : (
-          <ScrollView
-            className="flex-1"
-            showsVerticalScrollIndicator={false}
-          >
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
             <View className="gap-6">
-              <View className="rounded-2xl border border-border/80 bg-panel p-4 md:p-5 shadow-card">
-                <Text className="text-xs font-sans-semibold uppercase tracking-[0.2em] text-faint">
+              <View className="rounded-2xl border border-border/80 bg-panel p-4 shadow-card md:p-5">
+                <Text className="font-sans-semibold text-xs uppercase tracking-[0.2em] text-faint">
                   Find lessons
                 </Text>
                 <View className="mt-3 gap-3">
@@ -288,8 +312,10 @@ export default function LibraryScreen() {
               {continueLesson && (
                 <View className="gap-3">
                   <View className="flex-row items-center justify-between">
-                    <Text className="text-lg font-sans-semibold text-ink">Continue reading</Text>
-                    <Text className="text-xs text-subink font-sans-medium">
+                    <Text className="font-sans-semibold text-lg text-ink">
+                      Continue reading
+                    </Text>
+                    <Text className="font-sans-medium text-xs text-subink">
                       {filteredLessons.length} lessons
                     </Text>
                   </View>
@@ -298,51 +324,62 @@ export default function LibraryScreen() {
                     language={continueLesson.language.toUpperCase()}
                     duration={formatDuration(continueLesson.tokenCount)}
                     openedDate={`${continueLesson.lastOpenedAt ? 'opened' : 'created'} ${formatDate(continueLesson.lastOpenedAt ?? continueLesson.createdAt)}`}
-                    vocabCounts={calculateVocabCounts(continueLesson.uniqueTerms)}
+                    vocabCounts={calculateVocabCounts(
+                      continueLesson.uniqueTerms,
+                    )}
                     readingPercentage={getReadingPercentage(continueLesson)}
                     variant="feature"
                     isCompleted={!!continueLesson.completedAt}
                     onPress={() => handleLessonPress(continueLesson._id)}
-                    onLongPress={() => handleLongPress(continueLesson._id, continueLesson.title)}
+                    onLongPress={() =>
+                      handleLongPress(continueLesson._id, continueLesson.title)
+                    }
                   />
                 </View>
               )}
 
               <View className="gap-3">
-                <Text className="text-lg font-sans-semibold text-ink">All lessons</Text>
+                <Text className="font-sans-semibold text-lg text-ink">
+                  All lessons
+                </Text>
                 {filteredLessons.length === 0 ? (
                   <EmptyState
                     title="No matches"
                     description="Try a different search or filter"
                   />
                 ) : (
-                  <View className={`flex-row flex-wrap ${isDesktop ? 'gap-5' : 'gap-3'}`}>
+                  <View
+                    className={`flex-row flex-wrap ${isDesktop ? 'gap-5' : 'gap-3'}`}
+                  >
                     {allLessons.map((lesson) => {
                       const readingPercentage = getReadingPercentage(lesson);
 
                       const dateToUse = lesson.lastOpenedAt ?? lesson.createdAt;
-                      const dateLabel = lesson.lastOpenedAt ? 'opened' : 'created';
+                      const dateLabel = lesson.lastOpenedAt
+                        ? 'opened'
+                        : 'created';
 
                       let widthClass = 'w-full';
                       if (numColumns === 2) widthClass = 'w-[48%]';
                       if (numColumns === 3) widthClass = 'w-[32%]';
 
                       return (
-                        <View
-                          key={lesson._id}
-                          className={widthClass}
-                        >
+                        <View key={lesson._id} className={widthClass}>
                           <LessonCard
                             title={lesson.title}
                             language={lesson.language.toUpperCase()}
                             duration={formatDuration(lesson.tokenCount)}
                             openedDate={`${dateLabel} ${formatDate(dateToUse)}`}
-                            vocabCounts={calculateVocabCounts(lesson.uniqueTerms)}
+                            vocabCounts={calculateVocabCounts(
+                              lesson.uniqueTerms,
+                            )}
                             readingPercentage={readingPercentage}
                             variant={variant}
                             isCompleted={!!lesson.completedAt}
                             onPress={() => handleLessonPress(lesson._id)}
-                            onLongPress={() => handleLongPress(lesson._id, lesson.title)}
+                            onLongPress={() =>
+                              handleLongPress(lesson._id, lesson.title)
+                            }
                           />
                         </View>
                       );

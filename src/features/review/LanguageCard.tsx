@@ -42,10 +42,10 @@ export function LanguageCard({
       pulseScale.value = withRepeat(
         withSequence(
           withTiming(1.1, { duration: 600 }),
-          withTiming(1, { duration: 600 })
+          withTiming(1, { duration: 600 }),
         ),
         -1,
-        true
+        true,
       );
     } else {
       pulseScale.value = 1;
@@ -72,10 +72,10 @@ export function LanguageCard({
     return (
       <View className="rounded-2xl border border-border/80 bg-panel p-4 shadow-card">
         <View className="flex-row items-center gap-4">
-          <View className="h-12 w-12 rounded-lg bg-muted animate-pulse" />
+          <View className="h-12 w-12 animate-pulse rounded-lg bg-muted" />
           <View className="flex-1 gap-2">
-            <View className="h-5 w-24 rounded bg-muted animate-pulse" />
-            <View className="h-4 w-32 rounded bg-muted animate-pulse" />
+            <View className="h-5 w-24 animate-pulse rounded bg-muted" />
+            <View className="h-4 w-32 animate-pulse rounded bg-muted" />
           </View>
         </View>
       </View>
@@ -104,27 +104,27 @@ export function LanguageCard({
       disabled={!hasDue}
     >
       <View
-        className="rounded-2xl border border-border/80 bg-panel shadow-card overflow-hidden"
+        className="overflow-hidden rounded-2xl border border-border/80 bg-panel shadow-card"
         style={{
           borderTopWidth: 3,
           borderTopColor: accent.border,
         }}
       >
-        <View className="p-4 gap-4">
+        <View className="gap-4 p-4">
           {/* Header */}
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-3">
               <View
-                className="w-12 h-12 rounded-xl items-center justify-center"
+                className="h-12 w-12 items-center justify-center rounded-xl"
                 style={{ backgroundColor: accent.bg }}
               >
                 <LanguageFlag code={language} size={28} />
               </View>
               <View>
-                <Text className="text-lg font-sans-bold text-ink">
+                <Text className="font-sans-bold text-lg text-ink">
                   {languageName}
                 </Text>
-                <Text className="text-xs text-subink font-sans-medium">
+                <Text className="font-sans-medium text-xs text-subink">
                   {knownCount + learningCount} words total
                 </Text>
               </View>
@@ -134,15 +134,15 @@ export function LanguageCard({
             {hasDue ? (
               <Animated.View
                 style={pulseStyle}
-                className="px-3 py-1.5 rounded-full bg-brand"
+                className="rounded-full bg-brand px-3 py-1.5"
               >
-                <Text className="text-sm font-sans-bold text-white">
+                <Text className="font-sans-bold text-sm text-white">
                   {dueCount} due
                 </Text>
               </Animated.View>
             ) : (
-              <View className="px-3 py-1.5 rounded-full bg-muted">
-                <Text className="text-sm font-sans-semibold text-faint">
+              <View className="rounded-full bg-muted px-3 py-1.5">
+                <Text className="font-sans-semibold text-sm text-faint">
                   All caught up
                 </Text>
               </View>
@@ -152,14 +152,14 @@ export function LanguageCard({
           {/* Stats Row */}
           <View className="flex-row gap-4">
             <View className="flex-row items-center gap-1.5">
-              <View className="w-2.5 h-2.5 rounded-full bg-warning" />
-              <Text className="text-xs text-subink font-sans-medium">
+              <View className="bg-warning h-2.5 w-2.5 rounded-full" />
+              <Text className="font-sans-medium text-xs text-subink">
                 {learningCount} learning
               </Text>
             </View>
             <View className="flex-row items-center gap-1.5">
-              <View className="w-2.5 h-2.5 rounded-full bg-success" />
-              <Text className="text-xs text-subink font-sans-medium">
+              <View className="h-2.5 w-2.5 rounded-full bg-success" />
+              <Text className="font-sans-medium text-xs text-subink">
                 {knownCount} known
               </Text>
             </View>
@@ -169,10 +169,10 @@ export function LanguageCard({
           {hasDue && (
             <Pressable
               onPress={onStartReview}
-              className="flex-row items-center justify-center gap-2 py-3 rounded-xl bg-brand active:bg-brand/90"
+              className="flex-row items-center justify-center gap-2 rounded-xl bg-brand py-3 active:bg-brand/90"
             >
               <Ionicons name="flash" size={18} color="#fff" />
-              <Text className="text-sm font-sans-bold text-white">
+              <Text className="font-sans-bold text-sm text-white">
                 Start Review
               </Text>
             </Pressable>

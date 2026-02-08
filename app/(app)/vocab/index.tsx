@@ -10,12 +10,7 @@ import { VocabItem } from '@/src/features/vocab/VocabRow';
 import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
 import { useMutation, usePaginatedQuery, useQuery } from 'convex/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Modal,
-  Text,
-  useWindowDimensions,
-  View
-} from 'react-native';
+import { Modal, Text, useWindowDimensions, View } from 'react-native';
 
 type SortBy = 'dateAdded' | 'alphabetical' | 'status';
 
@@ -66,7 +61,7 @@ export default function VocabScreen() {
       sortBy,
       sortOrder,
     },
-    { initialNumItems: 50 }
+    { initialNumItems: 50 },
   );
 
   const bulkUpdateStatus = useMutation(api.vocab.bulkUpdateStatusById);
@@ -108,7 +103,7 @@ export default function VocabScreen() {
         setShowDetailModal(true);
       }
     },
-    [isDesktop]
+    [isDesktop],
   );
 
   const handleCloseDetail = useCallback(() => {
@@ -137,7 +132,7 @@ export default function VocabScreen() {
         setIsBulkUpdating(false);
       }
     },
-    [selectedIds, bulkUpdateStatus, isBulkUpdating]
+    [selectedIds, bulkUpdateStatus, isBulkUpdating],
   );
 
   const handleLoadMore = useCallback(() => {
@@ -177,12 +172,12 @@ export default function VocabScreen() {
     <ScreenLayout edges={['top']}>
       <View className="flex-1">
         {/* Header */}
-        <View className="px-5 pt-6 pb-3 md:px-8">
+        <View className="px-5 pb-3 pt-6 md:px-8">
           <View className="mb-4">
-            <Text className="text-2xl font-sans-semibold tracking-tight text-ink">
+            <Text className="font-sans-semibold text-2xl tracking-tight text-ink">
               Vocabulary
             </Text>
-            <Text className="mt-1 text-sm text-subink font-sans-medium">
+            <Text className="mt-1 font-sans-medium text-sm text-subink">
               {vocabCounts?.total ?? 0} words across all statuses
             </Text>
           </View>
@@ -205,7 +200,9 @@ export default function VocabScreen() {
         {/* Main content */}
         <View className="flex-1 flex-row">
           {/* List section */}
-          <View className={isDesktop ? 'w-2/5 border-r border-border/50' : 'flex-1'}>
+          <View
+            className={isDesktop ? 'w-2/5 border-r border-border/50' : 'flex-1'}
+          >
             <VocabList
               data={vocabList}
               selectedIds={selectedIds}

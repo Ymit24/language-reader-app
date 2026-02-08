@@ -10,7 +10,9 @@ interface CardProps {
 
 export function Card({ children, className = '' }: CardProps) {
   return (
-    <View className={`rounded-xl border border-border/80 bg-panel shadow-card ${className}`}>
+    <View
+      className={`rounded-xl border border-border/80 bg-panel shadow-card ${className}`}
+    >
       {children}
     </View>
   );
@@ -29,8 +31,10 @@ function LanguagePill({ language }: { language: string }) {
   const [bgClass, textClass] = style.split(' ');
 
   return (
-    <View className={`px-2.5 py-1 rounded-full ${bgClass}`}>
-      <Text className={`text-[11px] font-sans-semibold uppercase tracking-wide ${textClass}`}>
+    <View className={`rounded-full px-2.5 py-1 ${bgClass}`}>
+      <Text
+        className={`font-sans-semibold text-[11px] uppercase tracking-wide ${textClass}`}
+      >
         {language}
       </Text>
     </View>
@@ -44,7 +48,9 @@ function LanguageAccent({ language }: { language: string }) {
     JA: 'bg-[#d2a39b]',
   };
 
-  return <View className={`h-1.5 w-full ${accents[language] || 'bg-border2'}`} />;
+  return (
+    <View className={`h-1.5 w-full ${accents[language] || 'bg-border2'}`} />
+  );
 }
 
 interface LessonCardProps extends PressableProps {
@@ -71,11 +77,13 @@ export function LessonCard({
   ...props
 }: LessonCardProps) {
   const cardBackground = isCompleted ? 'bg-muted/60' : 'bg-panel';
-  const titleStyle = variant === 'feature' ? 'text-xl md:text-2xl' : 'text-base';
+  const titleStyle =
+    variant === 'feature' ? 'text-xl md:text-2xl' : 'text-base';
   const paddingStyle = variant === 'feature' ? 'p-5 md:p-6' : 'p-4';
-  const progressLabel = readingPercentage === undefined
-    ? 'New'
-    : `${Math.round(readingPercentage)}% read`;
+  const progressLabel =
+    readingPercentage === undefined
+      ? 'New'
+      : `${Math.round(readingPercentage)}% read`;
 
   return (
     <Pressable
@@ -89,22 +97,26 @@ export function LessonCard({
           <LanguagePill language={language} />
           {isCompleted ? (
             <View className="flex-row items-center gap-2">
-              <Text className="text-xs text-success font-sans-semibold">Completed</Text>
+              <Text className="font-sans-semibold text-xs text-success">
+                Completed
+              </Text>
               <CompletedBadge />
             </View>
           ) : (
-            <Text className="text-xs text-subink font-sans-semibold">{progressLabel}</Text>
+            <Text className="font-sans-semibold text-xs text-subink">
+              {progressLabel}
+            </Text>
           )}
         </View>
 
         <View className="gap-1">
           <Text
-            className={`${titleStyle} font-semibold text-ink leading-tight`}
+            className={`${titleStyle} font-semibold leading-tight text-ink`}
             numberOfLines={variant === 'feature' ? 3 : 2}
           >
             {title}
           </Text>
-          <Text className="text-xs text-faint font-sans-medium">
+          <Text className="font-sans-medium text-xs text-faint">
             {duration} · {openedDate}
           </Text>
         </View>
@@ -141,8 +153,12 @@ interface EmptyStateProps {
 export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
     <View className="flex-1 items-center justify-center px-4 py-12">
-      <Text className="text-center text-lg font-sans-semibold text-ink">{title}</Text>
-      <Text className="mt-2 text-center text-sm text-subink font-sans-medium">{description}</Text>
+      <Text className="text-center font-sans-semibold text-lg text-ink">
+        {title}
+      </Text>
+      <Text className="mt-2 text-center font-sans-medium text-sm text-subink">
+        {description}
+      </Text>
       {action && <View className="mt-4">{action}</View>}
     </View>
   );

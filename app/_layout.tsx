@@ -1,4 +1,4 @@
-import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { ConvexAuthProvider } from '@convex-dev/auth/react';
 import {
   Newsreader_400Regular,
   Newsreader_400Regular_Italic,
@@ -12,11 +12,15 @@ import {
   PlusJakartaSans_600SemiBold,
   PlusJakartaSans_700Bold,
 } from '@expo-google-fonts/plus-jakarta-sans';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { ConvexReactClient } from "convex/react";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from '@react-navigation/native';
+import { ConvexReactClient } from 'convex/react';
 import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
-import * as SecureStore from "expo-secure-store";
+import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -58,7 +62,7 @@ export default function RootLayout() {
       <ConvexAuthProvider
         client={convex}
         storage={
-          Platform.OS === "android" || Platform.OS === "ios"
+          Platform.OS === 'android' || Platform.OS === 'ios'
             ? secureStorage
             : undefined
         }

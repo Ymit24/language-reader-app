@@ -163,5 +163,5 @@ export const THEMES: ThemeDefinition[] = [
 ];
 
 export const THEME_BY_ID = Object.fromEntries(
-  THEMES.map((theme) => [theme.id, theme])
+  THEMES.map((theme) => [theme.id, theme]),
 ) as Record<ThemeId, ThemeDefinition>;

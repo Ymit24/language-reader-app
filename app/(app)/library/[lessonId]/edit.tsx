@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  Pressable,
+} from 'react-native';
 import { ScreenLayout } from '@/src/components/ScreenLayout';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery } from 'convex/react';
@@ -18,7 +27,7 @@ export default function EditLessonScreen() {
   const deleteLesson = useMutation(api.lessons.deleteLesson);
 
   const lesson = useQuery(api.lessons.getLesson, {
-    lessonId: lessonIdValidated as Id<"lessons">,
+    lessonId: lessonIdValidated as Id<'lessons'>,
   });
 
   const [title, setTitle] = useState('');
@@ -47,7 +56,7 @@ export default function EditLessonScreen() {
     setIsSubmitting(true);
     try {
       await updateLesson({
-        lessonId: lessonIdValidated as Id<"lessons">,
+        lessonId: lessonIdValidated as Id<'lessons'>,
         title: title.trim(),
         language,
         rawText: text,
@@ -76,7 +85,9 @@ export default function EditLessonScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteLesson({ lessonId: lessonIdValidated as Id<"lessons"> });
+              await deleteLesson({
+                lessonId: lessonIdValidated as Id<'lessons'>,
+              });
               router.replace('/library');
             } catch (error) {
               console.error(error);
@@ -84,7 +95,7 @@ export default function EditLessonScreen() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -92,7 +103,7 @@ export default function EditLessonScreen() {
     return (
       <ScreenLayout edges={['top']}>
         <View className="flex-1 items-center justify-center">
-          <Text className="text-ink font-sans-medium">Loading...</Text>
+          <Text className="font-sans-medium text-ink">Loading...</Text>
         </View>
       </ScreenLayout>
     );
@@ -102,7 +113,7 @@ export default function EditLessonScreen() {
     return (
       <ScreenLayout edges={['top']}>
         <View className="flex-1 items-center justify-center">
-          <Text className="text-ink font-sans-medium">Lesson not found</Text>
+          <Text className="font-sans-medium text-ink">Lesson not found</Text>
         </View>
       </ScreenLayout>
     );
@@ -114,9 +125,13 @@ export default function EditLessonScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        <View className="flex-row items-center justify-between px-5 py-3 border-b border-border/70 bg-canvas/95 z-10">
-          <Button variant="ghost" onPress={handleCancel}>Cancel</Button>
-          <Text className="text-lg font-sans-semibold text-ink">Edit Lesson</Text>
+        <View className="z-10 flex-row items-center justify-between border-b border-border/70 bg-canvas/95 px-5 py-3">
+          <Button variant="ghost" onPress={handleCancel}>
+            Cancel
+          </Button>
+          <Text className="font-sans-semibold text-lg text-ink">
+            Edit Lesson
+          </Text>
           <Button
             variant="primary"
             onPress={handleSave}
@@ -138,17 +153,21 @@ export default function EditLessonScreen() {
             />
 
             <View className="gap-2">
-              <Text className="text-xs font-sans-semibold uppercase tracking-widest text-faint">Language</Text>
-              <View className="flex-row gap-3 rounded-full bg-panel border border-border/80 p-1">
+              <Text className="font-sans-semibold text-xs uppercase tracking-widest text-faint">
+                Language
+              </Text>
+              <View className="flex-row gap-3 rounded-full border border-border/80 bg-panel p-1">
                 <Pressable
                   onPress={() => setLanguage('fr')}
                   className={`flex-1 items-center justify-center rounded-full py-2 ${
                     language === 'fr'
-                      ? 'bg-brandSoft border border-brand/20'
+                      ? 'border border-brand/20 bg-brandSoft'
                       : 'bg-transparent'
                   }`}
                 >
-                  <Text className={`font-sans-semibold ${language === 'fr' ? 'text-ink' : 'text-subink'}`}>
+                  <Text
+                    className={`font-sans-semibold ${language === 'fr' ? 'text-ink' : 'text-subink'}`}
+                  >
                     French
                   </Text>
                 </Pressable>
@@ -156,21 +175,25 @@ export default function EditLessonScreen() {
                   onPress={() => setLanguage('de')}
                   className={`flex-1 items-center justify-center rounded-full py-2 ${
                     language === 'de'
-                      ? 'bg-brandSoft border border-brand/20'
+                      ? 'border border-brand/20 bg-brandSoft'
                       : 'bg-transparent'
                   }`}
                 >
-                  <Text className={`font-sans-semibold ${language === 'de' ? 'text-ink' : 'text-subink'}`}>
+                  <Text
+                    className={`font-sans-semibold ${language === 'de' ? 'text-ink' : 'text-subink'}`}
+                  >
                     German
                   </Text>
                 </Pressable>
               </View>
             </View>
 
-            <View className="gap-2 flex-1 min-h-[200px]">
-              <Text className="text-xs font-sans-semibold uppercase tracking-widest text-faint">Content</Text>
+            <View className="min-h-[200px] flex-1 gap-2">
+              <Text className="font-sans-semibold text-xs uppercase tracking-widest text-faint">
+                Content
+              </Text>
               <TextInput
-                className="flex-1 rounded-xl border border-border/80 bg-panel p-4 text-base text-ink leading-relaxed font-serif"
+                className="flex-1 rounded-xl border border-border/80 bg-panel p-4 font-serif text-base leading-relaxed text-ink"
                 placeholder="Paste your text here..."
                 placeholderTextColor={colors['--faint']}
                 multiline
@@ -181,7 +204,7 @@ export default function EditLessonScreen() {
               />
             </View>
 
-            <View className="h-px bg-border/70 my-2" />
+            <View className="my-2 h-px bg-border/70" />
 
             <Button variant="destructive" onPress={handleDelete}>
               Delete Lesson

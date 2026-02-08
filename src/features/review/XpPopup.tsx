@@ -25,17 +25,17 @@ export function XpPopup({ xp, bonusXp = 0, onComplete }: XpPopupProps) {
   useEffect(() => {
     opacity.value = withSequence(
       withTiming(1, { duration: 150 }),
-      withDelay(800, withTiming(0, { duration: 300 }))
+      withDelay(800, withTiming(0, { duration: 300 })),
     );
-    
+
     translateY.value = withSequence(
       withTiming(-20, { duration: 150 }),
-      withTiming(-60, { duration: 1000 })
+      withTiming(-60, { duration: 1000 }),
     );
-    
+
     scale.value = withSequence(
       withTiming(1.2, { duration: 150 }),
-      withTiming(1, { duration: 100 })
+      withTiming(1, { duration: 100 }),
     );
 
     const timeout = setTimeout(() => {
@@ -46,10 +46,7 @@ export function XpPopup({ xp, bonusXp = 0, onComplete }: XpPopupProps) {
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
+    transform: [{ translateY: translateY.value }, { scale: scale.value }],
     opacity: opacity.value,
   }));
 
@@ -76,9 +73,7 @@ export function XpPopup({ xp, bonusXp = 0, onComplete }: XpPopupProps) {
         },
       ]}
     >
-      <Text className="text-lg font-sans-bold text-white">
-        {displayText}
-      </Text>
+      <Text className="font-sans-bold text-lg text-white">{displayText}</Text>
     </Animated.View>
   );
 }

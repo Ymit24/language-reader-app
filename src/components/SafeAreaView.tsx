@@ -7,10 +7,19 @@ type SafeAreaViewProps = {
   children: React.ReactNode;
 };
 
-export function SafeAreaView({ className, edges = ['top', 'bottom'], children }: SafeAreaViewProps) {
+export function SafeAreaView({
+  className,
+  edges = ['top', 'bottom'],
+  children,
+}: SafeAreaViewProps) {
   const insets = useSafeAreaInsets();
 
-  const style: { paddingTop?: number; paddingBottom?: number; paddingLeft?: number; paddingRight?: number } = {};
+  const style: {
+    paddingTop?: number;
+    paddingBottom?: number;
+    paddingLeft?: number;
+    paddingRight?: number;
+  } = {};
 
   if (edges.includes('top')) {
     style.paddingTop = insets.top;

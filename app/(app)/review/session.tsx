@@ -125,7 +125,7 @@ export default function ReviewSession() {
         console.error('Failed to grade card:', error);
       }
     },
-    [sessionId, currentIndex, items, gradeCard, sessionStartTime]
+    [sessionId, currentIndex, items, gradeCard, sessionStartTime],
   );
 
   const handleSwipeLeft = useCallback(() => {
@@ -152,14 +152,18 @@ export default function ReviewSession() {
   // Loading state
   if (!sessionId || items.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-canvas items-center justify-center">
+      <SafeAreaView className="flex-1 items-center justify-center bg-canvas">
         <View className="items-center gap-6">
-          <View className="w-20 h-20 rounded-3xl bg-panel border border-border/40 items-center justify-center shadow-card">
+          <View className="h-20 w-20 items-center justify-center rounded-3xl border border-border/40 bg-panel shadow-card">
             <ActivityIndicator size="small" color={colors['--brand']} />
           </View>
           <View className="items-center gap-2">
-            <Text className="text-lg font-sans-semibold text-ink tracking-tight">Preparing Session</Text>
-            <Text className="text-xs text-faint font-sans-bold uppercase tracking-[0.2em]">Gathering Cards</Text>
+            <Text className="font-sans-semibold text-lg tracking-tight text-ink">
+              Preparing Session
+            </Text>
+            <Text className="font-sans-bold text-xs uppercase tracking-[0.2em] text-faint">
+              Gathering Cards
+            </Text>
           </View>
         </View>
       </SafeAreaView>
@@ -194,18 +198,18 @@ export default function ReviewSession() {
       )}
 
       {/* Header */}
-      <View className="px-4 py-3 flex-row items-center justify-between">
+      <View className="flex-row items-center justify-between px-4 py-3">
         {/* Close button */}
         <Pressable
           onPress={handleClose}
-          className="w-10 h-10 rounded-full items-center justify-center bg-muted/50 active:bg-muted"
+          className="h-10 w-10 items-center justify-center rounded-full bg-muted/50 active:bg-muted"
         >
           <Ionicons name="close" size={24} color={colors['--subink']} />
         </Pressable>
 
         {/* Progress */}
-        <View className="flex-1 mx-4">
-          <View className="h-2 rounded-full bg-muted overflow-hidden w-full max-w-2xl self-center">
+        <View className="mx-4 flex-1">
+          <View className="h-2 w-full max-w-2xl self-center overflow-hidden rounded-full bg-muted">
             <Animated.View
               style={[
                 progressStyle,
@@ -218,21 +222,21 @@ export default function ReviewSession() {
               ]}
             />
           </View>
-          <Text className="text-xs text-center text-faint font-sans-medium mt-1">
+          <Text className="mt-1 text-center font-sans-medium text-xs text-faint">
             {currentIndex + 1} / {items.length}
           </Text>
         </View>
 
         {/* XP counter */}
-        <View className="bg-brandSoft px-3 py-1.5 rounded-full">
-          <Text className="text-sm font-sans-bold text-brand">
+        <View className="rounded-full bg-brandSoft px-3 py-1.5">
+          <Text className="font-sans-bold text-sm text-brand">
             +{totalXpEarned} XP
           </Text>
         </View>
       </View>
 
       {/* Card area */}
-      <View className="flex-1 px-6 py-4 items-center justify-center">
+      <View className="flex-1 items-center justify-center px-6 py-4">
         {currentItem && (
           <FlashCard
             word={currentItem.vocab.term}

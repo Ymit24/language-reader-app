@@ -1,6 +1,21 @@
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, InteractionManager, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Text, View } from 'react-native';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  ActivityIndicator,
+  InteractionManager,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { measureInWindow, Rect } from '../../lib/measureElement';
@@ -26,59 +41,64 @@ interface ReaderPageProps {
   isActive?: boolean;
 }
 
-interface ParagraphToken extends TokenType { }
+interface ParagraphToken extends TokenType {}
 
-const ReaderToken = React.memo(({
-  token,
-  vocabMap,
-  selectedTokenId,
-  selectedNormalized,
-  measureRef,
-}: {
-  token: TokenType;
-  vocabMap: Record<string, number>;
-  selectedTokenId: string | null;
-  selectedNormalized: string | null;
-  measureRef?: React.Ref<View>;
-}) => {
-  const isWord: boolean = token.isWord;
-  let status: TokenStatus = 'new';
-  let learningLevel: number | undefined;
+const ReaderToken = React.memo(
+  ({
+    token,
+    vocabMap,
+    selectedTokenId,
+    selectedNormalized,
+    measureRef,
+  }: {
+    token: TokenType;
+    vocabMap: Record<string, number>;
+    selectedTokenId: string | null;
+    selectedNormalized: string | null;
+    measureRef?: React.Ref<View>;
+  }) => {
+    const isWord: boolean = token.isWord;
+    let status: TokenStatus = 'new';
+    let learningLevel: number | undefined;
 
-  if (isWord && token.normalized) {
-    const vocabStatus = vocabMap[token.normalized];
-    if (vocabStatus !== undefined) {
-      if (vocabStatus === 4) {
-        status = 'known';
-      } else if (vocabStatus === 3) {
-        status = 'familiar';
-        learningLevel = vocabStatus;
-      } else if (vocabStatus >= 1 && vocabStatus <= 2) {
-        status = 'learning';
-        learningLevel = vocabStatus;
-      } else {
-        status = 'new';
+    if (isWord && token.normalized) {
+      const vocabStatus = vocabMap[token.normalized];
+      if (vocabStatus !== undefined) {
+        if (vocabStatus === 4) {
+          status = 'known';
+        } else if (vocabStatus === 3) {
+          status = 'familiar';
+          learningLevel = vocabStatus;
+        } else if (vocabStatus >= 1 && vocabStatus <= 2) {
+          status = 'learning';
+          learningLevel = vocabStatus;
+        } else {
+          status = 'new';
+        }
       }
     }
-  }
 
-  const key = token._id || `token-${token.index}`;
-  const isSelected = selectedTokenId === key;
-  const isWordSelected = Boolean(isWord && token.normalized && token.normalized === selectedNormalized);
+    const key = token._id || `token-${token.index}`;
+    const isSelected = selectedTokenId === key;
+    const isWordSelected = Boolean(
+      isWord && token.normalized && token.normalized === selectedNormalized,
+    );
 
-  return (
-    <Token
-      measureRef={isWord ? measureRef : undefined}
-      surface={token.surface}
-      isWord={isWord}
-      status={status}
-      learningLevel={learningLevel}
-      isSelected={isSelected}
-      normalized={token.normalized}
-      isWordSelected={isWordSelected}
-    />
-  );
-});
+    return (
+      <Token
+        measureRef={isWord ? measureRef : undefined}
+        surface={token.surface}
+        isWord={isWord}
+        status={status}
+        learningLevel={learningLevel}
+        isSelected={isSelected}
+        normalized={token.normalized}
+        isWordSelected={isWordSelected}
+      />
+    );
+  },
+);
+ReaderToken.displayName = 'ReaderToken';
 
 export function ReaderPage({
   tokens,
@@ -225,19 +245,22 @@ export function ReaderPage({
   /**
    * Finds token at given content-relative coordinates
    */
-  const findTokenAtPoint = useCallback((x: number, y: number): string | null => {
-    for (const [tokenId, rect] of tokenLayoutsRef.current.entries()) {
-      if (
-        x >= rect.x &&
-        x <= rect.x + rect.width &&
-        y >= rect.y &&
-        y <= rect.y + rect.height
-      ) {
-        return tokenId;
+  const findTokenAtPoint = useCallback(
+    (x: number, y: number): string | null => {
+      for (const [tokenId, rect] of tokenLayoutsRef.current.entries()) {
+        if (
+          x >= rect.x &&
+          x <= rect.x + rect.width &&
+          y >= rect.y &&
+          y <= rect.y + rect.height
+        ) {
+          return tokenId;
+        }
       }
-    }
-    return null;
-  }, []);
+      return null;
+    },
+    [],
+  );
 
   // Gesture detector ref for coordinate conversion
   const gestureContainerRef = useRef<View>(null);
@@ -248,12 +271,16 @@ export function ReaderPage({
 
   const getAdjustedContentPosition = useCallback((x: number, y: number) => {
     const contentX = x - contentOffsetForGesture.current.x;
-    const contentY = y - contentOffsetForGesture.current.y + scrollOffsetRef.current;
+    const contentY =
+      y - contentOffsetForGesture.current.y + scrollOffsetRef.current;
 
     return { contentX, contentY };
   }, []);
 
-  const findTokenAndIndex = (x: number, y: number): { tokenId: string | null; index: number | null } => {
+  const findTokenAndIndex = (
+    x: number,
+    y: number,
+  ): { tokenId: string | null; index: number | null } => {
     // // Find which token is at this point
     const tokenId = findTokenAtPoint(x, y);
     if (!tokenId) {
@@ -272,73 +299,95 @@ export function ReaderPage({
     return { tokenId: null, index: null };
   };
 
-  const [tokenSelectionStartIndex, setTokenSelectionStartIndex] = useState<number | null>(null);
-  const [tokenSelectionEndIndex, setTokenSelectionEndIndex] = useState<number | null>(null);
+  const [tokenSelectionStartIndex, setTokenSelectionStartIndex] = useState<
+    number | null
+  >(null);
+  const [tokenSelectionEndIndex, setTokenSelectionEndIndex] = useState<
+    number | null
+  >(null);
 
-  const handleGestureStart = useCallback((x: number, y: number) => {
-    const { contentX, contentY } = getAdjustedContentPosition(x, y);
+  const handleGestureStart = useCallback(
+    (x: number, y: number) => {
+      const { contentX, contentY } = getAdjustedContentPosition(x, y);
 
-    // If panel is visible, check if we tapped outside/start new selection
-    if (isSelectionPanelVisible) {
-      setIsSelectionPanelVisible(false);
-      // we don't return here, we let the new selection start if applicable
-    }
-
-    const { tokenId, index } = findTokenAndIndex(contentX, contentY);
-    if (tokenId && index !== null) {
-      setTokenSelectionStartIndex(index);
-      setTokenSelectionEndIndex(index);
-    } else {
-      // Tapped empty space?
-    }
-  }, [findTokenAndIndex, getAdjustedContentPosition, isSelectionPanelVisible]);
-
-  const handleGestureUpdate = useCallback((x: number, y: number) => {
-    const { contentX, contentY } = getAdjustedContentPosition(x, y);
-    const { tokenId, index } = findTokenAndIndex(contentX, contentY);
-
-    if (tokenId && index !== null) {
-      setTokenSelectionEndIndex(index);
-    }
-  }, [findTokenAndIndex, getAdjustedContentPosition]);
-
-  const handleTap = useCallback((x: number, y: number) => {
-    const { contentX, contentY } = getAdjustedContentPosition(x, y);
-    const { index } = findTokenAndIndex(contentX, contentY);
-
-    if (index === null) return;
-
-    const token = tokens[index];
-    if (!token?.isWord) return;
-
-    onTokenPress(token);
-  }, [findTokenAndIndex, getAdjustedContentPosition, onTokenPress, tokens]);
-
-  const handleGestureEnd = useCallback((x: number, y: number) => {
-    // Check if we have a valid selection
-    if (tokenSelectionStartIndex !== null && tokenSelectionEndIndex !== null) {
-      const start = Math.min(tokenSelectionStartIndex, tokenSelectionEndIndex);
-      const end = Math.max(tokenSelectionStartIndex, tokenSelectionEndIndex);
-
-      // Only show panel if we selected something (and maybe more than just 1 token? or even 1 token is fine?)
-      // Note: Long press on a word usually selects it via onTokenPress logic in UI if it wasn't a gesture.
-      // But here we are handling swipe selection.
-
-      const selectedTokens = tokens.slice(start, end + 1);
-      const text = selectedTokens.map(t => t.surface).join('');
-
-      if (text.trim().length > 0) {
-        setSelectionPanelText(text);
-        setIsSelectionPanelVisible(true);
-        // Do NOT clear selection indices here, so the highlight remains
-        return;
+      // If panel is visible, check if we tapped outside/start new selection
+      if (isSelectionPanelVisible) {
+        setIsSelectionPanelVisible(false);
+        // we don't return here, we let the new selection start if applicable
       }
-    }
 
-    // If no selection or empty, clear
-    setTokenSelectionStartIndex(null);
-    setTokenSelectionEndIndex(null);
-  }, [tokenSelectionStartIndex, tokenSelectionEndIndex, tokens]);
+      const { tokenId, index } = findTokenAndIndex(contentX, contentY);
+      if (tokenId && index !== null) {
+        setTokenSelectionStartIndex(index);
+        setTokenSelectionEndIndex(index);
+      } else {
+        // Tapped empty space?
+      }
+    },
+    [findTokenAndIndex, getAdjustedContentPosition, isSelectionPanelVisible],
+  );
+
+  const handleGestureUpdate = useCallback(
+    (x: number, y: number) => {
+      const { contentX, contentY } = getAdjustedContentPosition(x, y);
+      const { tokenId, index } = findTokenAndIndex(contentX, contentY);
+
+      if (tokenId && index !== null) {
+        setTokenSelectionEndIndex(index);
+      }
+    },
+    [findTokenAndIndex, getAdjustedContentPosition],
+  );
+
+  const handleTap = useCallback(
+    (x: number, y: number) => {
+      const { contentX, contentY } = getAdjustedContentPosition(x, y);
+      const { index } = findTokenAndIndex(contentX, contentY);
+
+      if (index === null) return;
+
+      const token = tokens[index];
+      if (!token?.isWord) return;
+
+      onTokenPress(token);
+    },
+    [findTokenAndIndex, getAdjustedContentPosition, onTokenPress, tokens],
+  );
+
+  const handleGestureEnd = useCallback(
+    (x: number, y: number) => {
+      // Check if we have a valid selection
+      if (
+        tokenSelectionStartIndex !== null &&
+        tokenSelectionEndIndex !== null
+      ) {
+        const start = Math.min(
+          tokenSelectionStartIndex,
+          tokenSelectionEndIndex,
+        );
+        const end = Math.max(tokenSelectionStartIndex, tokenSelectionEndIndex);
+
+        // Only show panel if we selected something (and maybe more than just 1 token? or even 1 token is fine?)
+        // Note: Long press on a word usually selects it via onTokenPress logic in UI if it wasn't a gesture.
+        // But here we are handling swipe selection.
+
+        const selectedTokens = tokens.slice(start, end + 1);
+        const text = selectedTokens.map((t) => t.surface).join('');
+
+        if (text.trim().length > 0) {
+          setSelectionPanelText(text);
+          setIsSelectionPanelVisible(true);
+          // Do NOT clear selection indices here, so the highlight remains
+          return;
+        }
+      }
+
+      // If no selection or empty, clear
+      setTokenSelectionStartIndex(null);
+      setTokenSelectionEndIndex(null);
+    },
+    [tokenSelectionStartIndex, tokenSelectionEndIndex, tokens],
+  );
 
   useEffect(() => {
     if (tokenSelectionStartIndex !== null && tokenSelectionEndIndex !== null) {
@@ -348,7 +397,10 @@ export function ReaderPage({
       const rects: Rect[] = [];
 
       // group tokens by Y coordinate and create one rect per line
-      const lineMap: Map<number, { xMin: number; xMax: number, height: number }> = new Map();
+      const lineMap: Map<
+        number,
+        { xMin: number; xMax: number; height: number }
+      > = new Map();
 
       for (let i = start; i <= end; i++) {
         const token = tokens[i];
@@ -361,7 +413,11 @@ export function ReaderPage({
             line.xMin = Math.min(line.xMin, rect.x);
             line.xMax = Math.max(line.xMax, rect.x + rect.width);
           } else {
-            lineMap.set(yKey, { xMin: rect.x, xMax: rect.x + rect.width, height: rect.height });
+            lineMap.set(yKey, {
+              xMin: rect.x,
+              xMax: rect.x + rect.width,
+              height: rect.height,
+            });
           }
         }
       }
@@ -382,8 +438,7 @@ export function ReaderPage({
     }
   }, [tokenSelectionStartIndex, tokenSelectionEndIndex, tokens]);
 
-  const panGesture = Gesture
-    .Pan()
+  const panGesture = Gesture.Pan()
     .activateAfterLongPress(250)
     .onStart((e) => {
       runOnJS(handleGestureStart)(e.x, e.y);
@@ -398,13 +453,12 @@ export function ReaderPage({
       runOnJS(handleGestureEnd)(e.x, e.y);
     });
 
-  const tapGesture = Gesture
-    .Tap()
-    .onStart((e) => {
-      runOnJS(handleTap)(e.x, e.y);
-    });
+  const tapGesture = Gesture.Tap().onStart((e) => {
+    runOnJS(handleTap)(e.x, e.y);
+  });
 
-  const gesturesEnabled = isActive && hasMeasuredTokens && !isSelectionPanelVisible;
+  const gesturesEnabled =
+    isActive && hasMeasuredTokens && !isSelectionPanelVisible;
 
   const showPreparingOverlay = isActive && !hasMeasuredTokens;
 
@@ -413,23 +467,29 @@ export function ReaderPage({
 
   const combinedGesture = Gesture.Exclusive(panGesture, tapGesture);
 
-  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
-  }, []);
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+    },
+    [],
+  );
 
-  const handleContentLayout = useCallback((event: { nativeEvent: { layout: { width: number; height: number } } }) => {
-    const { width, height } = event.nativeEvent.layout;
-    // Check if size actually changed to avoid unnecessary re-renders
-    setContentSize((prev) => {
-      if (prev.width !== width || prev.height !== height) {
-        // Trigger re-measurement on next frame
-        setLayoutVersion((v) => v + 1);
-        return { width, height };
-      }
-      return prev;
-    });
-    setIsLayoutReady(true);
-  }, []);
+  const handleContentLayout = useCallback(
+    (event: { nativeEvent: { layout: { width: number; height: number } } }) => {
+      const { width, height } = event.nativeEvent.layout;
+      // Check if size actually changed to avoid unnecessary re-renders
+      setContentSize((prev) => {
+        if (prev.width !== width || prev.height !== height) {
+          // Trigger re-measurement on next frame
+          setLayoutVersion((v) => v + 1);
+          return { width, height };
+        }
+        return prev;
+      });
+      setIsLayoutReady(true);
+    },
+    [],
+  );
 
   // Calculate selection bounds when highlights change
   const selectionBounds = useMemo(() => {
@@ -464,12 +524,15 @@ export function ReaderPage({
     const PANEL_WIDTH = 300;
     const CONTAINER_PADDING = 0; // The content container is already padded by the ScrollView
 
-    const availableWidth = Math.max(0, contentSize.width - (CONTAINER_PADDING * 2));
+    const availableWidth = Math.max(
+      0,
+      contentSize.width - CONTAINER_PADDING * 2,
+    );
     // If screen is tiny, shrink panel to fit
     const finalPanelWidth = Math.min(PANEL_WIDTH, availableWidth);
 
     // Start centered on selection
-    let left = selectionBounds.centerX - (finalPanelWidth / 2);
+    let left = selectionBounds.centerX - finalPanelWidth / 2;
 
     // Clamp to container bounds
     const minLeft = CONTAINER_PADDING;
@@ -490,9 +553,9 @@ export function ReaderPage({
   return (
     <GestureDetector gesture={combinedGesture}>
       <View ref={gestureContainerRef} className="relative flex-1 items-center">
-        <View className="flex-1 w-full" style={{ maxWidth: readerColumnWidth }}>
+        <View className="w-full flex-1" style={{ maxWidth: readerColumnWidth }}>
           <ScrollView
-            className="flex-1 px-6 md:px-12 lg:px-20 pt-10"
+            className="flex-1 px-6 pt-10 md:px-12 lg:px-20"
             contentContainerStyle={{ paddingBottom: 96 }}
             showsVerticalScrollIndicator={false}
             onScroll={handleScroll}
@@ -503,7 +566,7 @@ export function ReaderPage({
           >
             {/* Overlay inside content container - scrolls with content */}
             <View
-              className="absolute pointer-events-none"
+              className="pointer-events-none absolute"
               style={{
                 top: 0,
                 left: 0,
@@ -528,11 +591,14 @@ export function ReaderPage({
             {/* Content container - all measurements are relative to this */}
             <View
               ref={contentContainerRef}
-              className="flex-col items-start justify-start w-full relative"
+              className="relative w-full flex-col items-start justify-start"
               onLayout={handleContentLayout}
             >
               {paragraphs.map((paraTokens, paraIndex) => (
-                <View key={`para-${paraIndex}`} className="mb-6 flex-wrap flex-row items-baseline">
+                <View
+                  key={`para-${paraIndex}`}
+                  className="mb-6 flex-row flex-wrap items-baseline"
+                >
                   {paraTokens.map((token) => {
                     const tokenKey = token._id || `token-${token.index}`;
                     return (
@@ -572,16 +638,14 @@ export function ReaderPage({
                   />
 
                   {/* Panel centered relative to selection */}
-                  <View
-                    style={selectionPanelStyle || {}}
-                  >
+                  <View style={selectionPanelStyle || {}}>
                     <SelectionPanel
                       selectedText={selectionPanelText}
                       language={language}
                       onClose={clearSelection}
                       onAsk={() => {
                         // TODO: Implement ask
-                        console.log("Ask about: ", selectionPanelText);
+                        console.log('Ask about: ', selectionPanelText);
                       }}
                     />
                   </View>
@@ -591,21 +655,24 @@ export function ReaderPage({
           </ScrollView>
 
           {showPreparingOverlay && (
-            <View className="absolute inset-0 bg-canvas items-center justify-center pointer-events-none z-50">
+            <View className="pointer-events-none absolute inset-0 z-50 items-center justify-center bg-canvas">
               <View className="items-center gap-6">
-                <View className="w-16 h-16 rounded-2xl bg-panel border border-border/40 items-center justify-center shadow-card">
+                <View className="h-16 w-16 items-center justify-center rounded-2xl border border-border/40 bg-panel shadow-card">
                   <ActivityIndicator size="small" color={colors['--brand']} />
                 </View>
                 <View className="items-center gap-2">
-                  <Text className="text-sm font-sans-semibold text-ink tracking-tight">Preparing Reader</Text>
-                  <Text className="text-[10px] text-faint font-sans-bold uppercase tracking-[0.2em]">Optimizing Layout</Text>
+                  <Text className="font-sans-semibold text-sm tracking-tight text-ink">
+                    Preparing Reader
+                  </Text>
+                  <Text className="font-sans-bold text-[10px] uppercase tracking-[0.2em] text-faint">
+                    Optimizing Layout
+                  </Text>
                 </View>
               </View>
             </View>
           )}
 
           {/* Removed old fixed position panel */}
-
         </View>
       </View>
     </GestureDetector>

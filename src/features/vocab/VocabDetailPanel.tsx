@@ -78,7 +78,10 @@ export function VocabDetailPanel({
   const deleteVocab = useMutation(api.vocab.deleteVocab);
   const lookupAction = useAction(api.dictionaryActions.lookupDefinition);
 
-  const lookupKey = useMemo(() => `${language}:${term.toLowerCase()}`, [language, term]);
+  const lookupKey = useMemo(
+    () => `${language}:${term.toLowerCase()}`,
+    [language, term],
+  );
 
   // Lookup dictionary definition
   useEffect(() => {
@@ -149,17 +152,17 @@ export function VocabDetailPanel({
             }
           },
         },
-      ]
+      ],
     );
   };
 
   if (!vocabId) {
     return (
-      <View className="flex-1 items-center justify-center bg-panel border-l border-border/70 px-6">
-        <View className="w-16 h-16 rounded-full bg-muted items-center justify-center mb-4">
+      <View className="flex-1 items-center justify-center border-l border-border/70 bg-panel px-6">
+        <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-muted">
           <Ionicons name="book-outline" size={28} color={colors['--faint']} />
         </View>
-        <Text className="text-base font-sans-semibold text-subink text-center">
+        <Text className="text-center font-sans-semibold text-base text-subink">
           Select a word to view details
         </Text>
       </View>
@@ -167,16 +170,16 @@ export function VocabDetailPanel({
   }
 
   return (
-    <View className="flex-1 bg-panel border-l border-border/70">
+    <View className="flex-1 border-l border-border/70 bg-panel">
       {/* Header */}
-      <View className="p-6 pb-4 border-b border-border/50">
-        <View className="flex-row justify-between items-start">
+      <View className="border-b border-border/50 p-6 pb-4">
+        <View className="flex-row items-start justify-between">
           <View className="flex-1 pr-4">
-            <Text className="text-3xl font-serif-bold text-ink tracking-tight">
+            <Text className="font-serif-bold text-3xl tracking-tight text-ink">
               {display || term}
             </Text>
             {display && display.toLowerCase() !== term.toLowerCase() && (
-              <Text className="text-sm text-faint mt-0.5 font-sans-medium italic">
+              <Text className="mt-0.5 font-sans-medium text-sm italic text-faint">
                 {term}
               </Text>
             )}
@@ -193,18 +196,24 @@ export function VocabDetailPanel({
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Dictionary section */}
-        <View className="px-6 py-4 bg-canvas/60 border-b border-border/40">
-          <View className="flex-row items-center mb-3 opacity-50">
-            <Ionicons name="search-outline" size={14} color={colors['--subink']} />
-            <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-subink ml-1.5">
+        <View className="border-b border-border/40 bg-canvas/60 px-6 py-4">
+          <View className="mb-3 flex-row items-center opacity-50">
+            <Ionicons
+              name="search-outline"
+              size={14}
+              color={colors['--subink']}
+            />
+            <Text className="ml-1.5 font-sans-semibold text-[10px] uppercase tracking-widest text-subink">
               Definition
             </Text>
           </View>
 
           {isLookingUp ? (
-            <View className="py-4 items-center">
+            <View className="items-center py-4">
               <ActivityIndicator size="small" color={colors['--faint']} />
-              <Text className="text-sm text-faint mt-2">Looking up definition...</Text>
+              <Text className="mt-2 text-sm text-faint">
+                Looking up definition...
+              </Text>
             </View>
           ) : lookupResult?.success &&
             (lookupResult.entries.length > 0 ||
@@ -213,12 +222,12 @@ export function VocabDetailPanel({
               {lookupResult.entries.length > 0 &&
                 lookupResult.entries.slice(0, 2).map((entry, idx) => (
                   <View key={idx} className="mb-3 last:mb-0">
-                    <View className="flex-row items-center gap-2 mb-1">
-                      <Text className="text-xs font-sans-semibold text-brand bg-brandSoft px-2 py-0.5 rounded">
+                    <View className="mb-1 flex-row items-center gap-2">
+                      <Text className="rounded bg-brandSoft px-2 py-0.5 font-sans-semibold text-xs text-brand">
                         {entry.partOfSpeech}
                       </Text>
                       {entry.phonetic && (
-                        <Text className="text-xs text-faint font-mono">
+                        <Text className="font-mono text-xs text-faint">
                           {entry.phonetic}
                         </Text>
                       )}
@@ -226,7 +235,7 @@ export function VocabDetailPanel({
                     {entry.definitions.slice(0, 2).map((def, defIdx) => (
                       <Text
                         key={defIdx}
-                        className="text-sm text-ink leading-5 font-sans-medium"
+                        className="font-sans-medium text-sm leading-5 text-ink"
                       >
                         {defIdx + 1}. {def.definition}
                       </Text>
@@ -235,21 +244,25 @@ export function VocabDetailPanel({
                 ))}
 
               {lookupResult.lemma && lookupResult.lemmaEntries.length > 0 && (
-                <View className="mt-4 pt-4 border-t border-border/30">
-                  <View className="flex-row items-center gap-2 mb-2">
-                    <Ionicons name="git-branch-outline" size={14} color={colors['--brand']} />
-                    <Text className="text-xs font-sans-semibold text-brand">
+                <View className="mt-4 border-t border-border/30 pt-4">
+                  <View className="mb-2 flex-row items-center gap-2">
+                    <Ionicons
+                      name="git-branch-outline"
+                      size={14}
+                      color={colors['--brand']}
+                    />
+                    <Text className="font-sans-semibold text-xs text-brand">
                       Base form: {lookupResult.lemma}
                     </Text>
                   </View>
                   {lookupResult.lemmaEntries.slice(0, 2).map((entry, idx) => (
                     <View key={idx} className="mb-3 last:mb-0">
-                      <View className="flex-row items-center gap-2 mb-1">
-                        <Text className="text-xs font-sans-semibold text-brand bg-brandSoft px-2 py-0.5 rounded">
+                      <View className="mb-1 flex-row items-center gap-2">
+                        <Text className="rounded bg-brandSoft px-2 py-0.5 font-sans-semibold text-xs text-brand">
                           {entry.partOfSpeech}
                         </Text>
                         {entry.phonetic && (
-                          <Text className="text-xs text-faint font-mono">
+                          <Text className="font-mono text-xs text-faint">
                             {entry.phonetic}
                           </Text>
                         )}
@@ -257,7 +270,7 @@ export function VocabDetailPanel({
                       {entry.definitions.slice(0, 2).map((def, defIdx) => (
                         <Text
                           key={defIdx}
-                          className="text-sm text-ink leading-5 font-sans-medium"
+                          className="font-sans-medium text-sm leading-5 text-ink"
                         >
                           {defIdx + 1}. {def.definition}
                         </Text>
@@ -268,15 +281,15 @@ export function VocabDetailPanel({
               )}
             </View>
           ) : (
-            <Text className="text-sm text-subink leading-5 italic font-sans-medium">
+            <Text className="font-sans-medium text-sm italic leading-5 text-subink">
               No definition found for this word.
             </Text>
           )}
         </View>
 
         {/* Meaning field */}
-        <View className="px-6 py-4 border-b border-border/40">
-          <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-faint mb-2">
+        <View className="border-b border-border/40 px-6 py-4">
+          <Text className="mb-2 font-sans-semibold text-[10px] uppercase tracking-widest text-faint">
             Your Meaning
           </Text>
           <TextInput
@@ -286,13 +299,13 @@ export function VocabDetailPanel({
             placeholder="Add your own meaning..."
             placeholderTextColor={colors['--faint']}
             multiline
-            className="text-sm text-ink font-sans-medium bg-canvas/80 border border-border/50 rounded-lg p-3 min-h-[60px]"
+            className="min-h-[60px] rounded-lg border border-border/50 bg-canvas/80 p-3 font-sans-medium text-sm text-ink"
           />
         </View>
 
         {/* Notes field */}
-        <View className="px-6 py-4 border-b border-border/40">
-          <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-faint mb-2">
+        <View className="border-b border-border/40 px-6 py-4">
+          <Text className="mb-2 font-sans-semibold text-[10px] uppercase tracking-widest text-faint">
             Notes
           </Text>
           <TextInput
@@ -302,13 +315,13 @@ export function VocabDetailPanel({
             placeholder="Add notes, examples, mnemonics..."
             placeholderTextColor={colors['--faint']}
             multiline
-            className="text-sm text-ink font-sans-medium bg-canvas/80 border border-border/50 rounded-lg p-3 min-h-[80px]"
+            className="min-h-[80px] rounded-lg border border-border/50 bg-canvas/80 p-3 font-sans-medium text-sm text-ink"
           />
         </View>
 
         {/* Status section */}
         <View className="px-6 py-4">
-          <Text className="text-[10px] font-sans-semibold uppercase tracking-widest text-faint mb-3">
+          <Text className="mb-3 font-sans-semibold text-[10px] uppercase tracking-widest text-faint">
             Status
           </Text>
           <View className="flex-row flex-wrap gap-2">
@@ -327,21 +340,21 @@ export function VocabDetailPanel({
                   key={opt.value}
                   onPress={() => handleStatusChange(opt.value)}
                   className={cn(
-                    'flex-row items-center px-3 py-2 rounded-lg border',
+                    'flex-row items-center rounded-lg border px-3 py-2',
                     isActive
                       ? cn('border-transparent', activeBgClass[opt.value])
-                      : 'border-border/70 bg-panel'
+                      : 'border-border/70 bg-panel',
                   )}
                 >
                   <Ionicons
                     name={opt.icon as any}
                     size={16}
-                      color={isActive ? color : colors['--faint']}
+                    color={isActive ? color : colors['--faint']}
                   />
                   <Text
                     className={cn(
-                      'ml-2 text-sm font-sans-semibold',
-                      isActive ? '' : 'text-subink'
+                      'ml-2 font-sans-semibold text-sm',
+                      isActive ? '' : 'text-subink',
                     )}
                     style={isActive ? { color } : undefined}
                   >
@@ -355,13 +368,13 @@ export function VocabDetailPanel({
       </ScrollView>
 
       {/* Delete button */}
-      <View className="p-6 border-t border-border/50">
+      <View className="border-t border-border/50 p-6">
         <Pressable
           onPress={handleDelete}
-          className="flex-row items-center justify-center py-3 rounded-lg border border-danger/40 bg-dangerSoft active:bg-danger/15"
+          className="flex-row items-center justify-center rounded-lg border border-danger/40 bg-dangerSoft py-3 active:bg-danger/15"
         >
           <Ionicons name="trash-outline" size={18} color={colors['--danger']} />
-          <Text className="ml-2 text-sm font-sans-semibold text-danger">
+          <Text className="ml-2 font-sans-semibold text-sm text-danger">
             Delete Word
           </Text>
         </Pressable>

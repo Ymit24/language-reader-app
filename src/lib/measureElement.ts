@@ -52,7 +52,7 @@ export function measureInWindow(ref: View | null): Promise<Rect | null> {
  */
 export async function measureRelativeToContainer(
   elementRef: View | null,
-  containerRef: View | null
+  containerRef: View | null,
 ): Promise<Rect | null> {
   const [elementRect, containerRect] = await Promise.all([
     measureInWindow(elementRef),

@@ -4,7 +4,13 @@ import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useConvexAuth, useQuery } from 'convex/react';
 import { Redirect, Tabs } from 'expo-router';
-import { ActivityIndicator, Platform, Text, View, useWindowDimensions } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Sidebar } from '../../src/components/Sidebar';
 
@@ -13,26 +19,44 @@ function LoadingScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-canvas">
       <View className="items-center gap-6">
-        <View className="w-16 h-16 rounded-2xl bg-panel border border-border/40 items-center justify-center shadow-card">
+        <View className="h-16 w-16 items-center justify-center rounded-2xl border border-border/40 bg-panel shadow-card">
           <ActivityIndicator size="small" color={colors['--brand']} />
         </View>
         <View className="items-center gap-2">
-          <Text className="text-sm font-sans-semibold text-ink tracking-tight">Syncing</Text>
-          <Text className="text-[10px] text-faint font-sans-bold uppercase tracking-[0.2em]">Authenticating</Text>
+          <Text className="font-sans-semibold text-sm tracking-tight text-ink">
+            Syncing
+          </Text>
+          <Text className="font-sans-bold text-[10px] uppercase tracking-[0.2em] text-faint">
+            Authenticating
+          </Text>
         </View>
       </View>
     </View>
   );
 }
 
-function ReviewTabIcon({ color, size, focused }: { color: string; size: number; focused: boolean }) {
+function ReviewTabIcon({
+  color,
+  size,
+  focused,
+}: {
+  color: string;
+  size: number;
+  focused: boolean;
+}) {
   const { colors } = useAppTheme();
   const { selectedLanguage } = useSelectedLanguage();
-  const dueCount = useQuery(api.review.getDueCount, { language: selectedLanguage });
-  
+  const dueCount = useQuery(api.review.getDueCount, {
+    language: selectedLanguage,
+  });
+
   return (
     <View>
-      <Ionicons name={focused ? "flash" : "flash-outline"} size={size} color={color} />
+      <Ionicons
+        name={focused ? 'flash' : 'flash-outline'}
+        size={size}
+        color={color}
+      />
       {dueCount !== undefined && dueCount > 0 && (
         <View
           style={{
@@ -120,7 +144,11 @@ export default function AppLayout() {
             options={{
               title: 'Vocab',
               tabBarIcon: ({ color, size, focused }) => (
-                <Ionicons name={focused ? "reader" : "reader-outline"} size={size} color={color} />
+                <Ionicons
+                  name={focused ? 'reader' : 'reader-outline'}
+                  size={size}
+                  color={color}
+                />
               ),
             }}
           />

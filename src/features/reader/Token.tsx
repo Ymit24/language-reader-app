@@ -16,11 +16,20 @@ interface TokenProps {
   measureRef?: React.Ref<View>;
 }
 
-function TokenComponent({ surface, isWord, status, learningLevel, isSelected, normalized, isWordSelected, measureRef }: TokenProps) {
+function TokenComponent({
+  surface,
+  isWord,
+  status,
+  learningLevel,
+  isSelected,
+  normalized,
+  isWordSelected,
+  measureRef,
+}: TokenProps) {
   if (!isWord) {
     return (
       <Text
-        className="text-[22px] text-ink font-serif leading-relaxed"
+        className="font-serif text-[22px] leading-relaxed text-ink"
         style={{ lineHeight: 38 }}
       >
         {surface}
@@ -49,18 +58,21 @@ function TokenComponent({ surface, isWord, status, learningLevel, isSelected, no
         // New: Blue Text. Stands out as "Unknown".
         // Using blue-400 for better dark mode visibility (vs 700).
         bgClass = 'bg-transparent';
-        textClass = 'text-vUnknownLine decoration-vUnknownLine/50 underline decoration-2';
+        textClass =
+          'text-vUnknownLine decoration-vUnknownLine/50 underline decoration-2';
         break;
       case 'learning':
         // Learning: Orange Text + Orange Underline.
         bgClass = 'bg-transparent';
-        textClass = 'text-vLearningLine decoration-vLearningLine underline decoration-2';
+        textClass =
+          'text-vLearningLine decoration-vLearningLine underline decoration-2';
         break;
       case 'familiar':
         // Familiar: Yellow/Amber Text + Yellow/Amber Underline.
         // Using yellow-400/amber-400 for readability.
         bgClass = 'bg-transparent';
-        textClass = 'text-vFamiliarLine decoration-vFamiliarLine/50 underline decoration-dashed decoration-2';
+        textClass =
+          'text-vFamiliarLine decoration-vFamiliarLine/50 underline decoration-dashed decoration-2';
         break;
       case 'known':
         // Known: Plain.
@@ -76,9 +88,9 @@ function TokenComponent({ surface, isWord, status, learningLevel, isSelected, no
       ref={measureRef as React.Ref<Text>}
       suppressHighlighting={true}
       className={cn(
-        "text-[22px] font-serif box-decoration-clone",
+        'box-decoration-clone font-serif text-[22px]',
         textClass,
-        bgClass
+        bgClass,
       )}
       style={{
         lineHeight: 38,

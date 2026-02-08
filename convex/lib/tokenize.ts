@@ -28,9 +28,9 @@ export function tokenize(text: string): Token[] {
   //
   // Note: We include both straight quote ' and curly quote ’
   // We include hyphen - and underscore _ (sometimes used, though rare in standard text, good for safety)
-  
+
   const wordPattern = /([\p{L}\p{N}]+(?:['’\-_][\p{L}\p{N}]+)*)/gu;
-  
+
   const tokens: Token[] = [];
   let lastIndex = 0;
   let match;
@@ -41,7 +41,7 @@ export function tokenize(text: string): Token[] {
       const nonWordSurface = text.slice(lastIndex, match.index);
       tokens.push({
         surface: nonWordSurface,
-        isWord: false
+        isWord: false,
       });
     }
 
@@ -50,7 +50,7 @@ export function tokenize(text: string): Token[] {
     tokens.push({
       surface,
       normalized: normalize(surface),
-      isWord: true
+      isWord: true,
     });
 
     lastIndex = wordPattern.lastIndex;
@@ -60,7 +60,7 @@ export function tokenize(text: string): Token[] {
   if (lastIndex < text.length) {
     tokens.push({
       surface: text.slice(lastIndex),
-      isWord: false
+      isWord: false,
     });
   }
 
@@ -70,11 +70,11 @@ export function tokenize(text: string): Token[] {
 function normalize(surface: string): string {
   // Lowercase
   let normalized = surface.toLowerCase();
-  
-  // Note: The regex ensures we generally don't have *surrounding* punctuation 
+
+  // Note: The regex ensures we generally don't have *surrounding* punctuation
   // like "Hello," -> "Hello" is the match, "," is skipped.
   // But just in case, or for specific edge cases, we could strip here.
   // Given our regex, 'surface' should strictly be the word chars + internal separators.
-  
+
   return normalized;
 }

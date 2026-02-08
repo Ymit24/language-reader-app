@@ -1,7 +1,13 @@
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import * as SecureStore from 'expo-secure-store';
 import { vars } from 'nativewind';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Platform, View } from 'react-native';
 import {
   DEFAULT_DARK_THEME_ID,
@@ -37,7 +43,8 @@ const isThemePreference = (value: string | null): value is ThemePreference => {
   return Object.prototype.hasOwnProperty.call(THEME_BY_ID, value);
 };
 
-const parseRgb = (value: string) => value.split(' ').map((item) => Number(item));
+const parseRgb = (value: string) =>
+  value.split(' ').map((item) => Number(item));
 
 const toRgb = (value: string) => {
   const [r, g, b] = parseRgb(value);
@@ -49,9 +56,11 @@ const toRgba = (value: string, opacity: number) => {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
-const createThemeColors = (variables: Record<ThemeVariable, string>): ThemeColors => {
+const createThemeColors = (
+  variables: Record<ThemeVariable, string>,
+): ThemeColors => {
   return Object.fromEntries(
-    Object.entries(variables).map(([key, value]) => [key, toRgb(value)])
+    Object.entries(variables).map(([key, value]) => [key, toRgb(value)]),
   ) as ThemeColors;
 };
 
@@ -82,7 +91,8 @@ const storePreference = async (value: ThemePreference) => {
 
 export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useColorScheme();
-  const [preference, setPreferenceState] = useState<ThemePreference>(DEFAULT_THEME_ID);
+  const [preference, setPreferenceState] =
+    useState<ThemePreference>(DEFAULT_THEME_ID);
   const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
@@ -117,7 +127,8 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
-    const root = typeof document !== 'undefined' ? document.documentElement : null;
+    const root =
+      typeof document !== 'undefined' ? document.documentElement : null;
     if (!root) return;
     Object.entries(theme.variables).forEach(([key, value]) => {
       root.style.setProperty(key, value);
@@ -135,7 +146,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
       alpha: (token, opacity) => toRgba(theme.variables[token], opacity),
       themes: THEMES,
     }),
-    [preference, theme, resolvedThemeId, isDark, colors]
+    [preference, theme, resolvedThemeId, isDark, colors],
   );
 
   return (

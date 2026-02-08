@@ -7,7 +7,10 @@ interface LevelBadgeProps {
   size?: 'small' | 'medium' | 'large';
 }
 
-const LEVEL_COLORS: Record<number, { bg: string; text: string; border: string }> = {
+const LEVEL_COLORS: Record<
+  number,
+  { bg: string; text: string; border: string }
+> = {
   1: { bg: '#f0ebe1', text: '#524a43', border: '#cdbfaf' },
   2: { bg: '#e6eef5', text: '#3c7da8', border: '#9bbbd2' },
   3: { bg: '#e8f5ef', text: '#1d6b4f', border: '#7ac4a5' },

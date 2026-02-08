@@ -13,7 +13,7 @@ import { LANGUAGE_LABELS } from '@/src/lib/languages';
 export default function ReviewDashboard() {
   const router = useRouter();
   const { selectedLanguage } = useSelectedLanguage();
-  
+
   const progress = useQuery(api.progress.getProgress);
   const languageStats = useQuery(api.review.getAllLanguageStats);
   const weeklyStats = useQuery(api.progress.getWeeklyStats);
@@ -36,15 +36,15 @@ export default function ReviewDashboard() {
 
   return (
     <ScreenLayout>
-      <ScrollView 
-        className="flex-1" 
+      <ScrollView
+        className="flex-1"
         contentContainerClassName="p-4 md:p-6 gap-6"
         showsVerticalScrollIndicator={false}
       >
         {/* Page Header */}
         <View className="gap-1">
-          <Text className="text-2xl font-serif-bold text-ink">Review</Text>
-          <Text className="text-sm text-subink font-sans-medium">
+          <Text className="font-serif-bold text-2xl text-ink">Review</Text>
+          <Text className="font-sans-medium text-sm text-subink">
             Practice your vocabulary with spaced repetition
           </Text>
         </View>
@@ -65,26 +65,26 @@ export default function ReviewDashboard() {
         {todayStats && (
           <View className="flex-row gap-3">
             <View className="flex-1 rounded-xl border border-border/80 bg-panel p-4">
-              <Text className="text-2xl font-sans-bold text-ink">
+              <Text className="font-sans-bold text-2xl text-ink">
                 {todayStats.reviewCount}
               </Text>
-              <Text className="text-xs text-subink font-sans-medium">
+              <Text className="font-sans-medium text-xs text-subink">
                 Reviews today
               </Text>
             </View>
             <View className="flex-1 rounded-xl border border-border/80 bg-panel p-4">
-              <Text className="text-2xl font-sans-bold text-success">
+              <Text className="font-sans-bold text-2xl text-success">
                 +{todayStats.xpEarned}
               </Text>
-              <Text className="text-xs text-subink font-sans-medium">
+              <Text className="font-sans-medium text-xs text-subink">
                 XP earned
               </Text>
             </View>
             <View className="flex-1 rounded-xl border border-border/80 bg-panel p-4">
-              <Text className="text-2xl font-sans-bold text-brand">
+              <Text className="font-sans-bold text-2xl text-brand">
                 {weeklyStats?.accuracy ?? 0}%
               </Text>
-              <Text className="text-xs text-subink font-sans-medium">
+              <Text className="font-sans-medium text-xs text-subink">
                 This week
               </Text>
             </View>
@@ -100,8 +100,8 @@ export default function ReviewDashboard() {
 
         {/* Language Cards */}
         <View className="gap-4">
-          <Text className="text-lg font-sans-bold text-ink">Your Language</Text>
-          
+          <Text className="font-sans-bold text-lg text-ink">Your Language</Text>
+
           {isLoading ? (
             <>
               <LanguageCard
@@ -133,12 +133,12 @@ export default function ReviewDashboard() {
               onStartReview={() => handleStartReview(selectedLanguage)}
             />
           ) : (
-            <View className="rounded-2xl border border-border/80 bg-panel p-8 items-center">
-              <Text className="text-4xl mb-3">📚</Text>
-              <Text className="text-lg font-sans-semibold text-ink text-center">
+            <View className="items-center rounded-2xl border border-border/80 bg-panel p-8">
+              <Text className="mb-3 text-4xl">📚</Text>
+              <Text className="text-center font-sans-semibold text-lg text-ink">
                 No vocabulary yet in {LANGUAGE_LABELS[selectedLanguage]}
               </Text>
-              <Text className="text-sm text-subink font-sans-medium text-center mt-1">
+              <Text className="mt-1 text-center font-sans-medium text-sm text-subink">
                 Start reading lessons in this language to build your vocabulary
               </Text>
             </View>
@@ -148,39 +148,37 @@ export default function ReviewDashboard() {
         {/* Weekly Summary */}
         {weeklyStats && weeklyStats.reviewCount > 0 && (
           <View className="rounded-2xl border border-border/80 bg-panel p-5">
-            <Text className="text-base font-sans-bold text-ink mb-4">
+            <Text className="mb-4 font-sans-bold text-base text-ink">
               This Week
             </Text>
             <View className="flex-row justify-between">
               <View className="items-center">
-                <Text className="text-xl font-sans-bold text-ink">
+                <Text className="font-sans-bold text-xl text-ink">
                   {weeklyStats.reviewCount}
                 </Text>
-                <Text className="text-xs text-faint font-sans-medium">
+                <Text className="font-sans-medium text-xs text-faint">
                   Reviews
                 </Text>
               </View>
               <View className="items-center">
-                <Text className="text-xl font-sans-bold text-success">
+                <Text className="font-sans-bold text-xl text-success">
                   {weeklyStats.correctCount}
                 </Text>
-                <Text className="text-xs text-faint font-sans-medium">
+                <Text className="font-sans-medium text-xs text-faint">
                   Correct
                 </Text>
               </View>
               <View className="items-center">
-                <Text className="text-xl font-sans-bold text-brand">
+                <Text className="font-sans-bold text-xl text-brand">
                   +{weeklyStats.xpEarned}
                 </Text>
-                <Text className="text-xs text-faint font-sans-medium">
-                  XP
-                </Text>
+                <Text className="font-sans-medium text-xs text-faint">XP</Text>
               </View>
               <View className="items-center">
-                <Text className="text-xl font-sans-bold text-accent">
+                <Text className="font-sans-bold text-xl text-accent">
                   {weeklyStats.accuracy}%
                 </Text>
-                <Text className="text-xs text-faint font-sans-medium">
+                <Text className="font-sans-medium text-xs text-faint">
                   Accuracy
                 </Text>
               </View>

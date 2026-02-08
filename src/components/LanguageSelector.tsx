@@ -1,4 +1,8 @@
-import { LANGUAGES, LANGUAGE_LABELS, type LanguageCode } from '@/src/lib/languages';
+import {
+  LANGUAGES,
+  LANGUAGE_LABELS,
+  type LanguageCode,
+} from '@/src/lib/languages';
 import { cn } from '@/src/lib/utils';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
@@ -93,7 +97,7 @@ export function LanguageSelector({
         onPress={toggleDropdown}
         className={cn(
           'flex-row items-center justify-between rounded-xl border bg-panel px-3',
-          showLabels ? 'gap-3' : 'justify-center'
+          showLabels ? 'gap-3' : 'justify-center',
         )}
         style={{
           height: buttonHeight,
@@ -102,10 +106,12 @@ export function LanguageSelector({
         accessibilityRole="button"
         accessibilityLabel={`Selected language: ${LANGUAGE_LABELS[value]}`}
       >
-        <View className={cn('flex-row items-center', showLabels ? 'gap-2' : '')}>
+        <View
+          className={cn('flex-row items-center', showLabels ? 'gap-2' : '')}
+        >
           <LanguageFlag code={value} size={flagSize} />
           {showLabels && (
-            <Text className="text-sm font-sans-semibold text-ink">
+            <Text className="font-sans-semibold text-sm text-ink">
               {LANGUAGE_LABELS[value]}
             </Text>
           )}
@@ -126,14 +132,11 @@ export function LanguageSelector({
         onRequestClose={closeDropdown}
       >
         <View style={styles.modalRoot}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={closeDropdown}
-          />
+          <Pressable style={StyleSheet.absoluteFill} onPress={closeDropdown} />
           <View
             className={cn(
               'rounded-xl border bg-panel p-1',
-              showLabels ? '' : 'items-center'
+              showLabels ? '' : 'items-center',
             )}
             style={{
               borderColor: colors['--border'],
@@ -153,7 +156,7 @@ export function LanguageSelector({
                   onPress={() => handleSelect(lang)}
                   className={cn(
                     'flex-row items-center rounded-lg px-3 py-2',
-                    showLabels ? 'gap-2' : 'justify-center'
+                    showLabels ? 'gap-2' : 'justify-center',
                   )}
                   style={
                     isActive
@@ -167,8 +170,8 @@ export function LanguageSelector({
                   {showLabels && (
                     <Text
                       className={cn(
-                        'text-sm font-sans-medium',
-                        isActive ? 'text-ink' : 'text-subink'
+                        'font-sans-medium text-sm',
+                        isActive ? 'text-ink' : 'text-subink',
                       )}
                     >
                       {LANGUAGE_LABELS[lang]}

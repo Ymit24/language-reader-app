@@ -1,4 +1,9 @@
-import { ActivityIndicator, TouchableOpacity, Text, TouchableOpacityProps } from 'react-native';
+import {
+  ActivityIndicator,
+  TouchableOpacity,
+  Text,
+  TouchableOpacityProps,
+} from 'react-native';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
 
@@ -33,20 +38,19 @@ export function Button({
   ...props
 }: ButtonProps) {
   const spinnerColor = variant === 'primary' ? '#FFFFFF' : '#6B7280';
-  const showText = typeof children === 'string' || typeof loadingText === 'string';
-  const textContent = isLoading ? loadingText ?? children : children;
+  const showText =
+    typeof children === 'string' || typeof loadingText === 'string';
+  const textContent = isLoading ? (loadingText ?? children) : children;
 
   return (
     <TouchableOpacity
-      className={`rounded-lg px-4 py-2.5 flex-row items-center justify-center gap-2 ${variantStyles[variant]} ${className}`}
+      className={`flex-row items-center justify-center gap-2 rounded-lg px-4 py-2.5 ${variantStyles[variant]} ${className}`}
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading && (
-        <ActivityIndicator size="small" color={spinnerColor} />
-      )}
+      {isLoading && <ActivityIndicator size="small" color={spinnerColor} />}
       {showText ? (
-        <Text className={`text-sm font-sans-semibold ${textStyles[variant]}`}>
+        <Text className={`font-sans-semibold text-sm ${textStyles[variant]}`}>
           {textContent}
         </Text>
       ) : (
@@ -61,10 +65,15 @@ interface IconButtonProps extends TouchableOpacityProps {
   accessibilityLabel: string;
 }
 
-export function IconButton({ children, accessibilityLabel, className = '', ...props }: IconButtonProps) {
+export function IconButton({
+  children,
+  accessibilityLabel,
+  className = '',
+  ...props
+}: IconButtonProps) {
   return (
     <TouchableOpacity
-      className={`rounded-lg h-9 w-9 items-center justify-center border border-border/80 bg-panel active:bg-muted ${className}`}
+      className={`h-9 w-9 items-center justify-center rounded-lg border border-border/80 bg-panel active:bg-muted ${className}`}
       accessibilityLabel={accessibilityLabel}
       {...props}
     >
