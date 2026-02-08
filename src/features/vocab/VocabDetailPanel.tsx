@@ -99,7 +99,7 @@ export function VocabDetailPanel({
         const result = (await lookupAction({ language, term })) as LookupResult;
         cacheRef.current.set(lookupKey, result);
         setLookupResult(result);
-      } catch (error) {
+      } catch {
         setLookupResult({ success: false, entries: [], lemmaEntries: [] });
       } finally {
         setIsLookingUp(false);

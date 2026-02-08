@@ -2,7 +2,6 @@ import { api } from '@/convex/_generated/api';
 import { LanguageSelector } from '@/src/components/LanguageSelector';
 import { useSelectedLanguage } from '@/src/lib/selectedLanguage';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
-import { useAuthActions } from '@convex-dev/auth/react';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from 'convex/react';
 import { usePathname, useRouter } from 'expo-router';
@@ -40,7 +39,6 @@ export function Sidebar() {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut } = useAuthActions();
   const { colors, alpha } = useAppTheme();
   const { selectedLanguage, setSelectedLanguage } = useSelectedLanguage();
   const isCollapsed = useSharedValue(false);
@@ -50,17 +48,11 @@ export function Sidebar() {
   const dueCount = useQuery(api.review.getDueCount, {
     language: selectedLanguage,
   });
-  const progress = useQuery(api.progress.getProgress);
 
   const toggleCollapse = () => {
     const next = !collapsed;
     isCollapsed.value = next;
     setCollapsed(next);
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.replace('/(auth)/sign-in');
   };
 
   const sidebarWidthStyle = useAnimatedStyle(() => {

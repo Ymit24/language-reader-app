@@ -6,7 +6,6 @@ import Animated, {
   withSequence,
   withTiming,
   withDelay,
-  runOnJS,
 } from 'react-native-reanimated';
 import { useAppTheme } from '@/src/theme/AppThemeProvider';
 
@@ -43,7 +42,7 @@ export function XpPopup({ xp, bonusXp = 0, onComplete }: XpPopupProps) {
     }, 1300);
 
     return () => clearTimeout(timeout);
-  }, []);
+  }, [onComplete, opacity, scale, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }, { scale: scale.value }],

@@ -41,7 +41,7 @@ interface ReaderPageProps {
   isActive?: boolean;
 }
 
-interface ParagraphToken extends TokenType {}
+type ParagraphToken = TokenType;
 
 const ReaderToken = React.memo(
   ({
@@ -277,27 +277,30 @@ export function ReaderPage({
     return { contentX, contentY };
   }, []);
 
-  const findTokenAndIndex = (
-    x: number,
-    y: number,
-  ): { tokenId: string | null; index: number | null } => {
-    // // Find which token is at this point
-    const tokenId = findTokenAtPoint(x, y);
-    if (!tokenId) {
+  const findTokenAndIndex = useCallback(
+    (
+      x: number,
+      y: number,
+    ): { tokenId: string | null; index: number | null } => {
+      // Find which token is at this point.
+      const tokenId = findTokenAtPoint(x, y);
+      if (!tokenId) {
+        return { tokenId: null, index: null };
+      }
+
+      const indexOfToken = tokens.findIndex((token) => {
+        const key = token._id || `token-${token.index}`;
+        return key === tokenId;
+      });
+
+      if (indexOfToken !== -1) {
+        return { tokenId, index: indexOfToken };
+      }
+
       return { tokenId: null, index: null };
-    }
-
-    const indexOfToken = tokens.findIndex((token) => {
-      const key = token._id || `token-${token.index}`;
-      return key === tokenId;
-    });
-
-    if (indexOfToken !== -1) {
-      return { tokenId, index: indexOfToken };
-    }
-
-    return { tokenId: null, index: null };
-  };
+    },
+    [findTokenAtPoint, tokens],
+  );
 
   const [tokenSelectionStartIndex, setTokenSelectionStartIndex] = useState<
     number | null

@@ -67,7 +67,14 @@ export function SessionSummary({
     }
 
     buttonOpacity.value = withDelay(800, withTiming(1, { duration: 300 }));
-  }, []);
+  }, [
+    buttonOpacity,
+    cardScale,
+    levelUpScale,
+    leveledUp,
+    statsOpacity,
+    xpScale,
+  ]);
 
   const cardAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: cardScale.value }],

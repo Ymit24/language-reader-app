@@ -44,17 +44,20 @@ export function GradeButtons({
   disabled = false,
   showKeyboardHints = Platform.OS === 'web',
 }: GradeButtonsProps) {
-  const handleGrade = (quality: number) => {
-    if (disabled) return;
+  const handleGrade = React.useCallback(
+    (quality: number) => {
+      if (disabled) return;
 
-    Haptics.impactAsync(
-      quality >= 4
-        ? Haptics.ImpactFeedbackStyle.Light
-        : Haptics.ImpactFeedbackStyle.Medium,
-    );
+      Haptics.impactAsync(
+        quality >= 4
+          ? Haptics.ImpactFeedbackStyle.Light
+          : Haptics.ImpactFeedbackStyle.Medium,
+      );
 
-    onGrade(quality);
-  };
+      onGrade(quality);
+    },
+    [disabled, onGrade],
+  );
 
   // Keyboard shortcuts for web
   React.useEffect(() => {
@@ -71,7 +74,7 @@ export function GradeButtons({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [disabled]);
+  }, [disabled, handleGrade]);
 
   return (
     <View className="flex-row gap-2">

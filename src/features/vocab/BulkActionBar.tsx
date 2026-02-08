@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  ActivityIndicator,
-  View,
-  Text,
-  Pressable,
-  Animated,
-} from 'react-native';
+import { ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { VocabStatus, getStatusColor } from './StatusBadge';
 import { cn } from '../../lib/utils';

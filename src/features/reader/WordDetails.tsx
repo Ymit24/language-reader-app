@@ -109,7 +109,7 @@ export function WordDetails({
         } else {
           setHasLookupError(true);
         }
-      } catch (error) {
+      } catch {
         setHasLookupError(true);
       } finally {
         setIsLoading(false);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
 import { SafeAreaView } from '@/src/components/SafeAreaView';
@@ -67,7 +67,7 @@ export default function ReviewSession() {
       }
     };
     initSession();
-  }, [language]);
+  }, [language, router, startSession]);
 
   // Update progress bar
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function ReviewSession() {
       const ratio = Math.min(1, (currentIndex + 1) / items.length);
       progressValue.value = withTiming(ratio, { duration: 300 });
     }
-  }, [currentIndex, items.length]);
+  }, [currentIndex, items.length, progressValue]);
 
   const progressStyle = useAnimatedStyle(() => ({
     width: `${Math.max(0, progressValue.value) * 100}%`,
